@@ -72,8 +72,11 @@ export default async function LogPage({
   };
 
   return (
-    <main style={{ padding: "1.5rem", maxWidth: "36rem", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "1rem" }}>Daily log</h1>
+    <main className="page" style={{ maxWidth: "36rem" }}>
+      <header className="page-header">
+        <h1>Daily log</h1>
+        <p className="subtitle">The 30-second end-of-day check-in.</p>
+      </header>
       {/* key: switching dates must remount the form with the new day's state */}
       <DailyLogForm key={date} init={init} />
     </main>

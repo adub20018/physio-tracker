@@ -1,0 +1,221 @@
+/* History table styling: a calm daily journal, not a spreadsheet.
+   Five quiet columns; everything wordy lives in the expandable detail row.
+   Data reads in the mono voice; severity shows as small colored dots. */
+
+.wrapper {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Let the DataTable's own chrome disappear into our card */
+.wrapper :global(.p-datatable-table) {
+  font-size: 0.9rem;
+}
+
+.wrapper :global(.p-datatable-table-container) {
+  overflow-x: auto;
+}
+
+.wrapper th {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.wrapper td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  vertical-align: middle;
+}
+
+.wrapper tbody tr {
+  transition: background 0.12s ease;
+}
+
+.wrapper tbody tr:hover {
+  background: var(--surface-raised);
+}
+
+/* Sort buttons inherit the header look */
+.sortButton {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.sortButton:hover {
+  color: var(--muted);
+}
+
+.sortIcon {
+  color: var(--accent);
+  font-size: 0.6rem;
+}
+
+/* Date cell: mono date + faint weekday */
+.date {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.weekday {
+  color: var(--faint);
+  font-size: 0.72rem;
+  margin-left: 0.5rem;
+  font-family: var(--font-body);
+}
+
+/* Pain trio: three fixed-width readings, dot + value */
+.painTrio {
+  display: inline-flex;
+  gap: 0.9rem;
+}
+
+.painReading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 2.6rem;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.painDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.painEmpty {
+  color: var(--faint);
+}
+
+.slotLetter {
+  color: var(--faint);
+  font-size: 0.68rem;
+  font-family: var(--font-body);
+}
+
+/* Steps: number + a thin bar scaled against a typical active day */
+.steps {
+  min-width: 5.5rem;
+}
+
+.stepsValue {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.stepsBar {
+  margin-top: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent-soft);
+  overflow: hidden;
+  max-width: 5rem;
+}
+
+.stepsBarFill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent-strong);
+}
+
+/* Physio summary: compact, muted */
+.physio {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Expand toggle chevron */
+.toggle {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 6px;
+  color: var(--faint);
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.toggle:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Expanded detail row */
+.detailRow td {
+  background: color-mix(in srgb, var(--surface-raised) 70%, var(--background));
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem 2rem;
+  max-width: 60rem;
+}
+
+.detailBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.detailLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+}
+
+.detailText {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.detailText strong {
+  color: var(--foreground);
+  font-weight: 400;
+}
+
+.tagRow {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 99px;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  background: var(--surface);
+}

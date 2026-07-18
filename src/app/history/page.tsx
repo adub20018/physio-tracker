@@ -1,6 +1,7 @@
-// /history — the full data table of every logged day (the spreadsheet view,
-// kept). Server component: fetches logs through the repository, flattens them
-// into display-ready rows, and hands them to the client-side HistoryTable.
+// /history — the full journal of every logged day (the spreadsheet view,
+// kept but calmed down). Server component: fetches logs through the
+// repository, flattens them into display-ready rows, and hands them to the
+// client-side HistoryTable.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, type DailyLogWithExercises } from "@/repositories";
 import { HistoryTable, type HistoryRow } from "@/components/ui/history-table";
@@ -8,6 +9,14 @@ import { HistoryTable, type HistoryRow } from "@/components/ui/history-table";
 // Always render at request time: this page shows live database contents and
 // must never be frozen into a build-time snapshot.
 export const dynamic = "force-dynamic";
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// Weekday abbreviation for an ISO date, computed without timezone drift.
+function weekdayOf(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return WEEKDAYS[new Date(y, m - 1, d).getDay()];
+}
 
 // "Standing ankle raise 3×20s + 1×30s @25–35%" — one line per exercise name,
 // set groups joined, intensity range appended when recorded.
@@ -38,6 +47,7 @@ export default async function HistoryPage() {
   const rows: HistoryRow[] = logs.map((log) => ({
     id: log.id,
     date: log.date,
+    weekday: weekdayOf(log.date),
     steps: log.steps,
     painMorning: log.painMorning,
     painDaytime: log.painDaytime,
@@ -45,15 +55,19 @@ export default async function HistoryPage() {
     sleepHours: log.sleepHours,
     exerciseSummary: summarizeExercises(log),
     activityTags: log.activityTags ?? [],
-    notes: [log.activityNotes, log.generalNotes].filter(Boolean).join(" • "),
+    painTypes: log.painTypes ?? [],
+    activityNotes: log.activityNotes ?? "",
+    generalNotes: log.generalNotes ?? "",
   }));
 
   return (
-    <main style={{ padding: "1.5rem", maxWidth: "80rem", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "1rem" }}>History</h1>
-      <p style={{ marginBottom: "1rem", opacity: 0.7 }}>
-        {rows.length} logged days
-      </p>
+    <main className="page" style={{ maxWidth: "64rem" }}>
+      <header className="page-header">
+        <h1>History</h1>
+        <p className="subtitle">
+          {rows.length} logged days · click a row&apos;s arrow for notes and detail
+        </p>
+      </header>
       <HistoryTable rows={rows} />
     </main>
   );

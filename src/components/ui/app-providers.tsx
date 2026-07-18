@@ -14,44 +14,69 @@ import { useServerInsertedHTML } from "next/navigation";
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
 
-// App theme: Aura restyled to the "evening journal" palette in globals.css —
-// sage-green primary, green-tinted ink surfaces. Kept next to the provider
-// because they are configured together.
-const EveningJournal = definePreset(Aura, {
-  semantic: {
-    primary: {
-      50: "#f0f7f2",
-      100: "#dcece1",
-      200: "#bcd9c6",
-      300: "#9bc7ab",
-      400: "#8fc7a6",
-      500: "#5f9d7c",
-      600: "#4c8065",
-      700: "#3c6450",
-      800: "#2e4c3d",
-      900: "#243a30",
-      950: "#162420",
-    },
-    colorScheme: {
-      dark: {
-        surface: {
-          0: "#ffffff",
-          50: "#f2f5f3",
-          100: "#e2e7e4",
-          200: "#c4cdc8",
-          300: "#9aa79f",
-          400: "#6b756e",
-          500: "#4b554f",
-          600: "#333d38",
-          700: "#252d29",
-          800: "#1a201d",
-          900: "#141917",
-          950: "#0e1210",
+// ─── Try out color schemes here ──────────────────────────────────────────
+// Change this one word and save — the app hot-reloads with the new scheme.
+// Everything follows automatically: PrimeReact components read the theme
+// tokens, and the app's own CSS variables (globals.css) alias them.
+// (Exception by design: pain severity colors stay lime/amber/red.)
+//
+// Built-in palettes: "emerald" | "green" | "lime" | "teal" | "cyan" | "sky"
+//   | "blue" | "indigo" | "violet" | "purple" | "fuchsia" | "pink" | "rose"
+//   | "red" | "orange" | "amber" | "yellow"
+// Special: "noir" — monochrome, primary becomes white-on-black.
+const COLOR_SCHEME: string = "emerald";
+// ─────────────────────────────────────────────────────────────────────────
+
+// Builds a primary scale of token references like {sky.500}, which the
+// preset system resolves against the chosen palette.
+const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+function paletteRef(name: string): Record<number, string> {
+  return Object.fromEntries(SHADES.map((s) => [s, `{${name}.${s}}`]));
+}
+
+// Noir maps primary onto the surface (neutral) scale and inverts the
+// primary/highlight tokens so buttons and accents render white-on-black —
+// the standard Noir recipe from the Prime theming docs.
+const preset =
+  COLOR_SCHEME === "noir"
+    ? definePreset(Aura, {
+        semantic: {
+          primary: paletteRef("surface"),
+          colorScheme: {
+            light: {
+              primary: {
+                color: "{primary.950}",
+                contrastColor: "#ffffff",
+                hoverColor: "{primary.800}",
+                activeColor: "{primary.700}",
+              },
+              highlight: {
+                background: "{primary.950}",
+                focusBackground: "{primary.700}",
+                color: "#ffffff",
+                focusColor: "#ffffff",
+              },
+            },
+            dark: {
+              primary: {
+                color: "{primary.50}",
+                contrastColor: "{primary.950}",
+                hoverColor: "{primary.200}",
+                activeColor: "{primary.300}",
+              },
+              highlight: {
+                background: "{primary.50}",
+                focusBackground: "{primary.300}",
+                color: "{primary.950}",
+                focusColor: "{primary.950}",
+              },
+            },
+          },
         },
-      },
-    },
-  },
-});
+      })
+    : definePreset(Aura, {
+        semantic: { primary: paletteRef(COLOR_SCHEME) },
+      });
 
 // Module-level singleton: collects the CSS of every styled component that
 // renders during SSR so the markup arrives already styled (no flash).
@@ -68,7 +93,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <PrimeReactProvider
       // .app-dark is set on <html> permanently — the app commits to dark.
-      theme={{ preset: EveningJournal, options: { darkModeSelector: ".app-dark" } }}
+      theme={{ preset, options: { darkModeSelector: ".app-dark" } }}
       stylesheet={styledStyleSheet}
       // Free Community license key (see AGENTS.md); public by nature — it
       // ships to the browser in any PrimeReact app.

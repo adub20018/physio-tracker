@@ -1,36 +1,38 @@
 /* Global design tokens and base styles.
-   Aesthetic: "evening journal" — a calm, clinical-but-warm dark theme for an
-   app used at the end of the day to log rehab progress. Green-tinted inks,
-   a healing sage accent, warm off-white text. Pain severity is the only
-   place warm alarm colors appear, so they always mean something. */
+   Colors alias PrimeReact's built-in theme variables (--p-*), injected by the
+   preset configured in app-providers.tsx (currently stock Aura: zinc surfaces
+   + emerald primary in dark mode). Swap the preset there and the whole app
+   follows — our own names below stay stable for app code.
+   Pain severity is the only place warm alarm colors appear, so they always
+   mean something. */
 
 :root {
-  /* Ink surfaces (green-tinted neutrals, darkest to lightest) */
-  --background: #0e1210;
-  --surface: #141917;
-  --surface-raised: #1a201d;
-  --border: #252d29;
-  --border-strong: #333d38;
+  /* Surfaces (darkest to lightest), from the preset's zinc scale */
+  --background: var(--p-surface-950, #09090b);
+  --surface: var(--p-surface-900, #18181b);
+  --surface-raised: var(--p-surface-800, #27272a);
+  --border: var(--p-surface-700, #3f3f46);
+  --border-strong: var(--p-surface-600, #52525b);
 
   /* Text */
-  --foreground: #e9e7de;
-  --muted: #98a29b;
-  --faint: #6b756e;
+  --foreground: var(--p-text-color, #fafafa);
+  --muted: var(--p-text-muted-color, #a1a1aa);
+  --faint: var(--p-surface-400, #a1a1aa);
 
-  /* Accent — healing sage */
-  --accent: #8fc7a6;
-  --accent-strong: #5f9d7c;
-  --accent-soft: rgba(143, 199, 166, 0.12);
+  /* Accent — the preset's primary (emerald under stock Aura dark) */
+  --accent: var(--p-primary-color, #34d399);
+  --accent-strong: var(--p-primary-600, #059669);
+  --accent-soft: color-mix(in srgb, var(--p-primary-color, #34d399) 14%, transparent);
 
-  /* Pain severity — the only warm colors in the app */
-  --pain-none: #5b6660;
-  --pain-mild: #9db97f;
-  --pain-elevated: #d8a35a;
-  --pain-flare: #e0705f;
+  /* Pain severity — from the preset's primitive palettes */
+  --pain-none: var(--p-surface-500, #71717a);
+  --pain-mild: var(--p-lime-400, #a3e635);
+  --pain-elevated: var(--p-amber-400, #fbbf24);
+  --pain-flare: var(--p-red-400, #f87171);
 
   /* Typography (families injected by next/font in the root layout) */
   --font-display: var(--font-fraunces), Georgia, serif;
-  --font-body: var(--font-atkinson), system-ui, sans-serif;
+  --font-body: var(--font-instrument), system-ui, sans-serif;
   --font-data: var(--font-plex-mono), ui-monospace, monospace;
 }
 
@@ -51,7 +53,11 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background:
-    radial-gradient(120rem 60rem at 85% -20%, rgba(143, 199, 166, 0.05), transparent 60%),
+    radial-gradient(
+      120rem 60rem at 85% -20%,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 60%
+    ),
     var(--background);
   font-family: var(--font-body);
   font-size: 15px;

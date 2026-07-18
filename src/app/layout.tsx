@@ -2,10 +2,10 @@
 // and the app-wide provider stack (PrimeReact theme). Pages render inside
 // <AppProviders>.
 //
-// Type system: Fraunces (warm serif) for display, Atkinson Hyperlegible
-// (designed for maximum legibility) for body/UI, IBM Plex Mono for data.
+// Type system: Fraunces (warm serif) for display, Instrument Sans (sleek
+// modern grotesque) for body/UI, IBM Plex Mono for data.
 import type { Metadata } from "next";
-import { Fraunces, Atkinson_Hyperlegible, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppProviders } from "@/components/ui/app-providers";
 import { AppNav } from "@/components/ui/app-nav";
 import "./globals.css";
@@ -16,10 +16,9 @@ const fraunces = Fraunces({
   axes: ["SOFT", "WONK", "opsz"],
 });
 
-const atkinson = Atkinson_Hyperlegible({
-  variable: "--font-atkinson",
+const instrument = Instrument_Sans({
+  variable: "--font-instrument",
   subsets: ["latin"],
-  weight: ["400", "700"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -43,7 +42,7 @@ export default function RootLayout({
     // app's own always-dark palette (see darkModeSelector in AppProviders).
     <html
       lang="en"
-      className={`app-dark ${fraunces.variable} ${atkinson.variable} ${plexMono.variable}`}
+      className={`app-dark ${fraunces.variable} ${instrument.variable} ${plexMono.variable}`}
     >
       <body>
         <AppProviders>

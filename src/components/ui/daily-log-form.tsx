@@ -83,7 +83,7 @@ function PainInput({
     <div className={styles.painRow}>
       <div className={styles.painHeader}>
         <span className={styles.sectionLabel}>{label}</span>
-        <span>{value ?? "—"}{value != null && " / 10"}</span>
+        <span className={styles.painValue}>{value ?? "—"}{value != null && " / 10"}</span>
       </div>
       <div className={styles.painControls}>
         <div className={styles.painSlider}>

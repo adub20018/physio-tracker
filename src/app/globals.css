@@ -1,17 +1,44 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Global design tokens and base styles.
+   Colors alias PrimeReact's built-in theme variables (--p-*), injected by the
+   preset configured in app-providers.tsx (currently stock Aura: zinc surfaces
+   + emerald primary in dark mode). Swap the preset there and the whole app
+   follows — our own names below stay stable for app code.
+   Pain severity is the only place warm alarm colors appear, so they always
+   mean something. */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* Surfaces (darkest to lightest), from the preset's zinc scale */
+  --background: var(--p-surface-950, #09090b);
+  --surface: var(--p-surface-900, #18181b);
+  --surface-raised: var(--p-surface-800, #27272a);
+  --border: var(--p-surface-700, #3f3f46);
+  --border-strong: var(--p-surface-600, #52525b);
+
+  /* Text */
+  --foreground: var(--p-text-color, #fafafa);
+  --muted: var(--p-text-muted-color, #a1a1aa);
+  --faint: var(--p-surface-400, #a1a1aa);
+
+  /* Accent — the preset's primary (emerald under stock Aura dark) */
+  --accent: var(--p-primary-color, #34d399);
+  --accent-strong: var(--p-primary-600, #059669);
+  --accent-soft: color-mix(in srgb, var(--p-primary-color, #34d399) 14%, transparent);
+
+  /* Pain severity — from the preset's primitive palettes */
+  --pain-none: var(--p-surface-500, #71717a);
+  --pain-mild: var(--p-lime-400, #a3e635);
+  --pain-elevated: var(--p-amber-400, #fbbf24);
+  --pain-flare: var(--p-red-400, #f87171);
+
+  /* Typography (families injected by next/font in the root layout) */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-instrument), system-ui, sans-serif;
+  --font-data: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 html {
   height: 100%;
+  color-scheme: dark;
 }
 
 html,
@@ -25,8 +52,16 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(
+      120rem 60rem at 85% -20%,
+      color-mix(in srgb, var(--accent) 5%, transparent),
+      transparent 60%
+    ),
+    var(--background);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +77,40 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Display type: headings get the serif voice. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+h1 {
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+/* Numbers in data contexts read in the mono voice with tabular figures. */
+.data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92em;
+}
+
+/* Shared page shell */
+.page {
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header .subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
 }

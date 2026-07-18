@@ -14,13 +14,16 @@
 }
 
 .sectionLabel {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
 }
 
 .hint {
   font-size: 0.8rem;
-  opacity: 0.65;
+  color: var(--muted);
 }
 
 /* A labelled pain slider row: label+value on top, slider+clear below. */
@@ -68,8 +71,9 @@
 
 /* One exercise entry: bordered block with its own mini-grid. */
 .exerciseCard {
-  border: 1px solid var(--p-content-border-color, #3f3f46);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
   padding: 0.85rem;
   display: flex;
   flex-direction: column;
@@ -97,13 +101,20 @@
 }
 
 .error {
-  color: var(--p-red-400, #f87171);
+  color: var(--pain-flare);
   font-size: 0.85rem;
 }
 
 .success {
-  color: var(--p-green-400, #4ade80);
+  color: var(--accent);
   font-size: 0.85rem;
+}
+
+/* Pain value readout sits in the data voice */
+.painValue {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
 }
 
 .input {

@@ -1,12 +1,21 @@
 # domain/
 
-Pure calculation functions with zero dependencies — rolling averages, physio
-volume, flare detection (pain ≥ 3/10), lag correlations, week aggregation.
+Pure calculation functions with zero dependencies — the app's single source
+of truth for derived metrics.
+
+- `constants.ts` — flare threshold (≥ 3/10, per physio guidance), pain scale,
+  severity buckets for color coding
+- `types.ts` — the domain's own view of a logged day (`DomainDay`); the app
+  layer maps DB rows into it
+- `rolling.ts` — `average`, `rollingAverage` (trailing window, gap-tolerant)
+- `volume.ts` — physio volume = sets × duration × mean intensity fraction
+- `flare.ts` — flare detection, `daysBetween`, `daysSinceLastFlare`
+- `aggregate.ts` — daily pain average, calendar-window filtering,
+  week-vs-previous-week stats for the dashboard tiles
 
 Rules (PLAN.md §5):
 
 - Imports **nothing** from the rest of the app (no db, no repositories, no React).
-- Every function is unit-testable without a database or browser.
+- Every function is unit-tested (`__tests__/`, run with `npm test`);
+  no DB or browser needed.
 - All derived metrics live here and only here — pages and components call in.
-
-Populated in Phase 3.

@@ -81,7 +81,7 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             contentStyle={TOOLTIP_STYLE}
             labelStyle={{ color: "var(--muted)" }}
             cursor={{ stroke: CHART_CHROME.axisLine }}
-            formatter={(value: number | [number, number], name: string) =>
+            formatter={(value, name) =>
               Array.isArray(value) ? [`${value[0]}–${value[1]}%`, name] : [value, name]
             }
           />

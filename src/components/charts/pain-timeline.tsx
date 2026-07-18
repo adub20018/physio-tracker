@@ -76,9 +76,6 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             contentStyle={TOOLTIP_STYLE}
             labelStyle={{ color: "var(--muted)" }}
             cursor={{ stroke: CHART_CHROME.axisLine }}
-            formatter={(value: number | string, name: string) =>
-              name === "Flare" ? [null, null] : [value, name]
-            }
           />
           {/* Raw readings: thin, slightly transparent, gaps preserved */}
           {LINES.map((l) => (
@@ -102,8 +99,17 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             dot={false}
             isAnimationActive={false}
           />
-          {/* Flare markers: status red, sized for hover */}
-          <Scatter dataKey="flareValue" name="Flare" fill={FLARE_COLOR} isAnimationActive={false} />
+          {/* Flare markers: status red; excluded from the tooltip (the dot
+              itself is the message). Gets only the flare days as data —
+              Recharts would otherwise draw a symbol for every null point. */}
+          <Scatter
+            data={data.filter((d) => d.flareValue != null)}
+            dataKey="flareValue"
+            name="Flare"
+            fill={FLARE_COLOR}
+            tooltipType="none"
+            isAnimationActive={false}
+          />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

@@ -6,20 +6,10 @@
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { DailyLogForm, type DailyLogFormInit } from "@/components/ui/daily-log-form";
+import { todayIso } from "@/lib/dates";
 
 // Always render at request time — "today" and the loaded log must be fresh.
 export const dynamic = "force-dynamic";
-
-// Today's date in the server's local timezone. Fine for local use; when
-// deployed (Phase 5), set the TZ env var on Vercel to the user's timezone so
-// "today" doesn't flip over at UTC midnight.
-function todayIso(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 export default async function LogPage({
   searchParams,

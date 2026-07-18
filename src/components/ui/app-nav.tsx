@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import styles from "./app-nav.module.css";
 
 const LINKS = [
   { href: "/", label: "Dashboard" },
@@ -14,35 +15,22 @@ const LINKS = [
 export function AppNav() {
   const pathname = usePathname();
   return (
-    <nav
-      style={{
-        display: "flex",
-        gap: "0.25rem",
-        padding: "0.6rem 1rem",
-        borderBottom: "1px solid var(--p-content-border-color, #3f3f46)",
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        background: "var(--background)",
-      }}
-    >
-      {LINKS.map(({ href, label }) => {
-        const active = pathname === href;
-        return (
+    <nav className={styles.nav}>
+      {/* Wordmark — the italic serif accent is the app's signature */}
+      <Link href="/" className={styles.wordmark}>
+        physio<em>track</em>
+      </Link>
+      <div className={styles.links}>
+        {LINKS.map(({ href, label }) => (
           <Link
             key={href}
             href={href}
-            style={{
-              padding: "0.4rem 0.9rem",
-              borderRadius: "6px",
-              fontWeight: active ? 600 : 400,
-              background: active ? "var(--p-highlight-background, #27272a)" : "transparent",
-            }}
+            className={`${styles.link} ${pathname === href ? styles.linkActive : ""}`}
           >
             {label}
           </Link>
-        );
-      })}
+        ))}
+      </div>
     </nav>
   );
 }

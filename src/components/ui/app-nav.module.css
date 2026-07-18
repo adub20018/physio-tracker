@@ -1,0 +1,62 @@
+/* Top navigation: quiet wordmark on the left, three links on the right.
+   Active link is marked by a sage underline — no boxes, no noise. */
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.wordmark em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.links {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.link {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-radius: 6px;
+  position: relative;
+  transition: color 0.15s ease;
+}
+
+.link:hover {
+  color: var(--foreground);
+}
+
+.linkActive {
+  color: var(--foreground);
+}
+
+/* Sage underline for the active route */
+.linkActive::after {
+  content: "";
+  position: absolute;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: -0.1rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}

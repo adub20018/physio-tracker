@@ -36,11 +36,11 @@ export default async function LogPage({
   const exercises =
     exerciseSource?.exercises.map((ex) => ({
       exerciseName: ex.exerciseName,
-      sets: String(ex.sets),
-      durationOrReps: String(ex.durationOrReps),
+      sets: ex.sets,
+      durationOrReps: ex.durationOrReps,
       unit: ex.unit,
-      intensityMin: ex.intensityMin != null ? String(ex.intensityMin) : "",
-      intensityMax: ex.intensityMax != null ? String(ex.intensityMax) : "",
+      intensityMin: ex.intensityMin,
+      intensityMax: ex.intensityMax,
       // Notes belong to the specific day; only carried over when editing it.
       notes: existing ? (ex.notes ?? "") : "",
     })) ?? [];

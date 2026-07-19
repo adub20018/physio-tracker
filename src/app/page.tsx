@@ -13,17 +13,33 @@ import { dailyPhysioVolume } from "@/domain/volume";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
 import { addDays, nextMorningPain } from "@/domain/lag";
 import { StatTile } from "@/components/ui/stat-tile";
-import { PainTimeline, type PainTimelinePoint } from "@/components/charts/pain-timeline";
-import { LoadVsSymptoms, type LoadVsSymptomsPoint } from "@/components/charts/load-vs-symptoms";
-import { ProgressionChart, type ProgressionPoint } from "@/components/charts/progression-chart";
-import { CalendarHeatmap, type HeatmapDay } from "@/components/charts/calendar-heatmap";
+import {
+  PainTimeline,
+  type PainTimelinePoint,
+} from "@/components/charts/pain-timeline";
+import {
+  LoadVsSymptoms,
+  type LoadVsSymptomsPoint,
+} from "@/components/charts/load-vs-symptoms";
+import {
+  ProgressionChart,
+  type ProgressionPoint,
+} from "@/components/charts/progression-chart";
+import {
+  CalendarHeatmap,
+  type HeatmapDay,
+} from "@/components/charts/calendar-heatmap";
 import styles from "./dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
 export const dynamic = "force-dynamic";
 
 // Formats a numeric delta as "+0.4" / "−0.4"; null when either side is missing.
-function fmtDelta(current: number | null, previous: number | null, decimals: number): string | null {
+function fmtDelta(
+  current: number | null,
+  previous: number | null,
+  decimals: number,
+): string | null {
   if (current == null || previous == null) return null;
   const diff = current - previous;
   const text = Math.abs(diff).toFixed(decimals);
@@ -65,8 +81,12 @@ export default async function DashboardPage() {
   const progression: ProgressionPoint[] = days
     .filter((d) => d.exercises.length > 0)
     .map((d) => {
-      const mins = d.exercises.map((e) => e.intensityMin).filter((v): v is number => v != null);
-      const maxs = d.exercises.map((e) => e.intensityMax).filter((v): v is number => v != null);
+      const mins = d.exercises
+        .map((e) => e.intensityMin)
+        .filter((v): v is number => v != null);
+      const maxs = d.exercises
+        .map((e) => e.intensityMax)
+        .filter((v): v is number => v != null);
       const min = mins.length > 0 ? Math.min(...mins) : null;
       const max = maxs.length > 0 ? Math.max(...maxs) : null;
       return {
@@ -74,7 +94,10 @@ export default async function DashboardPage() {
         intensityMin: min,
         intensityMax: max,
         intensityMid: min != null && max != null ? (min + max) / 2 : null,
-        holdVolume: d.exercises.reduce((sum, e) => sum + e.sets * e.durationOrReps, 0),
+        holdVolume: d.exercises.reduce(
+          (sum, e) => sum + e.sets * e.durationOrReps,
+          0,
+        ),
       };
     });
 
@@ -110,12 +133,16 @@ export default async function DashboardPage() {
           }
         />
         <StatTile
-          label="Avg daily steps"
-          value={current.stepsAvg != null ? Math.round(current.stepsAvg).toLocaleString() : "—"}
+          label="7-day Avg daily steps"
+          value={
+            current.stepsAvg != null
+              ? Math.round(current.stepsAvg).toLocaleString()
+              : "—"
+          }
           delta={fmtDelta(
             current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
             previous.stepsAvg != null ? Math.round(previous.stepsAvg) : null,
-            0
+            0,
           )}
           deltaIsGood={
             current.stepsAvg != null && previous.stepsAvg != null
@@ -126,7 +153,11 @@ export default async function DashboardPage() {
         <StatTile
           label="Physio volume"
           value={Math.round(current.physioVolume).toLocaleString()}
-          delta={fmtDelta(Math.round(current.physioVolume), Math.round(previous.physioVolume), 0)}
+          delta={fmtDelta(
+            Math.round(current.physioVolume),
+            Math.round(previous.physioVolume),
+            0,
+          )}
           deltaIsGood={current.physioVolume >= previous.physioVolume}
         />
         <StatTile
@@ -139,8 +170,8 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Pain over time</h2>
         <p className={styles.cardSubtitle}>
-          Raw readings with the 7-day trend — the line that answers &ldquo;am I actually
-          progressing?&rdquo;
+          Raw readings with the 7-day trend — the line that answers &ldquo;am I
+          actually progressing?&rdquo;
         </p>
         <PainTimeline data={timeline} />
       </section>
@@ -148,7 +179,8 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Load vs next-morning pain</h2>
         <p className={styles.cardSubtitle}>
-          What you did each day, paired with how the tendon felt the next morning.
+          What you did each day, paired with how the tendon felt the next
+          morning.
         </p>
         <LoadVsSymptoms data={load} />
       </section>
@@ -156,14 +188,17 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Physio progression</h2>
         <p className={styles.cardSubtitle}>
-          Intensity and hold volume across sessions — the program advancing is progress too.
+          Intensity and hold volume across sessions — the program advancing is
+          progress too.
         </p>
         <ProgressionChart data={progression} />
       </section>
 
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Calendar</h2>
-        <p className={styles.cardSubtitle}>Average pain per day, at a glance.</p>
+        <p className={styles.cardSubtitle}>
+          Average pain per day, at a glance.
+        </p>
         <CalendarHeatmap data={heatmap} />
       </section>
     </main>

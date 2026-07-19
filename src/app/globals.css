@@ -59,6 +59,9 @@ body {
       transparent 60%
     ),
     var(--background);
+  /* The body background propagates to <html>, whose height is one viewport —
+     without this, the gradient tiles again every 100vh on pages that scroll. */
+  background-repeat: no-repeat;
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.55;

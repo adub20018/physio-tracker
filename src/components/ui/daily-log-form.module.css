@@ -120,3 +120,24 @@
 .input {
   width: 100%;
 }
+
+/* PrimeReact inputs ship with intrinsic widths; inside this form they must
+   fill — and be allowed to shrink with — their grid cells, or they clip at
+   phone widths. */
+.form :global(.p-inputnumber),
+.form :global(.p-datepicker),
+.form :global(.p-autocomplete) {
+  width: 100%;
+  min-width: 0;
+}
+
+.form :global(.p-inputnumber-input),
+.form :global(.p-inputtext) {
+  width: 100%;
+  min-width: 0;
+}
+
+.field,
+.exerciseHeader > :first-child {
+  min-width: 0;
+}

@@ -1,0 +1,45 @@
+/* Stat tile: label / big mono number / quiet delta line. */
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+}
+
+.value {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  color: var(--foreground);
+}
+
+.unit {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.delta {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.deltaGood {
+  color: var(--accent);
+}
+
+.deltaBad {
+  color: var(--pain-elevated);
+}

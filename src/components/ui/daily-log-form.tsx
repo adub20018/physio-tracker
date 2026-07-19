@@ -1,35 +1,61 @@
 // The daily log entry form (client component) — the app's core 30-second
-// habit, optimised for phone use. Holds all form state locally, submits a
-// typed payload to the saveDailyLog server action, and navigates by date so
-// past days can be edited with the same form.
+// habit. Every control is the real PrimeReact component (DatePicker,
+// InputNumber, AutoComplete, Slider, ToggleButton, Textarea, Message) so the
+// whole form carries the library's styling consistently. Holds all form
+// state locally, submits a typed payload to the saveDailyLog server action,
+// and navigates by date so past days can be edited with the same form.
 //
 // Receives display-ready initial values from the server page; talks to the
 // server only through the action (never imports repositories — PLAN.md §5).
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@primereact/ui/button";
 import { InputText } from "@primereact/ui/inputtext";
+import { Label } from "@primereact/ui/label";
+import { InputNumber } from "@primereact/ui/inputnumber";
+import { DatePicker } from "@primereact/ui/datepicker";
+import { AutoComplete } from "@primereact/ui/autocomplete";
+import type {
+  AutoCompleteInputValueChangeEvent,
+  AutoCompleteValueChangeEvent,
+} from "@primereact/types/primitive/autocomplete";
 import { Textarea } from "@primereact/ui/textarea";
 import { Slider } from "@primereact/ui/slider";
 import { ToggleButton } from "@primereact/ui/togglebutton";
 import { ToggleButtonGroup } from "@primereact/ui/togglebuttongroup";
-import { ACTIVITY_TAGS, PAIN_TYPES, type ActivityTag, type PainType } from "@/db/schema";
-import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
+import { Message } from "@primereact/ui/message";
+import { Calendar } from "@primeicons/react/calendar";
+import { ChevronUp } from "@primeicons/react/chevron-up";
+import { ChevronDown } from "@primeicons/react/chevron-down";
+import { ChevronLeft } from "@primeicons/react/chevron-left";
+import { ChevronRight } from "@primeicons/react/chevron-right";
+import type { InputNumberRootValueChangeEvent } from "@primereact/types/primitive/inputnumber";
+import {
+  ACTIVITY_TAGS,
+  PAIN_TYPES,
+  type ActivityTag,
+  type PainType,
+} from "@/db/schema";
+import {
+  PAIN_SCALE_MAX,
+  PAIN_SCALE_MIN,
+  PAIN_SCALE_STEP,
+} from "@/domain/constants";
 import { saveDailyLog, type SaveResult } from "@/app/log/actions";
 import type { DailyLogFormValues } from "@/app/log/schema";
 import styles from "./daily-log-form.module.css";
 
-// One exercise row in the form; numbers kept as strings while editing so the
-// user can clear a field without it snapping to 0. Parsed on submit.
+// One exercise row in the form. Numeric fields are number|null — PrimeReact's
+// InputNumber natively supports an empty (null) state.
 type ExerciseDraft = {
   exerciseName: string;
-  sets: string;
-  durationOrReps: string;
+  sets: number | null;
+  durationOrReps: number | null;
   unit: "seconds" | "reps";
-  intensityMin: string;
-  intensityMax: string;
+  intensityMin: number | null;
+  intensityMax: number | null;
   notes: string;
 };
 
@@ -46,26 +72,30 @@ export type DailyLogFormInit = {
   activityNotes: string;
   generalNotes: string;
   exercises: ExerciseDraft[];
-  knownExerciseNames: string[]; // for the datalist autocomplete
+  knownExerciseNames: string[]; // autocomplete suggestions
 };
 
 // Empty exercise row used by the "Add exercise" button.
 const BLANK_EXERCISE: ExerciseDraft = {
   exerciseName: "",
-  sets: "3",
-  durationOrReps: "20",
+  sets: 3,
+  durationOrReps: 20,
   unit: "seconds",
-  intensityMin: "",
-  intensityMax: "",
+  intensityMin: null,
+  intensityMax: null,
   notes: "",
 };
 
-// "" → null, otherwise the parsed number (invalid text also becomes null so
-// zod reports a clear error instead of NaN weirdness).
-function numOrNull(text: string): number | null {
-  if (text.trim() === "") return null;
-  const n = Number(text);
-  return Number.isFinite(n) ? n : null;
+// ISO YYYY-MM-DD ↔ local Date, without timezone drift.
+function isoToDate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+function dateToIso(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 // A single labelled pain slider with its value readout and a clear control.
@@ -83,7 +113,10 @@ function PainInput({
     <div className={styles.painRow}>
       <div className={styles.painHeader}>
         <span className={styles.sectionLabel}>{label}</span>
-        <span className={styles.painValue}>{value ?? "—"}{value != null && " / 10"}</span>
+        <span className={styles.painValue}>
+          {value ?? "—"}
+          {value != null && " / 10"}
+        </span>
       </div>
       <div className={styles.painControls}>
         <div className={styles.painSlider}>
@@ -103,11 +136,181 @@ function PainInput({
             <Slider.Handle aria-label={`${label} pain`} />
           </Slider.Root>
         </div>
-        <Button size="small" severity="secondary" variant="text" onClick={() => onChange(null)}>
+        <Button
+          size="small"
+          severity="secondary"
+          variant="text"
+          onClick={() => onChange(null)}
+        >
           Clear
         </Button>
       </div>
     </div>
+  );
+}
+
+// PrimeReact DatePicker composed for a single-date input with calendar popup,
+// following the official styled-mode demo: the input renders as InputText
+// (that's where its text-field styling comes from) and the nav arrows render
+// as icon Buttons.
+function LogDatePicker({
+  date,
+  onChange,
+}: {
+  date: string;
+  onChange: (iso: string) => void;
+}) {
+  // Stable Date identity per ISO date — a fresh object every render makes the
+  // picker re-sync its internal state during render (React warning).
+  const dateValue = useMemo(() => isoToDate(date), [date]);
+  return (
+    <DatePicker.Root
+      value={dateValue}
+      onValueChange={(e: { value: unknown }) => {
+        if (e.value instanceof Date) onChange(dateToIso(e.value));
+      }}
+      dateFormat="DD, dd MM, yy"
+    >
+      <DatePicker.Input as={InputText} id="log-date" />
+      <DatePicker.Trigger aria-label="Open calendar">
+        <Calendar />
+      </DatePicker.Trigger>
+      <DatePicker.Portal>
+        <DatePicker.Positioner align="start">
+          <DatePicker.Popup>
+            <DatePicker.Body>
+              <DatePicker.Panel>
+                <DatePicker.Calendar>
+                  <DatePicker.Header>
+                    <DatePicker.Prev
+                      as={Button}
+                      iconOnly
+                      variant="text"
+                      rounded
+                      severity="secondary"
+                      size="small"
+                    >
+                      <ChevronLeft />
+                    </DatePicker.Prev>
+                    <DatePicker.Title>
+                      <DatePicker.SelectMonth />
+                      <DatePicker.SelectYear />
+                      <DatePicker.Decade />
+                    </DatePicker.Title>
+                    <DatePicker.Next
+                      as={Button}
+                      iconOnly
+                      variant="text"
+                      rounded
+                      severity="secondary"
+                      size="small"
+                    >
+                      <ChevronRight />
+                    </DatePicker.Next>
+                  </DatePicker.Header>
+                  <DatePicker.Table>
+                    <DatePicker.TableHead />
+                    <DatePicker.TableBody />
+                    <DatePicker.TableBody view="month" />
+                    <DatePicker.TableBody view="year" />
+                  </DatePicker.Table>
+                </DatePicker.Calendar>
+              </DatePicker.Panel>
+            </DatePicker.Body>
+          </DatePicker.Popup>
+        </DatePicker.Positioner>
+      </DatePicker.Portal>
+    </DatePicker.Root>
+  );
+}
+
+// PrimeReact AutoComplete composed as a free-text input with a suggestion
+// popup filtered from previously logged exercise names.
+function ExerciseNameInput({
+  value,
+  suggestions,
+  onChange,
+}: {
+  value: string;
+  suggestions: string[];
+  onChange: (name: string) => void;
+}) {
+  const filtered = suggestions.filter((n) =>
+    n.toLowerCase().includes(value.toLowerCase()),
+  );
+  return (
+    <AutoComplete.Root
+      options={filtered}
+      inputValue={value}
+      onInputValueChange={(e: AutoCompleteInputValueChangeEvent) =>
+        onChange(e.query ?? "")
+      }
+      onValueChange={(e: AutoCompleteValueChangeEvent) => {
+        if (typeof e.value === "string") onChange(e.value);
+      }}
+      className={styles.input}
+    >
+      <AutoComplete.Input
+        placeholder="Exercise name"
+        aria-label="Exercise name"
+      />
+      <AutoComplete.Portal>
+        <AutoComplete.Positioner>
+          <AutoComplete.Popup>
+            <AutoComplete.List />
+          </AutoComplete.Popup>
+        </AutoComplete.Positioner>
+      </AutoComplete.Portal>
+    </AutoComplete.Root>
+  );
+}
+
+// One composed PrimeReact InputNumber (input + stacked spinner buttons),
+// shared by every numeric field in the form so the composition lives once.
+function NumberField({
+  id,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  placeholder,
+  maxFractionDigits,
+  useGrouping,
+}: {
+  id?: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  maxFractionDigits?: number;
+  useGrouping?: boolean;
+}) {
+  return (
+    <InputNumber.Root
+      value={value}
+      onValueChange={(e: InputNumberRootValueChangeEvent) =>
+        onChange(e.value ?? null)
+      }
+      min={min}
+      max={max}
+      step={step}
+      maxFractionDigits={maxFractionDigits}
+      useGrouping={useGrouping ?? false}
+      className={styles.input}
+    >
+      <InputNumber.Input id={id} placeholder={placeholder} />
+      <InputNumber.Group>
+        <InputNumber.Increment aria-label="Increase">
+          <ChevronUp size={12} />
+        </InputNumber.Increment>
+        <InputNumber.Decrement aria-label="Decrease">
+          <ChevronDown size={12} />
+        </InputNumber.Decrement>
+      </InputNumber.Group>
+    </InputNumber.Root>
   );
 }
 
@@ -117,12 +320,14 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
   const [result, setResult] = useState<SaveResult | null>(null);
 
   // Form state, seeded from the server-provided initial values.
-  const [steps, setSteps] = useState(init.steps?.toString() ?? "");
+  const [steps, setSteps] = useState<number | null>(init.steps);
   const [painMorning, setPainMorning] = useState(init.painMorning);
   const [painDaytime, setPainDaytime] = useState(init.painDaytime);
   const [painNight, setPainNight] = useState(init.painNight);
-  const [sleepHours, setSleepHours] = useState(init.sleepHours?.toString() ?? "");
-  const [activityTags, setActivityTags] = useState<ActivityTag[]>(init.activityTags);
+  const [sleepHours, setSleepHours] = useState<number | null>(init.sleepHours);
+  const [activityTags, setActivityTags] = useState<ActivityTag[]>(
+    init.activityTags,
+  );
   const [painTypes, setPainTypes] = useState<PainType[]>(init.painTypes);
   const [activityNotes, setActivityNotes] = useState(init.activityNotes);
   const [generalNotes, setGeneralNotes] = useState(init.generalNotes);
@@ -131,22 +336,24 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
   // Editing a different day = navigating to it; the server page reloads the
   // form with that day's data (or a fresh prefill).
   function changeDate(newDate: string) {
-    if (newDate) router.push(`/log?date=${newDate}`);
+    if (newDate && newDate !== init.date) router.push(`/log?date=${newDate}`);
   }
 
   function updateExercise(index: number, patch: Partial<ExerciseDraft>) {
-    setExercises((list) => list.map((ex, i) => (i === index ? { ...ex, ...patch } : ex)));
+    setExercises((list) =>
+      list.map((ex, i) => (i === index ? { ...ex, ...patch } : ex)),
+    );
   }
 
   function submit() {
     // Assemble the typed payload the server action validates with zod.
     const payload: DailyLogFormValues = {
       date: init.date,
-      steps: numOrNull(steps) as number | null,
+      steps,
       painMorning,
       painDaytime,
       painNight,
-      sleepHours: numOrNull(sleepHours),
+      sleepHours,
       activityTags,
       painTypes,
       activityNotes: activityNotes.trim() === "" ? null : activityNotes,
@@ -156,11 +363,11 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
         .filter((ex) => ex.exerciseName.trim() !== "")
         .map((ex) => ({
           exerciseName: ex.exerciseName,
-          sets: numOrNull(ex.sets) ?? 0,
-          durationOrReps: numOrNull(ex.durationOrReps) ?? 0,
+          sets: ex.sets ?? 0,
+          durationOrReps: ex.durationOrReps ?? 0,
           unit: ex.unit,
-          intensityMin: numOrNull(ex.intensityMin),
-          intensityMax: numOrNull(ex.intensityMax),
+          intensityMin: ex.intensityMin,
+          intensityMax: ex.intensityMax,
           notes: ex.notes.trim() === "" ? null : ex.notes,
         })),
     };
@@ -173,16 +380,12 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
 
   return (
     <div className={styles.form}>
-      {/* Date being logged; native date input = the OS date picker on phones */}
+      {/* Date being logged — PrimeReact DatePicker with calendar popup */}
       <div className={styles.section}>
-        <label className={styles.sectionLabel} htmlFor="log-date">Date</label>
-        <InputText
-          id="log-date"
-          type="date"
-          className={styles.input}
-          defaultValue={init.date}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeDate(e.target.value)}
-        />
+        <Label htmlFor="log-date" className={styles.sectionLabel}>
+          Date
+        </Label>
+        <LogDatePicker date={init.date} onChange={changeDate} />
         <span className={styles.hint}>
           {init.isExisting
             ? "This day already has a log — saving will update it."
@@ -193,8 +396,16 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
       {/* Pain readings */}
       <div className={styles.section}>
         <span className={styles.sectionLabel}>Pain (0–10)</span>
-        <PainInput label="Morning" value={painMorning} onChange={setPainMorning} />
-        <PainInput label="Daytime" value={painDaytime} onChange={setPainDaytime} />
+        <PainInput
+          label="Morning"
+          value={painMorning}
+          onChange={setPainMorning}
+        />
+        <PainInput
+          label="Daytime"
+          value={painDaytime}
+          onChange={setPainDaytime}
+        />
         <PainInput label="Night" value={painNight} onChange={setPainNight} />
       </div>
 
@@ -205,7 +416,9 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
           multiple
           allowEmpty
           value={painTypes}
-          onValueChange={(e: { value?: unknown }) => setPainTypes((e.value ?? []) as PainType[])}
+          onValueChange={(e: { value?: unknown }) =>
+            setPainTypes((e.value ?? []) as PainType[])
+          }
         >
           {PAIN_TYPES.map((t) => (
             <ToggleButton.Root key={t} value={t} size="small">
@@ -218,31 +431,31 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
       {/* Steps + sleep */}
       <div className={styles.fieldGrid}>
         <div className={styles.field}>
-          <label className={styles.sectionLabel} htmlFor="log-steps">Steps</label>
-          <InputText
+          <Label htmlFor="log-steps" className={styles.sectionLabel}>
+            Steps
+          </Label>
+          <NumberField
             id="log-steps"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            placeholder="e.g. 1500"
-            className={styles.input}
             value={steps}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSteps(e.target.value)}
+            onChange={setSteps}
+            min={0}
+            useGrouping
+            placeholder="e.g. 1500"
           />
         </div>
         <div className={styles.field}>
-          <label className={styles.sectionLabel} htmlFor="log-sleep">Sleep (hours)</label>
-          <InputText
+          <Label htmlFor="log-sleep" className={styles.sectionLabel}>
+            Sleep (hours)
+          </Label>
+          <NumberField
             id="log-sleep"
-            type="number"
-            inputMode="decimal"
+            value={sleepHours}
+            onChange={setSleepHours}
             min={0}
             max={24}
             step={0.5}
+            maxFractionDigits={1}
             placeholder="e.g. 7.5"
-            className={styles.input}
-            value={sleepHours}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSleepHours(e.target.value)}
           />
         </div>
       </div>
@@ -254,7 +467,9 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
           multiple
           allowEmpty
           value={activityTags}
-          onValueChange={(e: { value?: unknown }) => setActivityTags((e.value ?? []) as ActivityTag[])}
+          onValueChange={(e: { value?: unknown }) =>
+            setActivityTags((e.value ?? []) as ActivityTag[])
+          }
         >
           {ACTIVITY_TAGS.map((t) => (
             <ToggleButton.Root key={t} value={t} size="small">
@@ -270,87 +485,84 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
         {exercises.map((ex, i) => (
           <div key={i} className={styles.exerciseCard}>
             <div className={styles.exerciseHeader}>
-              <InputText
-                aria-label="Exercise name"
-                placeholder="Exercise name"
-                list="known-exercises"
-                className={styles.input}
+              <ExerciseNameInput
                 value={ex.exerciseName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  updateExercise(i, { exerciseName: e.target.value })
-                }
+                suggestions={init.knownExerciseNames}
+                onChange={(name) => updateExercise(i, { exerciseName: name })}
               />
               <Button
                 size="small"
                 severity="danger"
                 variant="text"
-                onClick={() => setExercises((list) => list.filter((_, j) => j !== i))}
+                onClick={() =>
+                  setExercises((list) => list.filter((_, j) => j !== i))
+                }
               >
                 Remove
               </Button>
             </div>
             <div className={styles.exerciseGrid}>
               <div className={styles.field}>
-                <label className={styles.hint}>Sets</label>
-                <InputText
-                  type="number" inputMode="numeric" min={1} className={styles.input}
+                <Label className={styles.hint}>Sets</Label>
+                <NumberField
                   value={ex.sets}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExercise(i, { sets: e.target.value })}
+                  onChange={(v) => updateExercise(i, { sets: v })}
+                  min={1}
+                  max={99}
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.hint}>
+                <Label className={styles.hint}>
                   {ex.unit === "seconds" ? "Hold (seconds)" : "Reps"}
-                </label>
-                <InputText
-                  type="number" inputMode="numeric" min={1} className={styles.input}
+                </Label>
+                <NumberField
                   value={ex.durationOrReps}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    updateExercise(i, { durationOrReps: e.target.value })
-                  }
+                  onChange={(v) => updateExercise(i, { durationOrReps: v })}
+                  min={1}
+                  max={999}
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.hint}>Intensity min %</label>
-                <InputText
-                  type="number" inputMode="numeric" min={0} max={100} className={styles.input}
+                <Label className={styles.hint}>Intensity min %</Label>
+                <NumberField
                   value={ex.intensityMin}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    updateExercise(i, { intensityMin: e.target.value })
-                  }
+                  onChange={(v) => updateExercise(i, { intensityMin: v })}
+                  min={0}
+                  max={100}
                 />
               </div>
               <div className={styles.field}>
-                <label className={styles.hint}>Intensity max %</label>
-                <InputText
-                  type="number" inputMode="numeric" min={0} max={100} className={styles.input}
+                <Label className={styles.hint}>Intensity max %</Label>
+                <NumberField
                   value={ex.intensityMax}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    updateExercise(i, { intensityMax: e.target.value })
-                  }
+                  onChange={(v) => updateExercise(i, { intensityMax: v })}
+                  min={0}
+                  max={100}
                 />
               </div>
             </div>
             <ToggleButtonGroup
               value={ex.unit}
               allowEmpty={false}
-              onValueChange={(e: { value?: unknown }) => updateExercise(i, { unit: e.value as "seconds" | "reps" })}
+              onValueChange={(e: { value?: unknown }) =>
+                updateExercise(i, { unit: e.value as "seconds" | "reps" })
+              }
             >
-              <ToggleButton.Root value="seconds" size="small">Timed hold</ToggleButton.Root>
-              <ToggleButton.Root value="reps" size="small">Reps</ToggleButton.Root>
+              <ToggleButton.Root value="seconds" size="small">
+                Timed hold
+              </ToggleButton.Root>
+              <ToggleButton.Root value="reps" size="small">
+                Reps
+              </ToggleButton.Root>
             </ToggleButtonGroup>
           </div>
         ))}
-        {/* Autocomplete suggestions from previously logged exercise names */}
-        <datalist id="known-exercises">
-          {init.knownExerciseNames.map((n) => (
-            <option key={n} value={n} />
-          ))}
-        </datalist>
         <Button
           size="small"
           severity="secondary"
-          onClick={() => setExercises((list) => [...list, { ...BLANK_EXERCISE }])}
+          onClick={() =>
+            setExercises((list) => [...list, { ...BLANK_EXERCISE }])
+          }
         >
           + Add exercise
         </Button>
@@ -358,25 +570,33 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
 
       {/* Notes */}
       <div className={styles.field}>
-        <label className={styles.sectionLabel} htmlFor="log-activity-notes">Activity notes</label>
+        <Label htmlFor="log-activity-notes" className={styles.sectionLabel}>
+          Activity notes
+        </Label>
         <Textarea
           id="log-activity-notes"
           rows={2}
           className={styles.input}
           placeholder="e.g. Gym + walking at cafe"
           value={activityNotes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setActivityNotes(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setActivityNotes(e.target.value)
+          }
         />
       </div>
       <div className={styles.field}>
-        <label className={styles.sectionLabel} htmlFor="log-general-notes">General notes</label>
+        <Label htmlFor="log-general-notes" className={styles.sectionLabel}>
+          General notes
+        </Label>
         <Textarea
           id="log-general-notes"
           rows={4}
           className={styles.input}
           placeholder="Anything worth remembering about today's symptoms"
           value={generalNotes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setGeneralNotes(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setGeneralNotes(e.target.value)
+          }
         />
       </div>
 
@@ -385,9 +605,19 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
         <Button onClick={submit} disabled={isPending}>
           {isPending ? "Saving…" : "Save day"}
         </Button>
-        {result?.ok && <span className={styles.success}>Saved {result.date} ✓</span>}
+        {result?.ok && (
+          <Message.Root severity="success" size="small">
+            <Message.Content>
+              <Message.Text>Saved {result.date} ✓</Message.Text>
+            </Message.Content>
+          </Message.Root>
+        )}
         {result && !result.ok && (
-          <span className={styles.error}>{result.errors.join(" · ")}</span>
+          <Message.Root severity="error" size="small">
+            <Message.Content>
+              <Message.Text>{result.errors.join(" · ")}</Message.Text>
+            </Message.Content>
+          </Message.Root>
         )}
       </div>
     </div>

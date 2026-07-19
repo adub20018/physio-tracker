@@ -18,6 +18,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **SSR styling** requires the `PrimeReactStyleSheet` + `useServerInsertedHTML` wiring that
   lives in `src/components/ui/app-providers.tsx` (from the official Next.js guide). Without
   it, only theme CSS variables are injected and components render unstyled.
+- **Slot parts often need `as={…}` composition to pick up styling.** e.g.
+  `<DatePicker.Input as={InputText} />` (otherwise the input renders with no text-field
+  styles) and `<DatePicker.Prev as={Button} iconOnly …>`. When a sub-part looks unstyled,
+  check the docs demo for its `as` prop before debugging CSS. Also pass **stable object
+  identities** for `value` props (memoize derived `Date` objects) — fresh objects each
+  render trigger "Cannot update a component while rendering" warnings from the headless
+  state sync.
 - **License**: v11 is under the PrimeUI license (free Community tier for individuals).
   The key comes from `NEXT_PUBLIC_PRIMEUI_LICENSE_KEY`; without it the app works but
   warns in the console.

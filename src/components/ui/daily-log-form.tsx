@@ -9,9 +9,10 @@
 // server only through the action (never imports repositories — PLAN.md §5).
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@primereact/ui/button";
+import { InputText } from "@primereact/ui/inputtext";
 import { Label } from "@primereact/ui/label";
 import { InputNumber } from "@primereact/ui/inputnumber";
 import { DatePicker } from "@primereact/ui/datepicker";
@@ -28,6 +29,8 @@ import { Message } from "@primereact/ui/message";
 import { Calendar } from "@primeicons/react/calendar";
 import { ChevronUp } from "@primeicons/react/chevron-up";
 import { ChevronDown } from "@primeicons/react/chevron-down";
+import { ChevronLeft } from "@primeicons/react/chevron-left";
+import { ChevronRight } from "@primeicons/react/chevron-right";
 import type { InputNumberRootValueChangeEvent } from "@primereact/types/primitive/inputnumber";
 import { ACTIVITY_TAGS, PAIN_TYPES, type ActivityTag, type PainType } from "@/db/schema";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
@@ -129,40 +132,74 @@ function PainInput({
   );
 }
 
-// PrimeReact DatePicker composed for a single-date input with calendar popup.
+// PrimeReact DatePicker composed for a single-date input with calendar popup,
+// following the official styled-mode demo: the input renders as InputText
+// (that's where its text-field styling comes from) and the nav arrows render
+// as icon Buttons.
 function LogDatePicker({ date, onChange }: { date: string; onChange: (iso: string) => void }) {
+  // Stable Date identity per ISO date — a fresh object every render makes the
+  // picker re-sync its internal state during render (React warning).
+  const dateValue = useMemo(() => isoToDate(date), [date]);
   return (
     <DatePicker.Root
-      value={isoToDate(date)}
+      value={dateValue}
       onValueChange={(e: { value: unknown }) => {
         if (e.value instanceof Date) onChange(dateToIso(e.value));
       }}
       dateFormat="yy-mm-dd"
     >
-      <DatePicker.Input id="log-date" />
-      <DatePicker.Trigger aria-label="Open calendar">
+      <DatePicker.Input as={InputText} id="log-date" />
+      <DatePicker.Trigger
+        as={Button}
+        iconOnly
+        variant="text"
+        severity="secondary"
+        aria-label="Open calendar"
+      >
         <Calendar size={16} />
       </DatePicker.Trigger>
       <DatePicker.Portal>
-        <DatePicker.Positioner>
+        <DatePicker.Positioner align="start">
           <DatePicker.Popup>
-            <DatePicker.Calendar>
-              <DatePicker.Header>
-                <DatePicker.Prev />
-                <DatePicker.Title>
-                  <DatePicker.SelectMonth />
-                  <DatePicker.SelectYear />
-                  <DatePicker.Decade />
-                </DatePicker.Title>
-                <DatePicker.Next />
-              </DatePicker.Header>
-              <DatePicker.Table>
-                <DatePicker.TableHead />
-                <DatePicker.TableBody />
-                <DatePicker.TableBody view="month" />
-                <DatePicker.TableBody view="year" />
-              </DatePicker.Table>
-            </DatePicker.Calendar>
+            <DatePicker.Body>
+              <DatePicker.Panel>
+                <DatePicker.Calendar>
+                  <DatePicker.Header>
+                    <DatePicker.Prev
+                      as={Button}
+                      iconOnly
+                      variant="text"
+                      rounded
+                      severity="secondary"
+                      size="small"
+                    >
+                      <ChevronLeft />
+                    </DatePicker.Prev>
+                    <DatePicker.Title>
+                      <DatePicker.SelectMonth />
+                      <DatePicker.SelectYear />
+                      <DatePicker.Decade />
+                    </DatePicker.Title>
+                    <DatePicker.Next
+                      as={Button}
+                      iconOnly
+                      variant="text"
+                      rounded
+                      severity="secondary"
+                      size="small"
+                    >
+                      <ChevronRight />
+                    </DatePicker.Next>
+                  </DatePicker.Header>
+                  <DatePicker.Table>
+                    <DatePicker.TableHead />
+                    <DatePicker.TableBody />
+                    <DatePicker.TableBody view="month" />
+                    <DatePicker.TableBody view="year" />
+                  </DatePicker.Table>
+                </DatePicker.Calendar>
+              </DatePicker.Panel>
+            </DatePicker.Body>
           </DatePicker.Popup>
         </DatePicker.Positioner>
       </DatePicker.Portal>

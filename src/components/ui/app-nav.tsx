@@ -9,6 +9,7 @@ import styles from "./app-nav.module.css";
 const LINKS = [
   { href: "/", label: "Dashboard" },
   { href: "/log", label: "Log" },
+  { href: "/insights", label: "Insights" },
   { href: "/history", label: "History" },
 ];
 

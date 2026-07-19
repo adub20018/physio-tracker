@@ -1,0 +1,38 @@
+/* Weekly report table: numbers in the data voice, quiet chrome. */
+
+.wrapper :global(.p-datatable-table-container) {
+  overflow-x: auto;
+}
+
+.week {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.num {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.painCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deltaGood {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-family: var(--font-data);
+}
+
+.deltaBad {
+  color: var(--pain-elevated);
+  font-size: 0.75rem;
+  font-family: var(--font-data);
+}
+
+.dim {
+  color: var(--faint);
+}

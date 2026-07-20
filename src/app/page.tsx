@@ -59,14 +59,21 @@ export default async function DashboardPage() {
   // ── Pain timeline ─────────────────────────────────────────────────────
   const painAvgs = days.map(dailyPainAverage);
   const rolling = rollingAverage(painAvgs, 7);
-  const timeline: PainTimelinePoint[] = days.map((d, i) => ({
-    date: d.date,
-    morning: d.painMorning,
-    daytime: d.painDaytime,
-    night: d.painNight,
-    rollingAvg: rolling[i] != null ? Number(rolling[i]!.toFixed(2)) : null,
-    flareValue: isFlareDay(d) ? painAvgs[i] : null,
-  }));
+  const timeline: PainTimelinePoint[] = days.map((d, i) => {
+    // Flare dot sits at the day's WORST reading — the one that crossed the
+    // threshold — so dots always appear at ≥ 3, matching the flare rule.
+    const readings = [d.painMorning, d.painDaytime, d.painNight].filter(
+      (p): p is number => p != null,
+    );
+    return {
+      date: d.date,
+      morning: d.painMorning,
+      daytime: d.painDaytime,
+      night: d.painNight,
+      rollingAvg: rolling[i] != null ? Number(rolling[i]!.toFixed(2)) : null,
+      flareValue: isFlareDay(d) ? Math.max(...readings) : null,
+    };
+  });
 
   // ── Load vs symptoms (next-morning pain) ──────────────────────────────
   const nextPain = nextMorningPain(days);

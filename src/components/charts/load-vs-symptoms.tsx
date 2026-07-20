@@ -29,6 +29,16 @@ export type LoadVsSymptomsPoint = {
 // Shared axis/grid props for the three synchronized panels.
 const SYNC_ID = "load-vs-symptoms";
 
+// Compact tick labels ("6k", "1.5k") so step counts never overflow the
+// axis gutter and lose their leading digits.
+function compactNumber(v: number): string {
+  if (Math.abs(v) >= 1000) {
+    const k = v / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}k`;
+  }
+  return String(v);
+}
+
 function PanelXAxis({ hidden }: { hidden: boolean }) {
   return (
     <XAxis
@@ -67,7 +77,14 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
           <PanelXAxis hidden />
-          <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} width={46} />
+          <YAxis
+            domain={[0, "auto"]}
+            tickFormatter={compactNumber}
+            tick={CHART_CHROME.tick}
+            axisLine={false}
+            tickLine={false}
+            width={46}
+          />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
             labelStyle={{ color: "var(--muted)" }}
@@ -82,7 +99,14 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
           <PanelXAxis hidden />
-          <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} width={46} />
+          <YAxis
+            domain={[0, "auto"]}
+            tickFormatter={compactNumber}
+            tick={CHART_CHROME.tick}
+            axisLine={false}
+            tickLine={false}
+            width={46}
+          />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
             labelStyle={{ color: "var(--muted)" }}

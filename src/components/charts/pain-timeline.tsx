@@ -10,7 +10,6 @@ import {
   ComposedChart,
   Line,
   ResponsiveContainer,
-  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -25,7 +24,8 @@ export type PainTimelinePoint = {
   daytime: number | null;
   night: number | null;
   rollingAvg: number | null;
-  // Daily pain average on flare days only (used to place the flare dot).
+  // The day's worst reading, on flare days only — places the flare dot at
+  // the reading that crossed the threshold (always ≥ 3).
   flareValue: number | null;
 };
 
@@ -99,15 +99,16 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             dot={false}
             isAnimationActive={false}
           />
-          {/* Flare markers: status red; excluded from the tooltip (the dot
-              itself is the message). Gets only the flare days as data —
-              Recharts would otherwise draw a symbol for every null point. */}
-          <Scatter
-            data={data.filter((d) => d.flareValue != null)}
+          {/* Flare markers: a dot-only Line on the SHARED chart data — Lines
+              skip null points, and sharing the data keeps the crosshair
+              tooltip tracking every day. (A Scatter with its own filtered
+              data array hijacks the hover index to just the flare points.) */}
+          <Line
             dataKey="flareValue"
             name="Flare"
-            fill={FLARE_COLOR}
-            tooltipType="none"
+            stroke="none"
+            dot={{ r: 4, fill: FLARE_COLOR, strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: FLARE_COLOR, strokeWidth: 0 }}
             isAnimationActive={false}
           />
         </ComposedChart>

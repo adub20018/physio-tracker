@@ -2,10 +2,12 @@
 // at-a-glance "is it getting better" view the spreadsheet color-coding was
 // reaching for. Weeks run as columns (GitHub-contribution style).
 //
-// Color is a sequential single-hue red ramp (magnitude of pain), stepping
-// from near-surface (0) to the status red used for flares — deliberately the
-// same hue family as the app's pain colors. Unlogged days are empty outlined
-// cells, distinct from "logged, zero pain". Pure CSS grid, no chart library.
+// Color is a "good → bad" traffic-light ramp — green on symptom-free days,
+// through yellow/amber, to red as pain rises to flare level — rather than
+// an all-red scale, so a good week actually reads as good at a glance.
+// Unlogged days are empty outlined cells, distinct from "logged, zero pain".
+// The exact value is always in the native tooltip, so the color choice is
+// never the only way to read a day. Pure CSS grid, no chart library.
 "use client";
 
 import styles from "./charts.module.css";
@@ -15,10 +17,9 @@ export type HeatmapDay = {
   avgPain: number | null; // null = not logged
 };
 
-// Sequential ramp (dark surface): near-surface → saturated red, 5 steps.
-// Bucket boundaries chosen around the scale's meaning: 0, mild (<1.5),
-// noticeable (<3), flare (<4.5), severe.
-const RAMP = ["#2a2325", "#57343a", "#8c4148", "#c25050", "#f87171"] as const;
+// Good (green) → bad (red) ramp, 5 steps. Bucket boundaries follow the
+// scale's meaning: 0, mild (<1.5), noticeable (<3), elevated (<4.5), severe.
+const RAMP = ["#3f9d63", "#8fb43f", "#d9b23f", "#d9803f", "#e0554a"] as const;
 
 function bucketColor(avgPain: number): string {
   if (avgPain <= 0) return RAMP[0];
@@ -75,11 +76,11 @@ export function CalendarHeatmap({ data }: { data: HeatmapDay[] }) {
         ))}
       </div>
       <div className={styles.heatmapLegend}>
-        <span>0</span>
+        <span>No pain</span>
         {RAMP.map((c) => (
           <span key={c} className={styles.heatmapCell} style={{ background: c }} />
         ))}
-        <span>5+ avg pain</span>
+        <span>Flare</span>
         <span style={{ marginLeft: "0.75rem" }}>
           <span className={`${styles.heatmapCell} ${styles.heatmapEmpty}`} style={{ display: "inline-block", verticalAlign: "middle" }} />
           {" "}not logged

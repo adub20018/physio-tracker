@@ -7,6 +7,7 @@
 import { DataTable } from "@primereact/ui/datatable";
 import { Tag } from "@primereact/ui/tag";
 import { SortableHeader } from "./datatable-sort-header";
+import { InfoTooltip } from "./info-tooltip";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./weekly-report-table.module.css";
 
@@ -50,8 +51,9 @@ export function WeeklyReportTable({ rows }: { rows: WeeklyRow[] }) {
                 <DataTable.THeadCell>Days</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg pain</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg steps</DataTable.THeadCell>
-                <DataTable.THeadCell title="Sum of sets × hold time × avg intensity %, added over the week">
+                <DataTable.THeadCell>
                   Physio load
+                  <InfoTooltip text="Sum of sets × hold time × average intensity %, added up over the week. Weighted by intensity — unlike Hold volume in Physio progression, which is raw sets × seconds." />
                 </DataTable.THeadCell>
                 <DataTable.THeadCell>Flares</DataTable.THeadCell>
               </DataTable.THeadRow>

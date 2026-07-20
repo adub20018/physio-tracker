@@ -1,0 +1,44 @@
+/* A quiet inline "?" badge, sized to sit next to a label without disturbing
+   its baseline. The popup itself borrows the app's card surface so it reads
+   as part of the same UI, not a browser-native tooltip. */
+
+.trigger {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 0.3rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  color: var(--faint);
+  font-size: 0.62rem;
+  line-height: 1;
+  cursor: help;
+  vertical-align: middle;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.popup {
+  max-width: 17rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.arrow {
+  fill: var(--surface-raised);
+}

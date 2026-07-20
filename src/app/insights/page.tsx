@@ -19,8 +19,12 @@ import {
 import { LagScatter } from "@/components/charts/lag-scatter";
 import { FlareReview, type FlareEpisodeView } from "@/components/ui/flare-review";
 import { WeeklyReportTable, type WeeklyRow } from "@/components/ui/weekly-report-table";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { FLARE_PAIN_THRESHOLD } from "@/domain/constants";
 import styles from "../dashboard.module.css";
+
+const PEARSON_R_HINT =
+  "Pearson correlation coefficient: how tightly two things move together, from -1 (as one goes up the other reliably goes down) to +1 (both reliably rise together). 0 means no relationship. “Weak/moderate/strong” bucket |r| at 0.2, 0.4, and 0.7. With only a few dozen days, treat this as a hint worth watching, not a proven cause.";
 
 // Always render at request time — insights must reflect the latest logs.
 export const dynamic = "force-dynamic";
@@ -129,13 +133,19 @@ export default async function InsightsPage() {
       </header>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Steps vs next-morning pain</h2>
+        <h2 className={styles.cardTitle}>
+          Steps vs next-morning pain
+          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
+        </h2>
         <p className={styles.cardSubtitle}>{correlationLine(stepsPoints)}</p>
         <LagScatter points={stepsPoints} xLabel="Steps" yLabel="Next-morning pain" />
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Physio load vs next-morning pain</h2>
+        <h2 className={styles.cardTitle}>
+          Physio load vs next-morning pain
+          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
+        </h2>
         <p className={styles.cardSubtitle}>{correlationLine(volumePoints)}</p>
         <LagScatter points={volumePoints} xLabel="Physio load" yLabel="Next-morning pain" />
       </section>

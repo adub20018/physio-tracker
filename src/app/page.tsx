@@ -142,6 +142,7 @@ export default async function DashboardPage() {
               ? current.painAvg <= previous.painAvg
               : null
           }
+          hint="Mean of each day's recorded morning/daytime/night pain, averaged over the last 7 complete days (today is excluded until it's fully logged, so a half-logged day can't skew this)."
         />
         <StatTile
           label="7-day Avg daily steps"
@@ -160,6 +161,7 @@ export default async function DashboardPage() {
               ? current.stepsAvg >= previous.stepsAvg
               : null
           }
+          hint="Average of the step counts you've logged over the last 7 complete days. Today is excluded (steps usually aren't known until the day is over), and days with no step count logged aren't counted as 0 — they're just left out of the average."
         />
         <StatTile
           label="Physio load (7d)"
@@ -176,6 +178,7 @@ export default async function DashboardPage() {
           label="Days since flare"
           value={flareGap != null ? String(flareGap) : "—"}
           unit={flareGap === 1 ? "day" : "days"}
+          hint="Days since any pain reading last hit 3/10 or higher — the threshold your physio set for 'safe to continue exercises.' Counts today, so a flare logged this morning shows as 0 immediately."
         />
       </div>
 

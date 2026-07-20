@@ -1,6 +1,7 @@
 // Stat tile: one headline number with a label and an optional week-over-week
 // delta. Direction-aware coloring: for pain, going DOWN is good; for steps
 // and volume, going UP is good — the tile is told which via `goodDirection`.
+import { InfoTooltip } from "./info-tooltip";
 import styles from "./stat-tile.module.css";
 
 export type StatTileProps = {
@@ -12,17 +13,17 @@ export type StatTileProps = {
   delta?: string | null;
   // Whether an increase is good ("up") or bad ("down"); styles the delta.
   deltaIsGood?: boolean | null;
-  // Optional formula/definition shown as a native tooltip on hover — for
-  // numbers whose meaning isn't obvious from the label alone.
+  // Optional formula/definition shown in a "?" tooltip — for numbers whose
+  // meaning isn't obvious from the label alone.
   hint?: string;
 };
 
 export function StatTile({ label, value, unit, delta, deltaIsGood, hint }: StatTileProps) {
   return (
-    <div className={styles.tile} title={hint}>
+    <div className={styles.tile}>
       <span className={styles.label}>
         {label}
-        {hint && <span className={styles.hintMark}> ⓘ</span>}
+        {hint && <InfoTooltip text={hint} label={`What is ${label}?`} />}
       </span>
       <span className={styles.value}>
         {value}

@@ -12,19 +12,13 @@
 }
 
 .label {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--faint);
-}
-
-/* Marks a tile whose value has a formula worth explaining on hover. */
-.hintMark {
-  color: var(--accent);
-  letter-spacing: normal;
-  text-transform: none;
-  font-weight: 400;
 }
 
 .value {

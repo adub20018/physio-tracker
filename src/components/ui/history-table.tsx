@@ -6,6 +6,7 @@
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";
+import { SortableHeader } from "./datatable-sort-header";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./history-table.module.css";
 
@@ -55,21 +56,6 @@ function PainReading({ slot, value }: { slot: string; value: number | null }) {
         </>
       )}
     </span>
-  );
-}
-
-// Sortable column header rendered in the table's quiet uppercase voice.
-function SortableHeader({ field, label }: { field: string; label: string }) {
-  return (
-    <DataTable.Sort field={field} className={styles.sortButton}>
-      {label}
-      <DataTable.SortIndicator match="asc">
-        <span className={styles.sortIcon}>▲</span>
-      </DataTable.SortIndicator>
-      <DataTable.SortIndicator match="desc">
-        <span className={styles.sortIcon}>▼</span>
-      </DataTable.SortIndicator>
-    </DataTable.Sort>
   );
 }
 

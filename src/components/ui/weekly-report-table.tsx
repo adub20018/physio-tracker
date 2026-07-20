@@ -1,10 +1,12 @@
 // Weekly report card (client): one PrimeReact DataTable row per calendar
 // week — days logged, average pain with week-over-week delta, steps, physio
-// volume, flare count. Receives display-ready rows from the server page.
+// volume, flare count. Sortable by week (newest first by default).
+// Receives display-ready rows from the server page.
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";
 import { Tag } from "@primereact/ui/tag";
+import { SortableHeader } from "./datatable-sort-header";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./weekly-report-table.module.css";
 
@@ -30,12 +32,21 @@ const SEVERITY_COLOR: Record<PainSeverity, "secondary" | "success" | "warn" | "d
 export function WeeklyReportTable({ rows }: { rows: WeeklyRow[] }) {
   return (
     <div className={styles.wrapper}>
-      <DataTable.Root data={rows} dataKey="weekStart" size="small">
+      <DataTable.Root
+        data={rows}
+        dataKey="weekStart"
+        size="small"
+        defaultSortField="weekStart"
+        defaultSortOrder={-1}
+        removableSort
+      >
         <DataTable.TableContainer>
           <DataTable.Table>
             <DataTable.THead>
               <DataTable.THeadRow>
-                <DataTable.THeadCell>Week</DataTable.THeadCell>
+                <DataTable.THeadCell>
+                  <SortableHeader field="weekStart" label="Week" />
+                </DataTable.THeadCell>
                 <DataTable.THeadCell>Days</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg pain</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg steps</DataTable.THeadCell>

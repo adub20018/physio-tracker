@@ -27,7 +27,7 @@ export function LagScatter({
 }) {
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: -14 }}>
+      <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
         <CartesianGrid stroke={CHART_CHROME.grid} />
         <XAxis
           dataKey="x"
@@ -54,6 +54,16 @@ export function LagScatter({
           tick={CHART_CHROME.tick}
           axisLine={false}
           tickLine={false}
+          width={44}
+          label={{
+            value: yLabel,
+            angle: -90,
+            position: "insideLeft",
+            offset: 4,
+            fill: "var(--faint)",
+            fontSize: 11,
+            style: { textAnchor: "middle" },
+          }}
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}

@@ -66,16 +66,19 @@ export default async function InsightsPage() {
 
   // ── Flare review ──────────────────────────────────────────────────────
   const episodes: FlareEpisodeView[] = flareEpisodes(days, FLARE_LOOKBACK_DAYS).map((ep) => {
+    // The reading(s) that crossed the threshold, with explicit slot names.
     const readings = (
       [
-        ["M", ep.day.painMorning],
-        ["D", ep.day.painDaytime],
-        ["N", ep.day.painNight],
+        ["Morning", ep.day.painMorning],
+        ["Daytime", ep.day.painDaytime],
+        ["Night", ep.day.painNight],
       ] as const
     )
-      .filter(([, v]) => v != null && v >= FLARE_PAIN_THRESHOLD)
-      .map(([slot, v]) => `${slot} ${v}`)
-      .join(" · ");
+      .filter((entry): entry is [(typeof entry)[0], number] => {
+        const v = entry[1];
+        return v != null && v >= FLARE_PAIN_THRESHOLD;
+      })
+      .map(([slot, value]) => ({ slot, value }));
     return {
       date: ep.day.date,
       weekday: weekdayOf(ep.day.date),
@@ -148,7 +151,9 @@ export default async function InsightsPage() {
 
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Weekly report card</h2>
-        <p className={styles.cardSubtitle}>Averages per calendar week, oldest first.</p>
+        <p className={styles.cardSubtitle}>
+          Averages per calendar week, newest first — click Week to flip the order.
+        </p>
         <WeeklyReportTable rows={weeklyRows} />
       </section>
     </main>

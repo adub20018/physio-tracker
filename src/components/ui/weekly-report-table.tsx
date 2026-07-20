@@ -50,7 +50,9 @@ export function WeeklyReportTable({ rows }: { rows: WeeklyRow[] }) {
                 <DataTable.THeadCell>Days</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg pain</DataTable.THeadCell>
                 <DataTable.THeadCell>Avg steps</DataTable.THeadCell>
-                <DataTable.THeadCell>Physio vol.</DataTable.THeadCell>
+                <DataTable.THeadCell title="Sum of sets × hold time × avg intensity %, added over the week">
+                  Physio load
+                </DataTable.THeadCell>
                 <DataTable.THeadCell>Flares</DataTable.THeadCell>
               </DataTable.THeadRow>
             </DataTable.THead>

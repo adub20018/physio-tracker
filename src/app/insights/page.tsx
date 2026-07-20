@@ -135,9 +135,9 @@ export default async function InsightsPage() {
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Physio volume vs next-morning pain</h2>
+        <h2 className={styles.cardTitle}>Physio load vs next-morning pain</h2>
         <p className={styles.cardSubtitle}>{correlationLine(volumePoints)}</p>
-        <LagScatter points={volumePoints} xLabel="Physio volume" yLabel="Next-morning pain" />
+        <LagScatter points={volumePoints} xLabel="Physio load" yLabel="Next-morning pain" />
       </section>
 
       <section className={styles.card}>

@@ -52,8 +52,11 @@ export default async function DashboardPage() {
   const days = toDomainDays(logs);
   const today = todayIso();
 
-  // ── Stat tiles: this calendar week vs the previous one ────────────────
-  const { current, previous } = windowComparison(days, today, 7);
+  // ── Stat tiles: the last 7 COMPLETE days vs the 7 before ──────────────
+  // Today is excluded: a partially-logged day (morning pain entered, steps
+  // not yet known) would bias the averages. Days-since-flare still counts
+  // from today — a flare logged this morning must show immediately.
+  const { current, previous } = windowComparison(days, addDays(today, -1), 7);
   const flareGap = daysSinceLastFlare(days, today);
 
   // ── Pain timeline ─────────────────────────────────────────────────────
@@ -123,7 +126,8 @@ export default async function DashboardPage() {
       <header className="page-header">
         <h1>Welcome back, {user.name}.</h1>
         <p className="subtitle">
-          {days.length} days logged · flare threshold 3/10 per physio guidance
+          {days.length} days logged · flare threshold 3/10 per physio guidance · weekly
+          tiles cover the last 7 complete days (today excluded until it&apos;s fully logged)
         </p>
       </header>
 
@@ -158,7 +162,7 @@ export default async function DashboardPage() {
           }
         />
         <StatTile
-          label="Physio volume"
+          label="Physio load (7d)"
           value={Math.round(current.physioVolume).toLocaleString()}
           delta={fmtDelta(
             Math.round(current.physioVolume),
@@ -166,6 +170,7 @@ export default async function DashboardPage() {
             0,
           )}
           deltaIsGood={current.physioVolume >= previous.physioVolume}
+          hint="Sum of each day's sets × hold time × average intensity %, added up over the last 7 complete days. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds."
         />
         <StatTile
           label="Days since flare"
@@ -186,8 +191,9 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Load vs next-morning pain</h2>
         <p className={styles.cardSubtitle}>
-          What you did each day, paired with how the tendon felt the next
-          morning.
+          What you did each day, paired with how the tendon felt the next morning. Physio
+          load here is the same intensity-weighted metric as the dashboard tile, shown
+          per day instead of summed over the week.
         </p>
         <LoadVsSymptoms data={load} />
       </section>
@@ -195,8 +201,9 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Physio progression</h2>
         <p className={styles.cardSubtitle}>
-          Intensity and hold volume across sessions — the program advancing is
-          progress too.
+          Intensity range and hold volume across sessions — the program advancing is
+          progress too. Hold volume is the raw sets × seconds performed, unweighted by
+          intensity (unlike Physio load above).
         </p>
         <ProgressionChart data={progression} />
       </section>

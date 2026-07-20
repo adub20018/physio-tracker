@@ -12,12 +12,18 @@ export type StatTileProps = {
   delta?: string | null;
   // Whether an increase is good ("up") or bad ("down"); styles the delta.
   deltaIsGood?: boolean | null;
+  // Optional formula/definition shown as a native tooltip on hover — for
+  // numbers whose meaning isn't obvious from the label alone.
+  hint?: string;
 };
 
-export function StatTile({ label, value, unit, delta, deltaIsGood }: StatTileProps) {
+export function StatTile({ label, value, unit, delta, deltaIsGood, hint }: StatTileProps) {
   return (
-    <div className={styles.tile}>
-      <span className={styles.label}>{label}</span>
+    <div className={styles.tile} title={hint}>
+      <span className={styles.label}>
+        {label}
+        {hint && <span className={styles.hintMark}> ⓘ</span>}
+      </span>
       <span className={styles.value}>
         {value}
         {unit && <span className={styles.unit}> {unit}</span>}

@@ -1,8 +1,9 @@
 // Load vs symptoms — answers "what did I do before it flared?". Three small
 // panels stacked on a shared, hover-synchronized x-axis: daily steps, physio
-// volume, and the NEXT morning's pain (load today, symptoms tomorrow —
-// tendon response lags ~24h). Deliberately not one dual-axis chart: the
-// measures live on different scales, so each gets its own panel and axis.
+// load (intensity-weighted — see domain/volume.ts), and the NEXT morning's
+// pain (load today, symptoms tomorrow — tendon response lags ~24h).
+// Deliberately not one dual-axis chart: the measures live on different
+// scales, so each gets its own panel and axis.
 "use client";
 
 import {
@@ -64,7 +65,7 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         </span>
         <span className={styles.legendItem}>
           <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
-          Physio volume
+          Physio load
         </span>
         <span className={styles.legendItem}>
           <span className={styles.legendLine} style={{ background: SERIES.rollingAvg }} />
@@ -114,7 +115,7 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
           />
           <Bar
             dataKey="physioVolume"
-            name="Physio volume"
+            name="Physio load"
             fill={SERIES.volume}
             radius={[3, 3, 0, 0]}
             isAnimationActive={false}

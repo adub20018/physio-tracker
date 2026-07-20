@@ -8,6 +8,7 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+  cursor: default;
 }
 
 .label {
@@ -16,6 +17,14 @@
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--faint);
+}
+
+/* Marks a tile whose value has a formula worth explaining on hover. */
+.hintMark {
+  color: var(--accent);
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 400;
 }
 
 .value {

@@ -35,6 +35,34 @@ const LINES = [
   { key: "night", label: "Night", color: SERIES.night },
 ] as const;
 
+// Custom tooltip content: same look as the shared TOOLTIP_STYLE, but drops
+// the "Flare" row. The flare dot's own value always equals whichever
+// reading is already shown above it (Morning/Daytime/Night), so listing it
+// again is a pure duplicate — the dot itself is the flare signal.
+function PainTooltipContent({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { dataKey?: string; name?: string; value?: number | null; color?: string }[];
+  label?: string;
+}) {
+  if (!active || !payload) return null;
+  const rows = payload.filter((p) => p.dataKey !== "flareValue" && p.value != null);
+  if (rows.length === 0) return null;
+  return (
+    <div style={TOOLTIP_STYLE}>
+      <div style={{ color: "var(--muted)", marginBottom: 4 }}>{label}</div>
+      {rows.map((r) => (
+        <div key={r.dataKey}>
+          <span style={{ color: r.color }}>{r.name}</span>: {r.value}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
   return (
     <div>
@@ -72,11 +100,7 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ stroke: CHART_CHROME.axisLine }}
-          />
+          <Tooltip content={<PainTooltipContent />} cursor={{ stroke: CHART_CHROME.axisLine }} />
           {/* Raw readings: thin, slightly transparent, gaps preserved */}
           {LINES.map((l) => (
             <Line

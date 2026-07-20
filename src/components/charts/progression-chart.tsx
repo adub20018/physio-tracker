@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import styles from "./charts.module.css";
 
 // One physio day on the progression chart (rest days are omitted by the
@@ -52,6 +53,7 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             style={{ background: SERIES.rollingAvg, opacity: 0.35 }}
           />
           Intensity range (% load)
+          <InfoTooltip text="The lightest and heaviest load used that day, as a % of bodyweight/resistance — e.g. a session at 20–25% shows as a band from 20 to 25." />
         </span>
         <span className={styles.legendItem}>
           <span className={styles.legendLine} style={{ background: SERIES.rollingAvg }} />
@@ -60,17 +62,24 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
         <span className={styles.legendItem}>
           <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
           Hold volume (sets×sec)
+          <InfoTooltip text="Raw work performed: sets × hold time (or reps), summed across exercises. Unlike Physio load on the dashboard, this ignores intensity % — a heavier set and a lighter set of the same length count the same." />
         </span>
       </div>
 
       {/* Panel 1: intensity band */}
+      {/* bottom margin > 0: with a hidden x-axis there's no reserved space
+          below the 0 gridline, so the "0%" tick label gets clipped by the
+          container edge without it. */}
       <ResponsiveContainer width="100%" height={170}>
-        <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 0, left: -18 }}>
+        <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 8, left: -18 }}>
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
           <XAxis dataKey="date" hide height={4} />
           <YAxis
             domain={[0, 50]}
             ticks={[0, 25, 50]}
+            // interval={0}: without it Recharts silently drops the 0% tick
+            // from the DOM on this panel (not a CSS clipping issue).
+            interval={0}
             tickFormatter={(v: number) => `${v}%`}
             tick={CHART_CHROME.tick}
             axisLine={false}

@@ -1,22 +1,29 @@
 /* A quiet inline "?" badge, sized to sit next to a label without disturbing
    its baseline. The popup itself borrows the app's card surface so it reads
-   as part of the same UI, not a browser-native tooltip. */
+   as part of the same UI, not a browser-native tooltip.
+
+   flex-shrink: 0 + explicit width/height on both the button and the icon
+   keep this a true circle even when its flex container is squeezed (e.g.
+   a stat tile on an iPhone SE) — without it, a flex row can compress an
+   item's width before its height, stretching the circle into an ellipse. */
 
 .trigger {
   all: unset;
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
+  box-sizing: border-box;
   margin-left: 0.3rem;
+  /* Nudges the circle down from a flex-start parent so it lines up with
+     the first line's cap-height instead of the taller line-box top. */
+  margin-top: 0.2em;
   border-radius: 50%;
   border: 1px solid var(--border-strong);
   color: var(--faint);
-  font-size: 0.62rem;
-  line-height: 1;
   cursor: help;
-  vertical-align: middle;
   transition: color 0.12s ease, border-color 0.12s ease;
 }
 
@@ -25,6 +32,12 @@
   color: var(--accent);
   border-color: var(--accent);
   outline: none;
+}
+
+.icon {
+  width: 10px;
+  height: 10px;
+  flex: none;
 }
 
 .popup {

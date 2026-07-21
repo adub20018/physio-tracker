@@ -13,7 +13,10 @@
 
 .label {
   display: inline-flex;
-  align-items: center;
+  /* flex-start, not center: when the label text wraps to two lines on a
+     narrow tile, the info icon should sit with the first line, not float
+     at the vertical midpoint of the whole wrapped block. */
+  align-items: flex-start;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;

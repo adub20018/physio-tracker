@@ -15,7 +15,9 @@
 
 .legendItem {
   display: inline-flex;
-  align-items: center;
+  /* flex-start: an info icon on a legend item that wraps to two lines
+     should sit with the first line, not center on the wrapped block. */
+  align-items: flex-start;
   gap: 0.35rem;
 }
 

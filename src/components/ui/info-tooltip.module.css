@@ -5,7 +5,11 @@
    flex-shrink: 0 + explicit width/height on both the button and the icon
    keep this a true circle even when its flex container is squeezed (e.g.
    a stat tile on an iPhone SE) — without it, a flex row can compress an
-   item's width before its height, stretching the circle into an ellipse. */
+   item's width before its height, stretching the circle into an ellipse.
+
+   No border/border-radius here: the question-circle icon already draws a
+   complete circle-plus-glyph as one shape, so a button-level circle border
+   would just be a second, redundant ring around the icon's own. */
 
 .trigger {
   all: unset;
@@ -20,23 +24,20 @@
   /* Nudges the circle down from a flex-start parent so it lines up with
      the first line's cap-height instead of the taller line-box top. */
   margin-top: 0.2em;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
   color: var(--faint);
   cursor: help;
-  transition: color 0.12s ease, border-color 0.12s ease;
+  transition: color 0.12s ease;
 }
 
 .trigger:hover,
 .trigger:focus-visible {
   color: var(--accent);
-  border-color: var(--accent);
   outline: none;
 }
 
 .icon {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   flex: none;
 }
 

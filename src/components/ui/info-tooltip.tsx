@@ -20,7 +20,7 @@ export function InfoTooltip({ text, label }: { text: string; label?: string }) {
         className={styles.trigger}
         aria-label={label ?? "What does this mean?"}
       >
-        <QuestionCircle size={10} className={styles.icon} />
+        <QuestionCircle size={14} className={styles.icon} />
       </Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Positioner side="top" align="center" sideOffset={6}>

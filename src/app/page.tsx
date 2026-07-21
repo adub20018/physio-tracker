@@ -164,6 +164,18 @@ export default async function DashboardPage() {
           hint="Average of the step counts you've logged over the last 7 complete days. Today is excluded (steps usually aren't known until the day is over), and days with no step count logged aren't counted as 0 — they're just left out of the average."
         />
         <StatTile
+          label="7-day avg sleep"
+          value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
+          unit="hrs"
+          delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
+          deltaIsGood={
+            current.sleepAvg != null && previous.sleepAvg != null
+              ? current.sleepAvg >= previous.sleepAvg
+              : null
+          }
+          hint="Average hours of sleep logged over the last 7 complete days. Sleep hours logged on a date are the hours slept the night before waking up that day — so they pair with that SAME day's morning pain, not the next day's."
+        />
+        <StatTile
           label="Physio load (7d)"
           value={Math.round(current.physioVolume).toLocaleString()}
           delta={fmtDelta(

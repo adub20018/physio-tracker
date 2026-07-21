@@ -17,7 +17,9 @@ import {
   type PairedPoint,
 } from "@/domain/correlation";
 import { LagScatter } from "@/components/charts/lag-scatter";
+import { MultiScatter, type ScatterSeries } from "@/components/charts/multi-scatter";
 import { SleepPainTimeline, type SleepPainPoint } from "@/components/charts/sleep-pain-timeline";
+import { SERIES } from "@/components/charts/chart-theme";
 import { FlareReview, type FlareEpisodeView } from "@/components/ui/flare-review";
 import { WeeklyReportTable, type WeeklyRow } from "@/components/ui/weekly-report-table";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -69,20 +71,28 @@ export default async function InsightsPage() {
     labels
   );
 
-  // ── Sleep vs morning pain: SAME day, not lagged ────────────────────────
+  // ── Sleep vs pain, all three readings: SAME day, not lagged ────────────
   // Sleep hours logged on a date are the hours slept the night before
-  // waking up that day — they already precede that day's morning reading,
-  // unlike steps/physio load whose effect shows up the next morning.
+  // waking up that day — they already precede ALL of that day's readings,
+  // unlike steps/physio load whose effect shows up the next morning. Sleep
+  // may affect the whole day, not just the immediate waking reading, so
+  // morning/daytime/night are each paired with the same night's sleep.
   const sameDayLabels = days.map((d) => d.date);
-  const sleepPoints = pairSeries(
-    days.map((d) => d.sleepHours),
-    days.map((d) => d.painMorning),
-    sameDayLabels
-  );
+  const sleepHoursSeries = days.map((d) => d.sleepHours);
+  const sleepVsMorning = pairSeries(sleepHoursSeries, days.map((d) => d.painMorning), sameDayLabels);
+  const sleepVsDaytime = pairSeries(sleepHoursSeries, days.map((d) => d.painDaytime), sameDayLabels);
+  const sleepVsNight = pairSeries(sleepHoursSeries, days.map((d) => d.painNight), sameDayLabels);
+  const sleepScatterSeries: ScatterSeries[] = [
+    { key: "morning", label: "Morning", color: SERIES.morning, points: sleepVsMorning },
+    { key: "daytime", label: "Daytime", color: SERIES.daytime, points: sleepVsDaytime },
+    { key: "night", label: "Night", color: SERIES.night, points: sleepVsNight },
+  ];
   const sleepTimelineData: SleepPainPoint[] = days.map((d) => ({
     date: d.date,
     sleepHours: d.sleepHours,
     painMorning: d.painMorning,
+    painDaytime: d.painDaytime,
+    painNight: d.painNight,
   }));
 
   // ── Flare review ──────────────────────────────────────────────────────
@@ -169,22 +179,27 @@ export default async function InsightsPage() {
 
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>
-          Sleep vs morning pain
+          Sleep vs pain, all day
           <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
         </h2>
         <p className={styles.cardSubtitle}>
           Same day, not lagged — sleep hours logged on a date are the hours slept the
-          night before waking up that day, so they pair with that day&apos;s own morning
-          reading. {correlationLine(sleepPoints)}
+          night before waking up that day, so they precede all three of that
+          day&apos;s readings, not just the morning one.
         </p>
-        <LagScatter points={sleepPoints} xLabel="Sleep (hours)" yLabel="Morning pain" />
+        <ul className={styles.rList}>
+          <li style={{ color: SERIES.morning }}>Morning: {correlationLine(sleepVsMorning)}</li>
+          <li style={{ color: SERIES.daytime }}>Daytime: {correlationLine(sleepVsDaytime)}</li>
+          <li style={{ color: SERIES.night }}>Night: {correlationLine(sleepVsNight)}</li>
+        </ul>
+        <MultiScatter series={sleepScatterSeries} xLabel="Sleep (hours)" yLabel="Pain" />
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Sleep &amp; morning pain over time</h2>
+        <h2 className={styles.cardTitle}>Sleep &amp; pain over time</h2>
         <p className={styles.cardSubtitle}>
           The same relationship as an over-time view — sleep the night before, and how
-          that morning felt.
+          the whole next day felt.
         </p>
         <SleepPainTimeline data={sleepTimelineData} />
       </section>

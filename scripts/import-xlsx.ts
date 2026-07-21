@@ -26,6 +26,7 @@ import {
   parseIntensity,
   parsePain,
   parseSetGroups,
+  parseSleepHours,
   parseSteps,
   parseText,
   toIsoDate,
@@ -47,6 +48,7 @@ type SheetRow = {
   "Morning Pain Num"?: unknown;
   "Daytime Pain"?: unknown;
   "Night Pain"?: unknown;
+  "Sleep Hours (night prior)"?: unknown;
   "Physio Notes"?: unknown;
   Intensity?: unknown;
   "Activity Notes"?: unknown;
@@ -61,6 +63,7 @@ function hasData(row: SheetRow): boolean {
     row["Morning Pain Num"],
     row["Daytime Pain"],
     row["Night Pain"],
+    row["Sleep Hours (night prior)"],
     row["Physio Exercise"],
     row["Activity Notes"],
     row["General Notes"],
@@ -88,6 +91,9 @@ function convertRow(row: SheetRow, warnings: string[]): DailyLogInput | null {
   warnIfLost("morning pain", row["Morning Pain Num"], painMorning);
   warnIfLost("daytime pain", row["Daytime Pain"], painDaytime);
   warnIfLost("night pain", row["Night Pain"], painNight);
+
+  const sleepHours = parseSleepHours(row["Sleep Hours (night prior)"]);
+  warnIfLost("sleep hours", row["Sleep Hours (night prior)"], sleepHours);
 
   // One spreadsheet row holds at most one exercise name, but mixed set
   // groups ("3x20, 1x30") become multiple entries with the same name.
@@ -126,7 +132,7 @@ function convertRow(row: SheetRow, warnings: string[]): DailyLogInput | null {
     painTypes: null, // not tracked in the spreadsheet; starts with the app
     activityNotes: parseText(row["Activity Notes"]),
     generalNotes: parseText(row["General Notes"]),
-    sleepHours: null, // not tracked in the spreadsheet; starts with the app
+    sleepHours,
     exercises,
   };
 }

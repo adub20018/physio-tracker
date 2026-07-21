@@ -1,7 +1,10 @@
-// Lag scatter — one dot per day pairing a load measure (x) with the next
-// day's pain (y). The correlation coefficient and sample size are shown
-// beside the title area by the caller; this component draws just the plot.
-// Single series → no legend (the title names it); hover tooltip per dot.
+// Lag scatter — one dot per day pairing two numeric series (x, y). Despite
+// the name, it's generic: used for genuinely lagged pairs (steps vs NEXT
+// morning's pain) and for same-day pairs (sleep vs THAT day's morning pain)
+// alike — the caller decides what x/y mean via the points it passes in. The
+// correlation coefficient and sample size are shown beside the title area by
+// the caller; this component draws just the plot. Single series → no legend
+// (the title names it); hover tooltip per dot.
 "use client";
 
 import {

@@ -17,6 +17,7 @@ import {
   type PairedPoint,
 } from "@/domain/correlation";
 import { LagScatter } from "@/components/charts/lag-scatter";
+import { SleepPainTimeline, type SleepPainPoint } from "@/components/charts/sleep-pain-timeline";
 import { FlareReview, type FlareEpisodeView } from "@/components/ui/flare-review";
 import { WeeklyReportTable, type WeeklyRow } from "@/components/ui/weekly-report-table";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -67,6 +68,22 @@ export default async function InsightsPage() {
     nextPain,
     labels
   );
+
+  // ── Sleep vs morning pain: SAME day, not lagged ────────────────────────
+  // Sleep hours logged on a date are the hours slept the night before
+  // waking up that day — they already precede that day's morning reading,
+  // unlike steps/physio load whose effect shows up the next morning.
+  const sameDayLabels = days.map((d) => d.date);
+  const sleepPoints = pairSeries(
+    days.map((d) => d.sleepHours),
+    days.map((d) => d.painMorning),
+    sameDayLabels
+  );
+  const sleepTimelineData: SleepPainPoint[] = days.map((d) => ({
+    date: d.date,
+    sleepHours: d.sleepHours,
+    painMorning: d.painMorning,
+  }));
 
   // ── Flare review ──────────────────────────────────────────────────────
   const episodes: FlareEpisodeView[] = flareEpisodes(days, FLARE_LOOKBACK_DAYS).map((ep) => {
@@ -148,6 +165,28 @@ export default async function InsightsPage() {
         </h2>
         <p className={styles.cardSubtitle}>{correlationLine(volumePoints)}</p>
         <LagScatter points={volumePoints} xLabel="Physio load" yLabel="Next-morning pain" />
+      </section>
+
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          Sleep vs morning pain
+          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
+        </h2>
+        <p className={styles.cardSubtitle}>
+          Same day, not lagged — sleep hours logged on a date are the hours slept the
+          night before waking up that day, so they pair with that day&apos;s own morning
+          reading. {correlationLine(sleepPoints)}
+        </p>
+        <LagScatter points={sleepPoints} xLabel="Sleep (hours)" yLabel="Morning pain" />
+      </section>
+
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Sleep &amp; morning pain over time</h2>
+        <p className={styles.cardSubtitle}>
+          The same relationship as an over-time view — sleep the night before, and how
+          that morning felt.
+        </p>
+        <SleepPainTimeline data={sleepTimelineData} />
       </section>
 
       <section className={styles.card}>

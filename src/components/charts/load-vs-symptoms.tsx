@@ -75,93 +75,102 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         </span>
       </div>
 
-      {/* Panel 1: steps */}
-      {/* bottom margin > 0: with a hidden x-axis there's no reserved space
-          below the 0 gridline, so the "0" tick label gets clipped by the
-          container edge without it. */}
-      <ResponsiveContainer width="100%" height={110}>
-        <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
-          <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          <PanelXAxis hidden />
-          <YAxis
-            domain={[0, "auto"]}
-            // interval={0}: Recharts otherwise silently drops the domain-min
-            // (0) tick on this panel — not a CSS clipping issue, the <text>
-            // never renders — forcing every computed tick to draw fixes it.
-            interval={0}
-            tickFormatter={compactNumber}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={46}
-          />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          />
-          <Bar dataKey="steps" name="Steps" fill={SERIES.steps} radius={[3, 3, 0, 0]} isAnimationActive={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
+      {/* Three panels get a gap (.panelStack) plus an explicit divider
+          element (.panelDivider) between them, so a panel's "0" tick
+          doesn't read as touching the next panel's top. */}
+      <div className={styles.panelStack}>
+        {/* Panel 1: steps */}
+        {/* bottom margin > 0: with a hidden x-axis there's no reserved space
+            below the 0 gridline, so the "0" tick label gets clipped by the
+            container edge without it. */}
+        <ResponsiveContainer width="100%" height={110}>
+          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <PanelXAxis hidden />
+            <YAxis
+              domain={[0, "auto"]}
+              // interval={0}: Recharts otherwise silently drops the domain-min
+              // (0) tick on this panel — not a CSS clipping issue, the <text>
+              // never renders — forcing every computed tick to draw fixes it.
+              interval={0}
+              tickFormatter={compactNumber}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            />
+            <Bar dataKey="steps" name="Steps" fill={SERIES.steps} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
 
-      {/* Panel 2: physio load */}
-      <ResponsiveContainer width="100%" height={110}>
-        <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
-          <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          <PanelXAxis hidden />
-          <YAxis
-            domain={[0, "auto"]}
-            interval={0}
-            tickFormatter={compactNumber}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={46}
-          />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          />
-          <Bar
-            dataKey="physioVolume"
-            name="Physio load"
-            fill={SERIES.volume}
-            radius={[3, 3, 0, 0]}
-            isAnimationActive={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+        <div className={styles.panelDivider} />
 
-      {/* Panel 3: next-morning pain (the symptom response) */}
-      <ResponsiveContainer width="100%" height={130}>
-        <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
-          <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          <PanelXAxis hidden={false} />
-          <YAxis
-            domain={[0, 10]}
-            ticks={[0, 5, 10]}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={46}
-          />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ stroke: CHART_CHROME.axisLine }}
-          />
-          <Line
-            dataKey="nextMorningPain"
-            name="Next-morning pain"
-            stroke={SERIES.rollingAvg}
-            strokeWidth={2}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+        {/* Panel 2: physio load */}
+        <ResponsiveContainer width="100%" height={110}>
+          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <PanelXAxis hidden />
+            <YAxis
+              domain={[0, "auto"]}
+              interval={0}
+              tickFormatter={compactNumber}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            />
+            <Bar
+              dataKey="physioVolume"
+              name="Physio load"
+              fill={SERIES.volume}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        <div className={styles.panelDivider} />
+
+        {/* Panel 3: next-morning pain (the symptom response) */}
+        <ResponsiveContainer width="100%" height={130}>
+          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <PanelXAxis hidden={false} />
+            <YAxis
+              domain={[0, 10]}
+              ticks={[0, 5, 10]}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ stroke: CHART_CHROME.axisLine }}
+            />
+            <Line
+              dataKey="nextMorningPain"
+              name="Next-morning pain"
+              stroke={SERIES.rollingAvg}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

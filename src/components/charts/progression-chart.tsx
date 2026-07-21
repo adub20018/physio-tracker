@@ -66,82 +66,89 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
         </span>
       </div>
 
-      {/* Panel 1: intensity band */}
-      {/* bottom margin > 0: with a hidden x-axis there's no reserved space
-          below the 0 gridline, so the "0%" tick label gets clipped by the
-          container edge without it. */}
-      <ResponsiveContainer width="100%" height={170}>
-        <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 8, left: -18 }}>
-          <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          <XAxis dataKey="date" hide height={4} />
-          <YAxis
-            domain={[0, 50]}
-            ticks={[0, 25, 50]}
-            // interval={0}: without it Recharts silently drops the 0% tick
-            // from the DOM on this panel (not a CSS clipping issue).
-            interval={0}
-            tickFormatter={(v: number) => `${v}%`}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={46}
-          />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ stroke: CHART_CHROME.axisLine }}
-            formatter={(value, name) =>
-              Array.isArray(value) ? [`${value[0]}–${value[1]}%`, name] : [value, name]
-            }
-          />
-          <Area
-            dataKey="intensityRange"
-            name="Intensity range"
-            stroke="none"
-            fill={SERIES.rollingAvg}
-            fillOpacity={0.22}
-            connectNulls
-            isAnimationActive={false}
-          />
-          <Line
-            dataKey="intensityMid"
-            name="Midpoint"
-            stroke={SERIES.rollingAvg}
-            strokeWidth={2}
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+      {/* Two panels get a gap (.panelStack) plus an explicit divider
+          element (.panelDivider) between them, so the intensity panel's
+          "0%" doesn't read as touching the bar chart below it. */}
+      <div className={styles.panelStack}>
+        {/* Panel 1: intensity band */}
+        {/* bottom margin > 0: with a hidden x-axis there's no reserved space
+            below the 0 gridline, so the "0%" tick label gets clipped by the
+            container edge without it. */}
+        <ResponsiveContainer width="100%" height={170}>
+          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 8, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <XAxis dataKey="date" hide height={4} />
+            <YAxis
+              domain={[0, 50]}
+              ticks={[0, 25, 50]}
+              // interval={0}: without it Recharts silently drops the 0% tick
+              // from the DOM on this panel (not a CSS clipping issue).
+              interval={0}
+              tickFormatter={(v: number) => `${v}%`}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ stroke: CHART_CHROME.axisLine }}
+              formatter={(value, name) =>
+                Array.isArray(value) ? [`${value[0]}–${value[1]}%`, name] : [value, name]
+              }
+            />
+            <Area
+              dataKey="intensityRange"
+              name="Intensity range"
+              stroke="none"
+              fill={SERIES.rollingAvg}
+              fillOpacity={0.22}
+              connectNulls
+              isAnimationActive={false}
+            />
+            <Line
+              dataKey="intensityMid"
+              name="Midpoint"
+              stroke={SERIES.rollingAvg}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
 
-      {/* Panel 2: hold volume */}
-      <ResponsiveContainer width="100%" height={110}>
-        <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
-          <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          <XAxis
-            dataKey="date"
-            tickFormatter={shortDate}
-            tick={CHART_CHROME.tick}
-            axisLine={{ stroke: CHART_CHROME.axisLine }}
-            tickLine={false}
-            minTickGap={28}
-          />
-          <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} width={46} />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-          />
-          <Bar
-            dataKey="holdVolume"
-            name="Hold volume"
-            fill={SERIES.volume}
-            radius={[3, 3, 0, 0]}
-            isAnimationActive={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+        <div className={styles.panelDivider} />
+
+        {/* Panel 2: hold volume */}
+        <ResponsiveContainer width="100%" height={110}>
+          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={shortDate}
+              tick={CHART_CHROME.tick}
+              axisLine={{ stroke: CHART_CHROME.axisLine }}
+              tickLine={false}
+              minTickGap={28}
+            />
+            <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} width={46} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            />
+            <Bar
+              dataKey="holdVolume"
+              name="Hold volume"
+              fill={SERIES.volume}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

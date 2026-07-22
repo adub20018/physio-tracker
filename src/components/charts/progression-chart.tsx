@@ -1,7 +1,11 @@
 // Progression chart — shows the rehab program itself advancing: the physio
-// intensity range (min–max % load) as a band with its midpoint line, plus
-// hold volume (sets × seconds) as quiet bars in a separate aligned panel.
-// Progress here is progress even when pain plateaus (PLAN.md §3).
+// intensity range (min–max % load) as a band with its midpoint line, hold
+// volume (sets × seconds, unweighted) and Physio load (intensity-weighted)
+// as separate aligned panels. Hold volume and Physio load can diverge — e.g.
+// longer holds at lower intensity raise hold volume while Physio load
+// falls — so both are shown rather than just one, which would otherwise
+// misrepresent how the program is actually progressing. Progress here is
+// progress even when pain plateaus (PLAN.md §3).
 "use client";
 
 import {
@@ -28,6 +32,9 @@ export type ProgressionPoint = {
   intensityMid: number | null;
   // Total hold volume that day: sets × duration, before intensity weighting.
   holdVolume: number;
+  // Intensity-weighted load — the same metric as the dashboard tile and
+  // Load vs symptoms, shown here so it can be compared against hold volume.
+  physioVolume: number;
 };
 
 // Recharts range areas take a [low, high] tuple per point.
@@ -60,20 +67,25 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
           Midpoint
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
+          <span className={styles.legendSwatch} style={{ background: SERIES.holdVolume }} />
           Hold volume (sets×sec)
-          <InfoTooltip text="Raw work performed: sets × hold time (or reps), summed across exercises. Unlike Physio load on the dashboard, this ignores intensity % — a heavier set and a lighter set of the same length count the same." />
+          <InfoTooltip text="Raw work performed: sets × hold time (or reps), summed across exercises. Unlike Physio load, this ignores intensity % — a heavier set and a lighter set of the same length count the same." />
+        </span>
+        <span className={styles.legendItem}>
+          <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
+          Physio load
+          <InfoTooltip text="Sets × hold time × average intensity %. The same metric as the dashboard tile and Load vs symptoms. Weighted by intensity — can move opposite to Hold volume, e.g. longer holds at lower intensity raise Hold volume while Physio load falls." />
         </span>
       </div>
 
-      {/* Two panels get a gap (.panelStack) plus an explicit divider
-          element (.panelDivider) between them, so the intensity panel's
-          "0%" doesn't read as touching the bar chart below it. */}
+      {/* Three panels get a gap (.panelStack) plus an explicit divider
+          element (.panelDivider) between them, so one panel's "0" doesn't
+          read as touching the panel below it. */}
       <div className={styles.panelStack}>
         {/* Panel 1: intensity band */}
-        {/* bottom margin > 0: with a hidden x-axis there's no reserved space
-            below the 0 gridline, so the "0%" tick label gets clipped by the
-            container edge without it. */}
+        {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
+            reserved space below the 0 gridline, and Recharts otherwise drops
+            the 0% tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer width="100%" height={170}>
           <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 8, left: -18 }}>
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -81,8 +93,6 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             <YAxis
               domain={[0, 50]}
               ticks={[0, 25, 50]}
-              // interval={0}: without it Recharts silently drops the 0% tick
-              // from the DOM on this panel (not a CSS clipping issue).
               interval={0}
               tickFormatter={(v: number) => `${v}%`}
               tick={CHART_CHROME.tick}
@@ -123,6 +133,36 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
 
         {/* Panel 2: hold volume */}
         <ResponsiveContainer width="100%" height={110}>
+          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+            <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            <XAxis dataKey="date" hide height={4} />
+            <YAxis
+              domain={[0, "auto"]}
+              interval={0}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: "var(--muted)" }}
+              cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            />
+            <Bar
+              dataKey="holdVolume"
+              name="Hold volume"
+              fill={SERIES.holdVolume}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        <div className={styles.panelDivider} />
+
+        {/* Panel 3: physio load */}
+        <ResponsiveContainer width="100%" height={110}>
           <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <XAxis
@@ -133,15 +173,22 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               tickLine={false}
               minTickGap={28}
             />
-            <YAxis tick={CHART_CHROME.tick} axisLine={false} tickLine={false} width={46} />
+            <YAxis
+              domain={[0, "auto"]}
+              interval={0}
+              tick={CHART_CHROME.tick}
+              axisLine={false}
+              tickLine={false}
+              width={46}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
             />
             <Bar
-              dataKey="holdVolume"
-              name="Hold volume"
+              dataKey="physioVolume"
+              name="Physio load"
               fill={SERIES.volume}
               radius={[3, 3, 0, 0]}
               isAnimationActive={false}

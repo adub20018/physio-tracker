@@ -108,6 +108,7 @@ export default async function DashboardPage() {
           (sum, e) => sum + e.sets * e.durationOrReps,
           0,
         ),
+        physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
       };
     });
 
@@ -216,9 +217,10 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Physio progression</h2>
         <p className={styles.cardSubtitle}>
-          Intensity range and hold volume across sessions — the program advancing is
-          progress too. Hold volume is the raw sets × seconds performed, unweighted by
-          intensity (unlike Physio load above).
+          Intensity range, hold volume, and Physio load across sessions — the program
+          advancing is progress too. Hold volume and Physio load can move in opposite
+          directions (e.g. longer holds at lower intensity raise one and lower the
+          other), so both are shown rather than just one.
         </p>
         <ProgressionChart data={progression} />
       </section>

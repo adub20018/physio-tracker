@@ -20,6 +20,12 @@ export const SERIES = {
   // hue rather than reusing one of theirs the way steps/volume safely do
   // in charts where they're the only series.
   sleep: "#d97706", // amber
+  // "Physio load" (intensity-weighted) keeps `volume`'s violet everywhere
+  // it appears — dashboard tile, Load vs symptoms, Physio progression — so
+  // the color always means the same metric at a glance. Hold volume (raw,
+  // unweighted) needs a genuinely different hue since Physio progression
+  // shows both side by side; validated against the rest of this palette.
+  holdVolume: "#0d9488", // teal
 } as const;
 
 // Status color for flare markers (means "flare", never "series 4").

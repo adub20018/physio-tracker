@@ -1,12 +1,23 @@
-// One-off import of the original tracking spreadsheet into the database.
-// Usage: npm run db:import [-- path/to/spreadsheet.xlsx]
+// One-off/repeatable import of the tracking spreadsheet into the database.
+// Usage:
+//   npm run db:import                          (default path, prompts before overwriting)
+//   npm run db:import -- path/to/sheet.xlsx     (custom path)
+//   npm run db:import -- --yes                  (skip the overwrite prompt)
+//   npm run db:import -- path/to/sheet.xlsx -y   (both)
 //
 // Reads every filled row, converts each spreadsheet format to the structured
 // schema (see import-helpers.ts), and upserts by date through the repository
-// layer — so re-running is safe and never duplicates days. Prints a summary
-// plus any cells it could not parse, for manual verification against the
-// spreadsheet before the import is considered done (AGENTS.md data-safety rule).
+// layer — so re-running never creates duplicate days; a spreadsheet row for a
+// date that's already in the database REPLACES that day's log and exercises.
+//
+// Because re-importing overwrites, and any edits made in the app itself for
+// that date would be lost, the script always reports how many already-logged
+// days the spreadsheet would overwrite and asks for confirmation before
+// touching them (AGENTS.md data-safety rule: no bulk overwrite without
+// explicit confirmation). New dates import without asking. Pass --yes to
+// skip the prompt (e.g. for scripted/non-interactive runs).
 import { readFile } from "node:fs/promises";
+import { createInterface } from "node:readline/promises";
 import * as XLSX from "xlsx";
 import { userRepository, dailyLogRepository, type DailyLogInput } from "../src/repositories";
 import {
@@ -15,12 +26,19 @@ import {
   parseIntensity,
   parsePain,
   parseSetGroups,
+  parseSleepHours,
   parseSteps,
   parseText,
   toIsoDate,
 } from "./import-helpers";
 
 const DEFAULT_PATH = "C:\\Users\\New\\Downloads\\Physio Tracker Formatted.xlsx";
+
+// Separate flags from the positional path argument so `--yes`/`-y` can
+// appear in any position without being mistaken for a file path.
+const argv = process.argv.slice(2);
+const autoConfirm = argv.includes("--yes") || argv.includes("-y");
+const positionalPath = argv.find((a) => !a.startsWith("-"));
 
 // Shape of one spreadsheet row, keyed by the sheet's header names.
 type SheetRow = {
@@ -30,6 +48,7 @@ type SheetRow = {
   "Morning Pain Num"?: unknown;
   "Daytime Pain"?: unknown;
   "Night Pain"?: unknown;
+  "Sleep Hours (night prior)"?: unknown;
   "Physio Notes"?: unknown;
   Intensity?: unknown;
   "Activity Notes"?: unknown;
@@ -44,6 +63,7 @@ function hasData(row: SheetRow): boolean {
     row["Morning Pain Num"],
     row["Daytime Pain"],
     row["Night Pain"],
+    row["Sleep Hours (night prior)"],
     row["Physio Exercise"],
     row["Activity Notes"],
     row["General Notes"],
@@ -71,6 +91,9 @@ function convertRow(row: SheetRow, warnings: string[]): DailyLogInput | null {
   warnIfLost("morning pain", row["Morning Pain Num"], painMorning);
   warnIfLost("daytime pain", row["Daytime Pain"], painDaytime);
   warnIfLost("night pain", row["Night Pain"], painNight);
+
+  const sleepHours = parseSleepHours(row["Sleep Hours (night prior)"]);
+  warnIfLost("sleep hours", row["Sleep Hours (night prior)"], sleepHours);
 
   // One spreadsheet row holds at most one exercise name, but mixed set
   // groups ("3x20, 1x30") become multiple entries with the same name.
@@ -109,13 +132,33 @@ function convertRow(row: SheetRow, warnings: string[]): DailyLogInput | null {
     painTypes: null, // not tracked in the spreadsheet; starts with the app
     activityNotes: parseText(row["Activity Notes"]),
     generalNotes: parseText(row["General Notes"]),
-    sleepHours: null, // not tracked in the spreadsheet; starts with the app
+    sleepHours,
     exercises,
   };
 }
 
+// Asks "continue? [y/N]" on the terminal, listing which dates will be
+// overwritten. Returns false (safe default) if the shell isn't interactive
+// and --yes wasn't passed, rather than hanging or guessing.
+async function confirmOverwrite(dates: string[]): Promise<boolean> {
+  if (autoConfirm) return true;
+  if (!process.stdin.isTTY) {
+    console.log(
+      "Non-interactive shell — pass --yes to allow overwriting existing days. Skipping them for now."
+    );
+    return false;
+  }
+  const preview = dates.slice(0, 10).join(", ") + (dates.length > 10 ? ` … (+${dates.length - 10} more)` : "");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await rl.question(
+    `\n${dates.length} day(s) already in the database will be OVERWRITTEN with the spreadsheet's values:\n  ${preview}\n\nAny edits made in the app for those days will be replaced. Continue? [y/N] `
+  );
+  rl.close();
+  return /^y(es)?$/i.test(answer.trim());
+}
+
 async function main() {
-  const path = process.argv[2] ?? DEFAULT_PATH;
+  const path = positionalPath ?? DEFAULT_PATH;
   const workbook = XLSX.read(await readFile(path), { cellDates: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<SheetRow>(sheet, { defval: null });
@@ -124,7 +167,7 @@ async function main() {
   if (!user) throw new Error("No user in database — run `npm run db:seed` first.");
 
   const warnings: string[] = [];
-  let imported = 0;
+  const parsed: DailyLogInput[] = [];
   let skippedEmpty = 0;
 
   for (const row of rows) {
@@ -133,15 +176,32 @@ async function main() {
       continue;
     }
     const input = convertRow(row, warnings);
-    if (!input) continue;
+    if (input) parsed.push(input);
+  }
+
+  // Split into new days (import freely) vs. days that already have a log
+  // (overwrite — needs confirmation, since it may discard app-made edits).
+  const existingDates = new Set((await dailyLogRepository.listAll(user.id)).map((l) => l.date));
+  const newRows = parsed.filter((r) => !existingDates.has(r.date));
+  const overwriteRows = parsed.filter((r) => existingDates.has(r.date));
+
+  let toImport = parsed;
+  if (overwriteRows.length > 0) {
+    const proceed = await confirmOverwrite(overwriteRows.map((r) => r.date));
+    if (!proceed) {
+      console.log(`Skipping ${overwriteRows.length} existing day(s); importing ${newRows.length} new day(s) only.`);
+      toImport = newRows;
+    }
+  }
+
+  for (const input of toImport) {
     await dailyLogRepository.upsert(user.id, input);
-    imported++;
   }
 
   // Summary for verification against the spreadsheet.
   const all = await dailyLogRepository.listAll(user.id);
   const withExercises = all.filter((l) => l.exercises.length > 0).length;
-  console.log(`Imported/updated ${imported} days (${skippedEmpty} empty rows skipped).`);
+  console.log(`\nImported/updated ${toImport.length} days (${skippedEmpty} empty rows skipped).`);
   console.log(`Database now holds ${all.length} daily logs, ${withExercises} with exercises.`);
   console.log(`Date range: ${all[0]?.date} → ${all[all.length - 1]?.date}`);
   if (warnings.length > 0) {

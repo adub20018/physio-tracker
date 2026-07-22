@@ -40,6 +40,28 @@
   flex-shrink: 0;
 }
 
+/* Stacked chart panels (e.g. Load vs symptoms, Physio progression): a
+   visible divider plus breathing room between each panel, so one panel's
+   y-axis "0" doesn't read as touching the next panel's top edge.
+
+   The gap is a flex `gap`, and the divider line is its own empty sibling
+   element (.panelDivider) — NOT padding/border on the ResponsiveContainer
+   wrapper itself. Recharts renders its SVG at the exact pixel `height` prop
+   regardless of that div's own CSS box, so adding padding/border directly
+   to it makes the SVG overflow past the div's bottom edge by that amount,
+   eating the gap on every panel after the first (which is exactly the
+   inconsistent gap bug this replaced). Gap-based spacing plus a separate
+   divider element never touches the ResponsiveContainer's box at all. */
+.panelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.panelDivider {
+  border-top: 1px solid var(--border);
+}
+
 /* ── Calendar heatmap ─────────────────────────────────────────── */
 
 .heatmap {

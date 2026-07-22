@@ -160,8 +160,16 @@ function LogDatePicker({
   date: string;
   onChange: (iso: string) => void;
 }) {
-  // Stable Date identity per ISO date — a fresh object every render makes the
-  // picker re-sync its internal state during render (React warning).
+  // Stable Date identity per ISO date (fresh objects would re-trigger the
+  // picker's value sync every render).
+  //
+  // Known upstream issue (PrimeReact 11.0.0, no patch yet): mounting
+  // DatePicker.Root logs a dev-only React warning — "Cannot update a
+  // component (E) while rendering PrimeReact.DatePicker.Root" — from the
+  // library's own mount-time state sync. It is not caused by our props
+  // (fires with defaultValue too, which additionally leaves the input
+  // blank), has no functional impact, and does not appear in production
+  // builds. Re-check after the next primereact release.
   const dateValue = useMemo(() => isoToDate(date), [date]);
   return (
     <DatePicker.Root

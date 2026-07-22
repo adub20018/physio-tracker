@@ -15,6 +15,17 @@ export const SERIES = {
   rollingAvg: "#059669", // emerald — the hero trend line
   steps: "#0284c7", // reuses slot 1 in a chart where it is the only series
   volume: "#8b5cf6", // reuses slot 3 likewise
+  // Distinct from morning/daytime/night (sky/pink/violet): sleep appears
+  // ALONGSIDE those three in the sleep timeline chart, so it needs its own
+  // hue rather than reusing one of theirs the way steps/volume safely do
+  // in charts where they're the only series.
+  sleep: "#d97706", // amber
+  // "Physio load" (intensity-weighted) keeps `volume`'s violet everywhere
+  // it appears — dashboard tile, Load vs symptoms, Physio progression — so
+  // the color always means the same metric at a glance. Hold volume (raw,
+  // unweighted) needs a genuinely different hue since Physio progression
+  // shows both side by side; validated against the rest of this palette.
+  holdVolume: "#0d9488", // teal
 } as const;
 
 // Status color for flare markers (means "flare", never "series 4").

@@ -21,6 +21,29 @@ export function daysBetween(a: string, b: string): number {
   return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86_400_000);
 }
 
+// One flare day together with the days that preceded it — the "what
+// happened before" view for the flare review panel. precedingDays are the
+// logged days within `lookback` calendar days before the flare (oldest
+// first); unlogged days in that span are simply absent.
+export type FlareEpisode = {
+  day: DomainDay;
+  precedingDays: DomainDay[];
+};
+
+// All flare days (newest first) with their lookback context.
+export function flareEpisodes(days: DomainDay[], lookback: number): FlareEpisode[] {
+  return days
+    .filter(isFlareDay)
+    .map((day) => ({
+      day,
+      precedingDays: days.filter((d) => {
+        const gap = daysBetween(d.date, day.date);
+        return gap >= 1 && gap <= lookback;
+      }),
+    }))
+    .reverse();
+}
+
 // Days since the most recent flare, measured from `today`.
 // null when no flare has ever been logged. 0 means today flared.
 export function daysSinceLastFlare(days: DomainDay[], today: string): number | null {

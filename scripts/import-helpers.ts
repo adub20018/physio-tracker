@@ -88,3 +88,18 @@ export function parseSteps(value: unknown): number | null {
   const num = Number(value);
   return Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
 }
+
+// Sleep-hours cell → number 0–24, or null. A plain decimal (e.g. 9.5) —
+// unlike pain, there's no "/10" suffix and no 0–10 clamp, since a full
+// night's sleep commonly exceeds 10 hours.
+export function parseSleepHours(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value >= 0 && value <= 24 ? value : null;
+  }
+  const text = String(value).trim();
+  const match = text.match(/^(\d+(?:\.\d+)?)$/);
+  if (!match) return null;
+  const num = Number(match[1]);
+  return num >= 0 && num <= 24 ? num : null;
+}

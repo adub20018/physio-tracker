@@ -25,6 +25,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
   identities** for `value` props (memoize derived `Date` objects) — fresh objects each
   render trigger "Cannot update a component while rendering" warnings from the headless
   state sync.
+- **Known v11.0.0 bug (upstream, no patch as of July 2026)**: mounting `DatePicker.Root`
+  logs a dev-only React warning ("Cannot update a component (E) while rendering…") from the
+  library's own mount-time state sync. Not fixable from our side (fires regardless of
+  controlled/uncontrolled value), no functional impact, absent from production builds.
+  Re-check on each primereact release; do not burn time debugging it again.
 - **License**: v11 is under the PrimeUI license (free Community tier for individuals).
   The key comes from `NEXT_PUBLIC_PRIMEUI_LICENSE_KEY`; without it the app works but
   warns in the console.

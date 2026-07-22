@@ -10,7 +10,6 @@ import {
   ComposedChart,
   Line,
   ResponsiveContainer,
-  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -25,7 +24,8 @@ export type PainTimelinePoint = {
   daytime: number | null;
   night: number | null;
   rollingAvg: number | null;
-  // Daily pain average on flare days only (used to place the flare dot).
+  // The day's worst reading, on flare days only — places the flare dot at
+  // the reading that crossed the threshold (always ≥ 3).
   flareValue: number | null;
 };
 
@@ -34,6 +34,34 @@ const LINES = [
   { key: "daytime", label: "Daytime", color: SERIES.daytime },
   { key: "night", label: "Night", color: SERIES.night },
 ] as const;
+
+// Custom tooltip content: same look as the shared TOOLTIP_STYLE, but drops
+// the "Flare" row. The flare dot's own value always equals whichever
+// reading is already shown above it (Morning/Daytime/Night), so listing it
+// again is a pure duplicate — the dot itself is the flare signal.
+function PainTooltipContent({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { dataKey?: string; name?: string; value?: number | null; color?: string }[];
+  label?: string;
+}) {
+  if (!active || !payload) return null;
+  const rows = payload.filter((p) => p.dataKey !== "flareValue" && p.value != null);
+  if (rows.length === 0) return null;
+  return (
+    <div style={TOOLTIP_STYLE}>
+      <div style={{ color: "var(--muted)", marginBottom: 4 }}>{label}</div>
+      {rows.map((r) => (
+        <div key={r.dataKey}>
+          <span style={{ color: r.color }}>{r.name}</span>: {r.value}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
   return (
@@ -72,11 +100,7 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            labelStyle={{ color: "var(--muted)" }}
-            cursor={{ stroke: CHART_CHROME.axisLine }}
-          />
+          <Tooltip content={<PainTooltipContent />} cursor={{ stroke: CHART_CHROME.axisLine }} />
           {/* Raw readings: thin, slightly transparent, gaps preserved */}
           {LINES.map((l) => (
             <Line
@@ -99,15 +123,16 @@ export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
             dot={false}
             isAnimationActive={false}
           />
-          {/* Flare markers: status red; excluded from the tooltip (the dot
-              itself is the message). Gets only the flare days as data —
-              Recharts would otherwise draw a symbol for every null point. */}
-          <Scatter
-            data={data.filter((d) => d.flareValue != null)}
+          {/* Flare markers: a dot-only Line on the SHARED chart data — Lines
+              skip null points, and sharing the data keeps the crosshair
+              tooltip tracking every day. (A Scatter with its own filtered
+              data array hijacks the hover index to just the flare points.) */}
+          <Line
             dataKey="flareValue"
             name="Flare"
-            fill={FLARE_COLOR}
-            tooltipType="none"
+            stroke="none"
+            dot={{ r: 4, fill: FLARE_COLOR, strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: FLARE_COLOR, strokeWidth: 0 }}
             isAnimationActive={false}
           />
         </ComposedChart>

@@ -31,3 +31,15 @@
   color: var(--muted);
   margin-bottom: 0.9rem;
 }
+
+/* Per-series correlation lines above a multi-series chart (e.g. sleep vs
+   morning/daytime/night) — each item's color matches its series in the
+   chart below, so the number and the dots read as the same thing. */
+.rList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.9rem;
+}

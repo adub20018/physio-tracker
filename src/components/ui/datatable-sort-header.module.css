@@ -1,0 +1,22 @@
+/* Sort button inherits the table header's quiet uppercase look. */
+
+.sortButton {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.sortButton:hover {
+  color: var(--muted);
+}
+
+.sortIcon {
+  color: var(--accent);
+  font-size: 0.6rem;
+}

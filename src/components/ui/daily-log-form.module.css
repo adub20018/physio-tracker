@@ -1,19 +1,65 @@
 /* Layout styles for the daily log form. Mobile-first: everything stacks in
-   one column; wider screens get two-column rows for compact fields. */
+   one column; wider screens get two-column rows for compact fields.
 
+   Two distinct heading tiers so sections stop reading as one undifferentiated
+   block: .cardTitle names the section ("Pain", "Activity", …); .fieldLabel
+   names the specific input inside it ("Morning", "Sets", …). They must never
+   share a size/weight/color, or the eye can't tell "section" from "field". */
+
+/* Outer frame: the lighter-grey card holding the whole form (date bar,
+   every section, and the save row) — same nested-card language as
+   PrimeReact's own docs (light preview panel, darker content within it). */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.5rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.5rem 0.75rem;
 }
 
-.section {
+/* One section = one visually distinct card, so the form reads as a set of
+   grouped questions instead of a jammed-together field list. Dark grey,
+   not near-black: PrimeReact's own inputs already render close to the page
+   background, so a --background-toned card would leave the card and the
+   inputs inside it with almost no contrast against each other. --surface
+   sits clearly between the outer frame and the inputs. */
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+}
+
+/* A labelled sub-part within a card (e.g. "Pain type" inside the Pain card) —
+   a little more room than a bare field label, since it introduces its own
+   control below it. padding-top matches .card's own gap (0.75rem) so the
+   divider sits centered between what's above and below it, not hugging
+   the heading underneath. */
+.subsection {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
 }
 
-.sectionLabel {
+/* Compound selector, not just .fieldLabel: PrimeReact's own Label component
+   ships its own font-size/color on .p-label at equal specificity, and
+   whichever rule loads later in the stylesheet wins ties — unreliable.
+   Qualifying with .form outranks it regardless of injection order. */
+.form .fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -26,12 +72,33 @@
   color: var(--muted);
 }
 
+/* Date bar sits outside any card — it's the page's own header-like control,
+   not a "section" among equals. */
+.dateBar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dateInputRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dateInputRow :global(.p-inputtext) {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  font-size: 1.15rem;
+}
+
 /* A labelled pain slider row: label+value on top, slider+clear below. */
 .painRow {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  padding: 0.6rem 0;
+  padding: 0.5rem 0;
 }
 
 .painHeader {
@@ -69,11 +136,32 @@
   gap: 0.35rem;
 }
 
-/* One exercise entry: bordered block with its own mini-grid. */
+/* Chip multi-select (pain type / activity): known chips + custom-add row,
+   shared markup so both inputs behave identically. */
+.tagSelect {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tagCustomRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tagCustomRow .input {
+  flex: 1;
+}
+
+/* One exercise entry: a third depth step. --surface-sunken (one notch
+   darker than the Physio exercises card's own --surface) instead of
+   repeating --surface itself, so nesting still reads as nesting — while
+   staying far enough from --background that the inputs inside still
+   stand out as their own, darkest layer. */
 .exerciseCard {
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--surface);
+  background: var(--surface-sunken);
   padding: 0.85rem;
   display: flex;
   flex-direction: column;
@@ -93,21 +181,13 @@
   gap: 0.5rem;
 }
 
+/* Save button spans the full width so it's a bigger, easier target and
+   reads as the form's one clear final step; the save-result message sits
+   below it rather than squeezed into the same row. */
 .actions {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.error {
-  color: var(--pain-flare);
-  font-size: 0.85rem;
-}
-
-.success {
-  color: var(--accent);
-  font-size: 0.85rem;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 /* Pain value readout sits in the data voice */

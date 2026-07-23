@@ -13,6 +13,12 @@
   --surface-raised: var(--p-surface-800, #27272a);
   --border: var(--p-surface-700, #3f3f46);
   --border-strong: var(--p-surface-600, #52525b);
+  /* One notch darker than --surface, for a card nested inside another card
+     (e.g. an exercise entry inside the Physio exercises section) — there's
+     no matching step in the preset's own scale, so this sits between
+     --surface and --background rather than jumping straight to it, which
+     would leave nothing to distinguish the card from its own inputs. */
+  --surface-sunken: color-mix(in srgb, var(--surface) 65%, var(--background));
 
   /* Text */
   --foreground: var(--p-text-color, #fafafa);
@@ -22,7 +28,11 @@
   /* Accent — the preset's primary (emerald under stock Aura dark) */
   --accent: var(--p-primary-color, #34d399);
   --accent-strong: var(--p-primary-600, #059669);
-  --accent-soft: color-mix(in srgb, var(--p-primary-color, #34d399) 14%, transparent);
+  --accent-soft: color-mix(
+    in srgb,
+    var(--p-primary-color, #34d399) 14%,
+    transparent
+  );
 
   /* Pain severity — from the preset's primitive palettes */
   --pain-none: var(--p-surface-500, #71717a);
@@ -30,8 +40,10 @@
   --pain-elevated: var(--p-amber-400, #fbbf24);
   --pain-flare: var(--p-red-400, #f87171);
 
-  /* Typography (families injected by next/font in the root layout) */
-  --font-display: var(--font-fraunces), Georgia, serif;
+  /* Typography (families injected by next/font in the root layout).
+     --font-display shares Instrument Sans with body text now — no more
+     serif voice; h1/h2/h3's own weight/letter-spacing carry the hierarchy. */
+  --font-display: var(--font-instrument), system-ui, sans-serif;
   --font-body: var(--font-instrument), system-ui, sans-serif;
   --font-data: var(--font-plex-mono), ui-monospace, monospace;
 }
@@ -52,8 +64,7 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--foreground);
-  background:
-    radial-gradient(
+  background: radial-gradient(
       120rem 60rem at 85% -20%,
       color-mix(in srgb, var(--accent) 5%, transparent),
       transparent 60%

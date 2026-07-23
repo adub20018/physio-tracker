@@ -3,7 +3,6 @@
 // (server functions are reachable by direct POST, so the server never trusts
 // the client), and its inferred type keeps the client form in sync.
 import { z } from "zod";
-import { ACTIVITY_TAGS, PAIN_TYPES } from "@/db/schema";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
 
 // A pain reading: 0–10 in 0.5 steps, or null when not recorded.
@@ -20,6 +19,10 @@ const optionalText = z
   .transform((s) => s.trim())
   .transform((s) => (s.length > 0 ? s : null))
   .nullable();
+
+// A pain-type/activity tag: either one of the suggested chips or a custom
+// value the user typed — bounded so nobody pastes a paragraph into a chip.
+const tag = z.string().trim().min(1).max(40);
 
 export const exerciseSchema = z
   .object({
@@ -44,8 +47,8 @@ export const dailyLogSchema = z.object({
   painDaytime: painValue,
   painNight: painValue,
   sleepHours: z.number().min(0).max(24).nullable(),
-  activityTags: z.array(z.enum(ACTIVITY_TAGS)),
-  painTypes: z.array(z.enum(PAIN_TYPES)),
+  activityTags: z.array(tag).max(20),
+  painTypes: z.array(tag).max(20),
   activityNotes: optionalText,
   generalNotes: optionalText,
   exercises: z.array(exerciseSchema).max(20),

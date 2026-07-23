@@ -5,11 +5,15 @@
 // state locally, submits a typed payload to the saveDailyLog server action,
 // and navigates by date so past days can be edited with the same form.
 //
+// Section order follows the natural order of the day: how did it feel
+// (pain) → what did the day look like (activity) → what physio was done →
+// anything else worth remembering (notes).
+//
 // Receives display-ready initial values from the server page; talks to the
 // server only through the action (never imports repositories — PLAN.md §5).
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@primereact/ui/button";
 import { InputText } from "@primereact/ui/inputtext";
@@ -31,13 +35,10 @@ import { ChevronUp } from "@primeicons/react/chevron-up";
 import { ChevronDown } from "@primeicons/react/chevron-down";
 import { ChevronLeft } from "@primeicons/react/chevron-left";
 import { ChevronRight } from "@primeicons/react/chevron-right";
+import { WavePulse } from "@primeicons/react/wave-pulse";
+import { Moon } from "@primeicons/react/moon";
 import type { InputNumberRootValueChangeEvent } from "@primereact/types/primitive/inputnumber";
-import {
-  ACTIVITY_TAGS,
-  PAIN_TYPES,
-  type ActivityTag,
-  type PainType,
-} from "@/db/schema";
+import { PAIN_TYPES, ACTIVITY_TAGS } from "@/db/schema";
 import {
   PAIN_SCALE_MAX,
   PAIN_SCALE_MIN,
@@ -67,8 +68,8 @@ export type DailyLogFormInit = {
   painDaytime: number | null;
   painNight: number | null;
   sleepHours: number | null;
-  activityTags: ActivityTag[];
-  painTypes: PainType[];
+  activityTags: string[];
+  painTypes: string[];
   activityNotes: string;
   generalNotes: string;
   exercises: ExerciseDraft[];
@@ -112,7 +113,7 @@ function PainInput({
   return (
     <div className={styles.painRow}>
       <div className={styles.painHeader}>
-        <span className={styles.sectionLabel}>{label}</span>
+        <span className={styles.fieldLabel}>{label}</span>
         <span className={styles.painValue}>
           {value ?? "—"}
           {value != null && " / 10"}
@@ -149,6 +150,78 @@ function PainInput({
   );
 }
 
+// A group of clickable chips (known suggestions + whatever custom values are
+// already selected) plus a small "add custom" row — shared by Pain type and
+// Activity so both behave identically. Toggling a custom chip off removes it
+// the same way toggling off a known one does; there's no separate list to
+// manage.
+function TagMultiSelect({
+  value,
+  options,
+  onChange,
+  customPlaceholder,
+}: {
+  value: string[];
+  options: readonly string[];
+  onChange: (next: string[]) => void;
+  customPlaceholder: string;
+}) {
+  const [draft, setDraft] = useState("");
+  const chips = [...options, ...value.filter((v) => !options.includes(v))];
+
+  function addCustom() {
+    const trimmed = draft.trim();
+    if (trimmed && !value.includes(trimmed)) {
+      onChange([...value, trimmed]);
+    }
+    setDraft("");
+  }
+
+  return (
+    <div className={styles.tagSelect}>
+      <ToggleButtonGroup
+        multiple
+        allowEmpty
+        value={value}
+        onValueChange={(e: { value?: unknown }) =>
+          onChange((e.value ?? []) as string[])
+        }
+      >
+        {chips.map((t) => (
+          <ToggleButton.Root key={t} value={t}>
+            <ToggleButton.Indicator>{t}</ToggleButton.Indicator>
+          </ToggleButton.Root>
+        ))}
+      </ToggleButtonGroup>
+      <div className={styles.tagCustomRow}>
+        <InputText
+          value={draft}
+          placeholder={customPlaceholder}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setDraft(e.target.value)
+          }
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addCustom();
+            }
+          }}
+          className={styles.input}
+        />
+        <Button
+          size="small"
+          severity="secondary"
+          variant="outlined"
+          onClick={addCustom}
+          disabled={draft.trim() === ""}
+        >
+          Add
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 // PrimeReact DatePicker composed for a single-date input with calendar popup,
 // following the official styled-mode demo: the input renders as InputText
 // (that's where its text-field styling comes from) and the nav arrows render
@@ -163,25 +236,36 @@ function LogDatePicker({
   // Stable Date identity per ISO date (fresh objects would re-trigger the
   // picker's value sync every render).
   //
-  // Known upstream issue (PrimeReact 11.0.0, no patch yet): mounting
-  // DatePicker.Root logs a dev-only React warning — "Cannot update a
-  // component (E) while rendering PrimeReact.DatePicker.Root" — from the
-  // library's own mount-time state sync. It is not caused by our props
-  // (fires with defaultValue too, which additionally leaves the input
-  // blank), has no functional impact, and does not appear in production
-  // builds. Re-check after the next primereact release.
+  // Known upstream issue (PrimeReact 11.0.0, no patch yet): DatePicker.Root
+  // only formats the input's displayed text when its `value` prop actually
+  // CHANGES — on mount there's no prior value to change from, so the input
+  // renders blank (confirmed in both dev and production builds; a real
+  // bug, not the dev-only artifact previously assumed here). Rendering
+  // `null` for one tick and then swapping in the real value forces that
+  // transition every mount, which reliably triggers the library's own
+  // sync. Re-check after the next primereact release.
   const dateValue = useMemo(() => isoToDate(date), [date]);
+  const [mountedValue, setMountedValue] = useState<Date | null>(null);
+  useEffect(() => {
+    const id = setTimeout(() => setMountedValue(dateValue), 0);
+    return () => clearTimeout(id);
+    // Intentionally re-runs only on mount (per `date`, since this whole
+    // component remounts via `key={date}` on the page) — dateValue is
+    // excluded because re-triggering the null-flash on every parent
+    // re-render would be wrong, only a genuine new date should.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <DatePicker.Root
-      value={dateValue}
+      value={mountedValue}
       onValueChange={(e: { value: unknown }) => {
         if (e.value instanceof Date) onChange(dateToIso(e.value));
       }}
       dateFormat="DD, dd MM, yy"
     >
-      <DatePicker.Input as={InputText} id="log-date" />
+      <DatePicker.Input as={InputText} id="log-date" readOnly />
       <DatePicker.Trigger aria-label="Open calendar">
-        <Calendar />
+        <Calendar size={16} />
       </DatePicker.Trigger>
       <DatePicker.Portal>
         <DatePicker.Positioner align="start">
@@ -258,7 +342,10 @@ function ExerciseNameInput({
       }}
       className={styles.input}
     >
+      {/* as={InputText}: the AutoComplete input part renders unstyled
+          without this composition (AGENTS.md PrimeReact gotchas). */}
       <AutoComplete.Input
+        as={InputText}
         placeholder="Exercise name"
         aria-label="Exercise name"
       />
@@ -333,10 +420,8 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
   const [painDaytime, setPainDaytime] = useState(init.painDaytime);
   const [painNight, setPainNight] = useState(init.painNight);
   const [sleepHours, setSleepHours] = useState<number | null>(init.sleepHours);
-  const [activityTags, setActivityTags] = useState<ActivityTag[]>(
-    init.activityTags,
-  );
-  const [painTypes, setPainTypes] = useState<PainType[]>(init.painTypes);
+  const [activityTags, setActivityTags] = useState<string[]>(init.activityTags);
+  const [painTypes, setPainTypes] = useState<string[]>(init.painTypes);
   const [activityNotes, setActivityNotes] = useState(init.activityNotes);
   const [generalNotes, setGeneralNotes] = useState(init.generalNotes);
   const [exercises, setExercises] = useState<ExerciseDraft[]>(init.exercises);
@@ -388,11 +473,8 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
 
   return (
     <div className={styles.form}>
-      {/* Date being logged — PrimeReact DatePicker with calendar popup */}
-      <div className={styles.section}>
-        <Label htmlFor="log-date" className={styles.sectionLabel}>
-          Date
-        </Label>
+      {/* Date */}
+      <div className={styles.dateBar}>
         <LogDatePicker date={init.date} onChange={changeDate} />
         <span className={styles.hint}>
           {init.isExisting
@@ -401,9 +483,11 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
         </span>
       </div>
 
-      {/* Pain readings */}
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Pain (0–10)</span>
+      {/* Pain: readings + character, grouped as one section since they're
+          the same question asked two ways ("how much" then "what kind"). */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Pain</h2>
+        <span className={styles.fieldLabel}>Pain level (0–10)</span>
         <PainInput
           label="Morning"
           value={painMorning}
@@ -415,81 +499,65 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
           onChange={setPainDaytime}
         />
         <PainInput label="Night" value={painNight} onChange={setPainNight} />
-      </div>
-
-      {/* Pain character tags (optional) */}
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Pain type</span>
-        <ToggleButtonGroup
-          multiple
-          allowEmpty
-          value={painTypes}
-          onValueChange={(e: { value?: unknown }) =>
-            setPainTypes((e.value ?? []) as PainType[])
-          }
-        >
-          {PAIN_TYPES.map((t) => (
-            <ToggleButton.Root key={t} value={t} size="small">
-              {t}
-            </ToggleButton.Root>
-          ))}
-        </ToggleButtonGroup>
-      </div>
-
-      {/* Steps + sleep */}
-      <div className={styles.fieldGrid}>
-        <div className={styles.field}>
-          <Label htmlFor="log-steps" className={styles.sectionLabel}>
-            Steps
-          </Label>
-          <NumberField
-            id="log-steps"
-            value={steps}
-            onChange={setSteps}
-            min={0}
-            useGrouping
-            placeholder="e.g. 1500"
+        <div className={styles.subsection}>
+          <span className={styles.fieldLabel}>Pain type</span>
+          <TagMultiSelect
+            value={painTypes}
+            options={PAIN_TYPES}
+            onChange={setPainTypes}
+            customPlaceholder="Custom pain type…"
           />
         </div>
-        <div className={styles.field}>
-          <Label htmlFor="log-sleep" className={styles.sectionLabel}>
-            Sleep (hours)
-          </Label>
-          <NumberField
-            id="log-sleep"
-            value={sleepHours}
-            onChange={setSleepHours}
-            min={0}
-            max={24}
-            step={0.5}
-            maxFractionDigits={1}
-            placeholder="e.g. 7.5"
+      </section>
+
+      {/* Activity: what the day looked like — steps, sleep, and tags all
+          answer "what happened today", so they live together. */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Activity</h2>
+        <div className={styles.fieldGrid}>
+          <div className={styles.field}>
+            <Label htmlFor="log-steps" className={styles.fieldLabel}>
+              <WavePulse size={14} /> Steps
+            </Label>
+            <NumberField
+              id="log-steps"
+              value={steps}
+              onChange={setSteps}
+              min={0}
+              useGrouping
+              placeholder="e.g. 1500"
+            />
+          </div>
+          <div className={styles.field}>
+            <Label htmlFor="log-sleep" className={styles.fieldLabel}>
+              <Moon size={14} /> Sleep (hours)
+            </Label>
+            <NumberField
+              id="log-sleep"
+              value={sleepHours}
+              onChange={setSleepHours}
+              min={0}
+              max={24}
+              step={0.5}
+              maxFractionDigits={1}
+              placeholder="e.g. 7.5"
+            />
+          </div>
+        </div>
+        <div className={styles.subsection}>
+          <span className={styles.fieldLabel}>Activity type</span>
+          <TagMultiSelect
+            value={activityTags}
+            options={ACTIVITY_TAGS}
+            onChange={setActivityTags}
+            customPlaceholder="Custom activity…"
           />
         </div>
-      </div>
-
-      {/* Activity tags */}
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Activity</span>
-        <ToggleButtonGroup
-          multiple
-          allowEmpty
-          value={activityTags}
-          onValueChange={(e: { value?: unknown }) =>
-            setActivityTags((e.value ?? []) as ActivityTag[])
-          }
-        >
-          {ACTIVITY_TAGS.map((t) => (
-            <ToggleButton.Root key={t} value={t} size="small">
-              {t}
-            </ToggleButton.Root>
-          ))}
-        </ToggleButtonGroup>
-      </div>
+      </section>
 
       {/* Physio exercises */}
-      <div className={styles.section}>
-        <span className={styles.sectionLabel}>Physio exercises</span>
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Physio exercises</h2>
         {exercises.map((ex, i) => (
           <div key={i} className={styles.exerciseCard}>
             <div className={styles.exerciseHeader}>
@@ -511,7 +579,7 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
             </div>
             <div className={styles.exerciseGrid}>
               <div className={styles.field}>
-                <Label className={styles.hint}>Sets</Label>
+                <Label className={styles.fieldLabel}>Sets</Label>
                 <NumberField
                   value={ex.sets}
                   onChange={(v) => updateExercise(i, { sets: v })}
@@ -520,7 +588,7 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
                 />
               </div>
               <div className={styles.field}>
-                <Label className={styles.hint}>
+                <Label className={styles.fieldLabel}>
                   {ex.unit === "seconds" ? "Hold (seconds)" : "Reps"}
                 </Label>
                 <NumberField
@@ -531,7 +599,7 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
                 />
               </div>
               <div className={styles.field}>
-                <Label className={styles.hint}>Intensity min %</Label>
+                <Label className={styles.fieldLabel}>Intensity min %</Label>
                 <NumberField
                   value={ex.intensityMin}
                   onChange={(v) => updateExercise(i, { intensityMin: v })}
@@ -540,7 +608,7 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
                 />
               </div>
               <div className={styles.field}>
-                <Label className={styles.hint}>Intensity max %</Label>
+                <Label className={styles.fieldLabel}>Intensity max %</Label>
                 <NumberField
                   value={ex.intensityMax}
                   onChange={(v) => updateExercise(i, { intensityMax: v })}
@@ -556,13 +624,25 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
                 updateExercise(i, { unit: e.value as "seconds" | "reps" })
               }
             >
-              <ToggleButton.Root value="seconds" size="small">
-                Timed hold
+              <ToggleButton.Root value="seconds">
+                <ToggleButton.Indicator>Timed hold</ToggleButton.Indicator>
               </ToggleButton.Root>
-              <ToggleButton.Root value="reps" size="small">
-                Reps
+              <ToggleButton.Root value="reps">
+                <ToggleButton.Indicator>Reps</ToggleButton.Indicator>
               </ToggleButton.Root>
             </ToggleButtonGroup>
+            <div className={styles.field}>
+              <Label className={styles.fieldLabel}>Additional comments</Label>
+              <Textarea
+                rows={2}
+                className={styles.input}
+                placeholder="e.g. Last set felt harder than usual"
+                value={ex.notes}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  updateExercise(i, { notes: e.target.value })
+                }
+              />
+            </div>
           </div>
         ))}
         <Button
@@ -574,43 +654,52 @@ export function DailyLogForm({ init }: { init: DailyLogFormInit }) {
         >
           + Add exercise
         </Button>
-      </div>
+      </section>
 
-      {/* Notes */}
-      <div className={styles.field}>
-        <Label htmlFor="log-activity-notes" className={styles.sectionLabel}>
-          Activity notes
-        </Label>
-        <Textarea
-          id="log-activity-notes"
-          rows={2}
-          className={styles.input}
-          placeholder="e.g. Gym + walking at cafe"
-          value={activityNotes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setActivityNotes(e.target.value)
-          }
-        />
-      </div>
-      <div className={styles.field}>
-        <Label htmlFor="log-general-notes" className={styles.sectionLabel}>
-          General notes
-        </Label>
-        <Textarea
-          id="log-general-notes"
-          rows={4}
-          className={styles.input}
-          placeholder="Anything worth remembering about today's symptoms"
-          value={generalNotes}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setGeneralNotes(e.target.value)
-          }
-        />
-      </div>
+      {/* Notes — free-text elaboration, last since it's "anything else" */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Notes</h2>
+        <div className={styles.field}>
+          <Label htmlFor="log-activity-notes" className={styles.fieldLabel}>
+            Activity notes
+          </Label>
+          <Textarea
+            id="log-activity-notes"
+            rows={2}
+            className={styles.input}
+            placeholder="e.g. Gym + walking at cafe"
+            value={activityNotes}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setActivityNotes(e.target.value)
+            }
+          />
+        </div>
+        <div className={styles.field}>
+          <Label htmlFor="log-general-notes" className={styles.fieldLabel}>
+            General notes
+          </Label>
+          <Textarea
+            id="log-general-notes"
+            rows={4}
+            className={styles.input}
+            placeholder="Anything worth remembering about today's symptoms"
+            value={generalNotes}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setGeneralNotes(e.target.value)
+            }
+          />
+        </div>
+      </section>
 
       {/* Submit + feedback */}
       <div className={styles.actions}>
-        <Button onClick={submit} disabled={isPending}>
+        <Button
+          onClick={submit}
+          disabled={isPending}
+          fluid
+          size="large"
+          severity="contrast"
+        >
           {isPending ? "Saving…" : "Save day"}
         </Button>
         {result?.ok && (

@@ -127,8 +127,12 @@ export default async function DashboardPage() {
       <header className="page-header">
         <h1>Welcome back, {user.name}.</h1>
         <p className="subtitle">
-          {days.length} days logged · flare threshold 3/10 per physio guidance · weekly
-          tiles cover the last 7 complete days (today excluded until it&apos;s fully logged)
+          {/* A template literal, not JSX text + {expr}: JSX collapses the
+              whitespace around an expression when the surrounding text
+              wraps across lines, silently eating the space right after
+              {days.length} ("54days logged"). One expression sidesteps
+              that entirely. */}
+          {`${days.length} days logged · flare threshold 3/10 per physio guidance · weekly tiles cover the last 7 complete days (today excluded until it's fully logged)`}
         </p>
       </header>
 

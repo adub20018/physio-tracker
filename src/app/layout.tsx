@@ -1,20 +1,15 @@
-// Root layout: HTML shell, the app's three typographic voices, global styles,
+// Root layout: HTML shell, the app's typographic voices, global styles,
 // and the app-wide provider stack (PrimeReact theme). Pages render inside
 // <AppProviders>.
 //
-// Type system: Fraunces (warm serif) for display, Instrument Sans (sleek
-// modern grotesque) for body/UI, IBM Plex Mono for data.
+// Type system: Instrument Sans (sleek modern grotesque) for both display
+// (headings) and body/UI — weight and size carry the hierarchy instead of a
+// separate serif — plus IBM Plex Mono for data.
 import type { Metadata } from "next";
-import { Fraunces, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppProviders } from "@/components/ui/app-providers";
 import { AppNav } from "@/components/ui/app-nav";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
-});
 
 const instrument = Instrument_Sans({
   variable: "--font-instrument",
@@ -42,7 +37,7 @@ export default function RootLayout({
     // app's own always-dark palette (see darkModeSelector in AppProviders).
     <html
       lang="en"
-      className={`app-dark ${fraunces.variable} ${instrument.variable} ${plexMono.variable}`}
+      className={`app-dark ${instrument.variable} ${plexMono.variable}`}
     >
       <body>
         <AppProviders>

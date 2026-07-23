@@ -40,7 +40,10 @@ export default async function HistoryPage() {
         <div>
           <h1>History</h1>
           <p className="subtitle">
-            {rows.length} logged days · click a row&apos;s arrow for notes and detail
+            {/* Template literal, not text + {expr} — see page.tsx's dashboard
+                subtitle for why the plain version silently loses the space
+                after the number. */}
+            {`${rows.length} logged days · click a row's arrow for notes and detail`}
           </p>
         </div>
         {/* Plain anchor: a download must be a real navigation, not a client route */}

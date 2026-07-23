@@ -1,0 +1,30 @@
+/* Evenly split progress bar: one flex-equal segment per loggable input.
+   Meant to sit flush against a card's own top edge (no wrapping padding/
+   margin — the card provides that), so the end segments pick up the
+   card's own corner radius (12px cards elsewhere in /log, minus the 1px
+   border) rather than squaring off against a rounded corner. */
+
+.track {
+  display: flex;
+  gap: 0.15rem;
+  width: 100%;
+}
+
+.segment {
+  flex: 1;
+  height: 0.3rem;
+  background: var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.segment:first-child {
+  border-top-left-radius: 11px;
+}
+
+.segment:last-child {
+  border-top-right-radius: 11px;
+}
+
+.segmentFilled {
+  background: var(--accent);
+}

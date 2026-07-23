@@ -10,6 +10,19 @@ export function weekdayOf(isoDate: string): string {
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 }
 
+// "Wed, Jul 22, 2026" — the active date shown as a plain (non-editable)
+// label on each /log section page and the review page, once the date
+// itself is only changeable from the overview.
+export function shortDateLabel(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 // "Standing ankle raise 3×20s + 1×30s @25–35%" — one line per exercise name,
 // set groups joined, intensity range appended when recorded.
 export function summarizeExercises(log: Pick<DailyLogWithExercises, "exercises">): string {

@@ -1,0 +1,41 @@
+/* Back link + section title + active date. Sits above the section's own
+   form/content, outside any card — page chrome, not a section among
+   equals (same idea as the old date bar). */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  align-self: flex-start;
+}
+
+.backLink:hover {
+  color: var(--foreground);
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.6rem;
+}
+
+.date {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}

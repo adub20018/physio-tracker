@@ -1,9 +1,12 @@
-// Zod schema for the daily log form — the single definition of what a valid
-// submission looks like. Used by the server action to validate every payload
-// (server functions are reachable by direct POST, so the server never trusts
-// the client), and its inferred type keeps the client form in sync.
+// Zod schemas for the daily log flow — one per section, since each section
+// now saves independently (Pain, Activity, Physio, Notes each have their own
+// page and their own server action). The server never trusts a payload
+// (Server Functions are reachable by direct POST), so every action validates
+// against one of these before touching the database.
 import { z } from "zod";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
 
 // A pain reading: 0–10 in 0.5 steps, or null when not recorded.
 const painValue = z
@@ -40,19 +43,32 @@ export const exerciseSchema = z
     { message: "Intensity min must be ≤ max", path: ["intensityMin"] }
   );
 
-export const dailyLogSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-  steps: z.number().int().min(0).max(200000).nullable(),
+export const painSectionSchema = z.object({
+  date: isoDate,
   painMorning: painValue,
   painDaytime: painValue,
   painNight: painValue,
+  painTypes: z.array(tag).max(20),
+});
+export type PainSectionValues = z.infer<typeof painSectionSchema>;
+
+export const activitySectionSchema = z.object({
+  date: isoDate,
+  steps: z.number().int().min(0).max(200000).nullable(),
   sleepHours: z.number().min(0).max(24).nullable(),
   activityTags: z.array(tag).max(20),
-  painTypes: z.array(tag).max(20),
-  activityNotes: optionalText,
-  generalNotes: optionalText,
+});
+export type ActivitySectionValues = z.infer<typeof activitySectionSchema>;
+
+export const physioSectionSchema = z.object({
+  date: isoDate,
   exercises: z.array(exerciseSchema).max(20),
 });
+export type PhysioSectionValues = z.infer<typeof physioSectionSchema>;
 
-// The shape the client form builds and the server action receives.
-export type DailyLogFormValues = z.infer<typeof dailyLogSchema>;
+export const notesSectionSchema = z.object({
+  date: isoDate,
+  activityNotes: optionalText,
+  generalNotes: optionalText,
+});
+export type NotesSectionValues = z.infer<typeof notesSectionSchema>;

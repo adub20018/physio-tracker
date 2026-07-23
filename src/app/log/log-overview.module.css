@@ -1,0 +1,90 @@
+/* The overview's tile grid — one tappable card per section, each showing
+   what's already logged for the active date so the page communicates
+   progress at a glance instead of requiring a scroll through every field. */
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 30rem) {
+  .tiles {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* The progress bar is a direct child of .tile (not .tileBody) and .tile
+   carries no padding of its own, so the bar sits flush against the card's
+   top edge and spans its full width — everything else lives in the padded
+   .tileBody below it. overflow:hidden keeps the bar's square inner corners
+   from poking past the card's own rounded ones. */
+.tile {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.tile:hover {
+  border-color: var(--border-strong);
+}
+
+/* Not logged yet: a visibly quieter card, so filled-in sections stand out
+   as "done" without needing a separate checkmark icon. */
+.tileEmpty {
+  border-style: dashed;
+  background: transparent;
+}
+
+.tileBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+}
+
+.tileHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tileTitle {
+  font-size: 1.05rem;
+  font-family: var(--font-display);
+}
+
+.tileCount {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tileEmpty .tileCount {
+  color: var(--faint);
+}
+
+.tileSummary {
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: break-word;
+}
+
+.tileEmpty .tileSummary {
+  color: var(--faint);
+}
+
+.reviewLink {
+  display: inline-block;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}

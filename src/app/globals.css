@@ -40,8 +40,10 @@
   --pain-elevated: var(--p-amber-400, #fbbf24);
   --pain-flare: var(--p-red-400, #f87171);
 
-  /* Typography (families injected by next/font in the root layout) */
-  --font-display: var(--font-fraunces), Georgia, serif;
+  /* Typography (families injected by next/font in the root layout).
+     --font-display shares Instrument Sans with body text now — no more
+     serif voice; h1/h2/h3's own weight/letter-spacing carry the hierarchy. */
+  --font-display: var(--font-instrument), system-ui, sans-serif;
   --font-body: var(--font-instrument), system-ui, sans-serif;
   --font-data: var(--font-plex-mono), ui-monospace, monospace;
 }
@@ -62,8 +64,7 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--foreground);
-  background:
-    radial-gradient(
+  background: radial-gradient(
       120rem 60rem at 85% -20%,
       color-mix(in srgb, var(--accent) 5%, transparent),
       transparent 60%

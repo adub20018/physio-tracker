@@ -1,74 +1,101 @@
-// /log — the daily entry page. Server component: resolves which date is
-// being logged (?date=YYYY-MM-DD, defaulting to today), loads that day's
-// existing log if present, and prepares initial form values — including
-// prefilling exercises from the most recent session, since a rehab program
-// rarely changes day to day.
+// /log — the overview: pick a date once, then tap into whichever section
+// you actually have data for right now. Replaces the old one-long-form
+// page: logging happens in short, separate visits throughout the day
+// (morning pain, midday physio, evening steps, …), so the page you land on
+// shows what's done and what's left for the active date rather than every
+// field at once.
+import Link from "next/link";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
-import { DailyLogForm, type DailyLogFormInit } from "@/components/ui/daily-log-form";
-import { todayIso } from "@/lib/dates";
+import { resolveDateParam } from "@/lib/dates";
+import {
+  painSummary,
+  painProgress,
+  activitySummary,
+  activityProgress,
+  physioSummary,
+  physioProgress,
+  notesSummary,
+  notesProgress,
+} from "@/lib/log-summaries";
+import { LogDateBar } from "@/components/ui/log-date-bar";
+import { SegmentProgress } from "@/components/ui/segment-progress";
+import styles from "./log-overview.module.css";
 
-// Always render at request time — "today" and the loaded log must be fresh.
+// Always render at request time — the active date's log must be fresh.
 export const dynamic = "force-dynamic";
 
-export default async function LogPage({
+export default async function LogOverviewPage({
   searchParams,
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date: dateParam } = await searchParams;
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateParam ?? "") ? dateParam! : todayIso();
+  const date = resolveDateParam(dateParam);
 
   const user = await getCurrentUser();
-  const [existing, allLogs] = await Promise.all([
-    dailyLogRepository.findByDate(user.id, date),
-    dailyLogRepository.listAll(user.id),
-  ]);
+  const existing = await dailyLogRepository.findByDate(user.id, date);
 
-  // Exercise names ever logged, for the form's autocomplete suggestions.
-  const knownExerciseNames = [
-    ...new Set(allLogs.flatMap((l) => l.exercises.map((e) => e.exerciseName))),
-  ].sort();
-
-  // For a new day, prefill exercises from the most recent day that had any.
-  const lastWithExercises = [...allLogs].reverse().find((l) => l.exercises.length > 0);
-  const exerciseSource = existing ?? lastWithExercises;
-  const exercises =
-    exerciseSource?.exercises.map((ex) => ({
-      exerciseName: ex.exerciseName,
-      sets: ex.sets,
-      durationOrReps: ex.durationOrReps,
-      unit: ex.unit,
-      intensityMin: ex.intensityMin,
-      intensityMax: ex.intensityMax,
-      // Notes belong to the specific day; only carried over when editing it.
-      notes: existing ? (ex.notes ?? "") : "",
-    })) ?? [];
-
-  const init: DailyLogFormInit = {
-    date,
-    isExisting: existing != null,
-    steps: existing?.steps ?? null,
-    painMorning: existing?.painMorning ?? null,
-    painDaytime: existing?.painDaytime ?? null,
-    painNight: existing?.painNight ?? null,
-    sleepHours: existing?.sleepHours ?? null,
-    activityTags: existing?.activityTags ?? [],
-    painTypes: existing?.painTypes ?? [],
-    activityNotes: existing?.activityNotes ?? "",
-    generalNotes: existing?.generalNotes ?? "",
-    exercises,
-    knownExerciseNames,
-  };
+  const tiles = [
+    {
+      href: `/log/pain?date=${date}`,
+      title: "Pain",
+      summary: painSummary(existing),
+      progress: painProgress(existing),
+    },
+    {
+      href: `/log/activity?date=${date}`,
+      title: "Activity",
+      summary: activitySummary(existing),
+      progress: activityProgress(existing),
+    },
+    {
+      href: `/log/physio?date=${date}`,
+      title: "Physio exercises",
+      summary: physioSummary(existing),
+      progress: physioProgress(existing),
+    },
+    {
+      href: `/log/notes?date=${date}`,
+      title: "Notes",
+      summary: notesSummary(existing),
+      progress: notesProgress(existing),
+    },
+  ];
 
   return (
     <main className="page" style={{ maxWidth: "36rem" }}>
       <header className="page-header">
         <h1>Daily log</h1>
-        <p className="subtitle">The 30-second end-of-day check-in.</p>
+        <p className="subtitle">Pick what you&apos;re logging right now.</p>
       </header>
-      {/* key: switching dates must remount the form with the new day's state */}
-      <DailyLogForm key={date} init={init} />
+
+      <LogDateBar date={date} />
+
+      <div className={styles.tiles}>
+        {tiles.map((t) => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={`${styles.tile} ${t.progress.filled === 0 ? styles.tileEmpty : ""}`}
+          >
+            <SegmentProgress filled={t.progress.filled} total={t.progress.total} />
+            <div className={styles.tileBody}>
+              <div className={styles.tileHeader}>
+                <span className={styles.tileTitle}>{t.title}</span>
+                <span className={styles.tileCount}>
+                  {t.progress.filled}/{t.progress.total}
+                </span>
+              </div>
+              <span className={styles.tileSummary}>{t.summary}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <Link href={`/log/review?date=${date}`} className={styles.reviewLink}>
+        Review full day →
+      </Link>
     </main>
   );
 }

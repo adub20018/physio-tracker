@@ -1,0 +1,63 @@
+/* Read-only per-section summary cards. Not log-shared's plain .card:
+   these need the progress bar flush against the top edge with no inset,
+   so the card itself carries no padding — .cardBody (not .card) is what's
+   padded, matching the same look log-shared.module.css defines but with
+   room for the bar above it. Duplicated rather than composed with .card so
+   there's no cross-stylesheet specificity fight over `padding` between
+   two same-specificity classes from different files. */
+.progressCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cardHeaderRight {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.count {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.editLink {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  margin-top: 0.5rem;
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--faint);
+  font-style: italic;
+}

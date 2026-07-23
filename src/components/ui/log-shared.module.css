@@ -1,5 +1,8 @@
-/* Layout styles for the daily log form. Mobile-first: everything stacks in
-   one column; wider screens get two-column rows for compact fields.
+/* Shared layout styles for the whole /log flow — the overview and every
+   section page (Pain, Activity, Physio, Notes) import from here, so the
+   "outer frame + card" visual language stays one thing to change rather
+   than four copies. Mobile-first: everything stacks in one column; wider
+   screens get two-column rows for compact fields.
 
    Two distinct heading tiers so sections stop reading as one undifferentiated
    block: .cardTitle names the section ("Pain", "Activity", …); .fieldLabel

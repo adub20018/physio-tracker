@@ -13,6 +13,12 @@
   --surface-raised: var(--p-surface-800, #27272a);
   --border: var(--p-surface-700, #3f3f46);
   --border-strong: var(--p-surface-600, #52525b);
+  /* One notch darker than --surface, for a card nested inside another card
+     (e.g. an exercise entry inside the Physio exercises section) — there's
+     no matching step in the preset's own scale, so this sits between
+     --surface and --background rather than jumping straight to it, which
+     would leave nothing to distinguish the card from its own inputs. */
+  --surface-sunken: color-mix(in srgb, var(--surface) 65%, var(--background));
 
   /* Text */
   --foreground: var(--p-text-color, #fafafa);
@@ -22,7 +28,11 @@
   /* Accent — the preset's primary (emerald under stock Aura dark) */
   --accent: var(--p-primary-color, #34d399);
   --accent-strong: var(--p-primary-600, #059669);
-  --accent-soft: color-mix(in srgb, var(--p-primary-color, #34d399) 14%, transparent);
+  --accent-soft: color-mix(
+    in srgb,
+    var(--p-primary-color, #34d399) 14%,
+    transparent
+  );
 
   /* Pain severity — from the preset's primitive palettes */
   --pain-none: var(--p-surface-500, #71717a);

@@ -4,12 +4,15 @@
 import { sqliteTable, text, integer, real, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // Pain descriptors the user can attach to a day (multi-select, optional).
+// PAIN_TYPES are the suggested chips shown in the UI — the column itself
+// accepts any string, since the form also lets the user add a custom one.
 export const PAIN_TYPES = ["ache", "sharp", "stiffness", "numbness-tingling"] as const;
-export type PainType = (typeof PAIN_TYPES)[number];
+export type PainType = string;
 
 // Activity categories derived from the spreadsheet's activity notes.
+// ACTIVITY_TAGS are the suggested chips; the column accepts any string.
 export const ACTIVITY_TAGS = ["gym", "physio", "rest", "walking"] as const;
-export type ActivityTag = (typeof ACTIVITY_TAGS)[number];
+export type ActivityTag = string;
 
 // App users. Single seeded row for now; auth fields (email, password hash)
 // arrive only when real multi-user auth is built (PLAN.md §8).

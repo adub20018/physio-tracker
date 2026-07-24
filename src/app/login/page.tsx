@@ -17,9 +17,7 @@ export default function Login() {
       console.error(result.error.message);
       return;
     }
-
     console.log("Login successful");
-
     router.push("/");
   }
   return (

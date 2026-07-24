@@ -18,10 +18,8 @@ export default function Signup() {
       console.error(result.error.message);
       return;
     }
-
     console.log("Signup successful");
-
-    // router.push("/");
+    router.push("/");
   }
   return (
     <div>

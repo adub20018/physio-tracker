@@ -211,9 +211,9 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Load vs next-morning pain</h2>
         <p className={styles.cardSubtitle}>
-          What you did each day, paired with how the tendon felt the next morning. Physio
-          load here is the same intensity-weighted metric as the dashboard tile, shown
-          per day instead of summed over the week.
+          What you did each day, paired with how the tendon felt the next
+          morning. Physio load here is the same intensity-weighted metric as the
+          dashboard tile, shown per day instead of summed over the week.
         </p>
         <LoadVsSymptoms data={load} />
       </section>
@@ -221,10 +221,11 @@ export default async function DashboardPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Physio progression</h2>
         <p className={styles.cardSubtitle}>
-          Intensity range, hold volume, and Physio load across sessions — the program
-          advancing is progress too. Hold volume and Physio load can move in opposite
-          directions (e.g. longer holds at lower intensity raise one and lower the
-          other), so both are shown rather than just one.
+          Intensity range, hold volume, and Physio load across sessions — the
+          program advancing is progress too. Hold volume and Physio load can
+          move in opposite directions (e.g. longer holds at lower intensity
+          raise one and lower the other), so both are shown rather than just
+          one.
         </p>
         <ProgressionChart data={progression} />
       </section>

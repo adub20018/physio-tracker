@@ -3,9 +3,9 @@
 // never on Drizzle or libSQL directly, so the storage backend can be swapped
 // by writing one new implementation (PLAN.md §5).
 //
-// Every data method takes a userId and must scope its queries by it — this is
-// what makes the app multi-user ready before multi-user auth exists.
-import type { DailyLog, ExerciseEntry, NewDailyLog, NewExerciseEntry, User } from "@/db/schema";
+// Every data method takes a userId (the signed-in Neon Auth account's id)
+// and must scope its queries by it.
+import type { DailyLog, ExerciseEntry, NewDailyLog, NewExerciseEntry } from "@/db/schema";
 
 // A daily log together with the exercises performed that day — the shape most
 // of the UI works with.
@@ -17,12 +17,6 @@ export type DailyLogWithExercises = DailyLog & { exercises: ExerciseEntry[] };
 export type DailyLogInput = Omit<NewDailyLog, "id" | "userId" | "createdAt"> & {
   exercises: Omit<NewExerciseEntry, "id" | "dailyLogId">[];
 };
-
-export interface UserRepository {
-  // Returns the app's single seeded user until real auth arrives.
-  findFirst(): Promise<User | null>;
-  findById(id: string): Promise<User | null>;
-}
 
 export interface DailyLogRepository {
   // All logs for a user, oldest first, each with its exercises.

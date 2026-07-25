@@ -1,4 +1,4 @@
-// Drizzle schema for the physio tracker database (SQLite/libSQL dialect).
+// Drizzle schema for the physio tracker database (Postgres, hosted on Neon).
 // This is the single source of truth for table shapes — migrations are generated
 // from this file via `npm run db:generate`. See PLAN.md §2 for the data model.
 import {
@@ -9,6 +9,7 @@ import {
   jsonb,
   uniqueIndex,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 // Pain descriptors the user can attach to a day (multi-select, optional).
@@ -27,16 +28,6 @@ export type PainType = string;
 export const ACTIVITY_TAGS = ["gym", "physio", "rest", "walking"] as const;
 export type ActivityTag = string;
 
-// App users. Single seeded row for now; auth fields (email, password hash)
-// arrive only when real multi-user auth is built (PLAN.md §8).
-export const users = pgTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
 // One row per tracked day. Every log belongs to a user from day one so that
 // multi-user support later is additive, not a data migration.
 // Pain values are REAL to allow half-steps (e.g. 1.5) on the 0–10 scale.
@@ -46,9 +37,12 @@ export const dailyLogs = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id),
+    // References neon_auth.user.id (Neon Auth's own table, in a different
+    // Postgres schema in this same database). No Drizzle `.references()`
+    // here — drizzle-kit can't diff a schema it doesn't own — the actual FK
+    // constraint is created directly in migrations/0001_repoint-user-fk.sql
+    // and enforced by Postgres regardless.
+    userId: uuid("user_id").notNull(),
     // Calendar date in ISO format (YYYY-MM-DD); unique per user, not globally.
     date: text("date").notNull(),
     steps: integer("steps"),
@@ -92,7 +86,6 @@ export const exerciseEntries = pgTable("exercise_entries", {
 });
 
 // Row types inferred from the schema, for use by the repository layer.
-export type User = typeof users.$inferSelect;
 export type DailyLog = typeof dailyLogs.$inferSelect;
 export type NewDailyLog = typeof dailyLogs.$inferInsert;
 export type ExerciseEntry = typeof exerciseEntries.$inferSelect;

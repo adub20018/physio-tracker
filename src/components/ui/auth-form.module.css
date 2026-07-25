@@ -1,0 +1,71 @@
+/* Shared layout for the login and sign-up pages — same nested-card visual
+   language as the /log flow (log-shared.module.css), kept as its own small
+   module since these two pages are a distinct concern, not part of /log. */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1.25rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.card .fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+}
+
+.card :global(.p-inputtext),
+.card :global(.p-password) {
+  width: 100%;
+}
+
+/* Password fields are wrapped in IconField.Root for the show/hide toggle
+   (see PasswordField) — the icon field, not .p-password, is now the outer
+   box that needs to stretch full width. */
+.card :global(.p-iconfield) {
+  width: 100%;
+}
+
+.card :global(.p-iconfield .p-inputicon) {
+  cursor: pointer;
+}
+
+/* Per-field validation message — sits right under its input, same red as
+   the input's own invalid-state border (PrimeReact's form.field.invalid.*
+   tokens resolve to red.300 in this app's always-dark theme). */
+.fieldError {
+  font-size: 0.78rem;
+  color: var(--p-red-300, #fca5a5);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.switchLink {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.switchLink a {
+  color: var(--accent);
+}

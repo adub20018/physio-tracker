@@ -1,8 +1,13 @@
-// Pure parsing helpers for the one-off spreadsheet import. Each function
-// converts one quirky spreadsheet format into the structured shape the
-// database stores. Kept dependency-free so they can be tested or reused
-// without touching the DB.
-import type { ActivityTag } from "../src/db/schema";
+// Pure parsing helpers for spreadsheet import. Each function converts one
+// quirky spreadsheet cell format into the structured shape the database
+// stores. Zero dependencies (domain/ imports nothing — see PLAN.md §5), so
+// they're usable from the in-app import flow without pulling in Drizzle
+// or the repository layer.
+
+// Tags derived from the spreadsheet's activity notes (see PLAN.md §1) — a
+// plain string, same as ActivityTag in db/schema, but domain/ doesn't
+// import from db/ even for a type alias.
+export type ActivityTag = string;
 
 // Pain cell → number 0–10, or null. Accepts "2/10", "4.5/10", plain numbers,
 // and numeric strings ("2", "1.5") so the import works whether or not the

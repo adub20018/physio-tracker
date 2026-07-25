@@ -1,0 +1,18 @@
+/* Deliberately lighter than app-nav.module.css's .nav — no border, not
+   sticky, no links — a signed-out visitor has nowhere else in the app to
+   go, so this just brands the page rather than acting as navigation. */
+.header {
+  padding: 0.9rem 1.5rem;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.wordmark em {
+  font-style: italic;
+  color: var(--accent);
+}

@@ -1,12 +1,19 @@
 {
   "version": "7",
-  "dialect": "sqlite",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1784335083316,
-      "tag": "0000_spooky_sunspot",
+      "version": "7",
+      "when": 1784865999130,
+      "tag": "0000_colossal_william_stryker",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784941000357,
+      "tag": "0001_repoint-user-fk",
       "breakpoints": true
     }
   ]

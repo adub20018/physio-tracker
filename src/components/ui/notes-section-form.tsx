@@ -9,9 +9,9 @@ import { Button } from "@primereact/ui/button";
 import { Label } from "@primereact/ui/label";
 import { Textarea } from "@primereact/ui/textarea";
 import { Message } from "@primereact/ui/message";
-import { saveNotesSection } from "@/app/log/actions";
-import type { SaveResult } from "@/app/log/actions";
-import type { NotesSectionValues } from "@/app/log/schema";
+import { saveNotesSection } from "@/app/(app)/log/actions";
+import type { SaveResult } from "@/app/(app)/log/actions";
+import type { NotesSectionValues } from "@/app/(app)/log/schema";
 import styles from "./log-shared.module.css";
 
 export type NotesSectionInit = {

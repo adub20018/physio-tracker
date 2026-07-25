@@ -10,9 +10,9 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { PAIN_TYPES } from "@/db/schema";
 import { PainInput, TagMultiSelect } from "./log-fields";
-import { savePainSection } from "@/app/log/actions";
-import type { SaveResult } from "@/app/log/actions";
-import type { PainSectionValues } from "@/app/log/schema";
+import { savePainSection } from "@/app/(app)/log/actions";
+import type { SaveResult } from "@/app/(app)/log/actions";
+import type { PainSectionValues } from "@/app/(app)/log/schema";
 import styles from "./log-shared.module.css";
 
 export type PainSectionInit = {

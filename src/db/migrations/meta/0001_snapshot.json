@@ -1,6 +1,6 @@
 {
-  "id": "d5afa2a0-30b2-4d57-a09a-f5be6cdb7fc4",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "6337f01e-1a4f-4651-9add-691c35ccb087",
+  "prevId": "d5afa2a0-30b2-4d57-a09a-f5be6cdb7fc4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -16,7 +16,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -106,26 +106,12 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
-      "foreignKeys": {
-        "daily_logs_user_id_users_id_fk": {
-          "name": "daily_logs_user_id_users_id_fk",
-          "tableFrom": "daily_logs",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -197,49 +183,17 @@
         "exercise_entries_daily_log_id_daily_logs_id_fk": {
           "name": "exercise_entries_daily_log_id_daily_logs_id_fk",
           "tableFrom": "exercise_entries",
-          "tableTo": "daily_logs",
           "columnsFrom": [
             "daily_log_id"
           ],
+          "tableTo": "daily_logs",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.users": {
-      "name": "users",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -249,10 +203,10 @@
   },
   "enums": {},
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

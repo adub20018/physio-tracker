@@ -9,9 +9,9 @@ answer two core questions:
 
 Logged from **both phone and computer**; hosted on **Vercel**.
 
-**Single-user for now, multi-user ready.** The app serves one user initially, but the schema
-and architecture are built so real auth and additional users can be added later without
-restructuring — see the "Multi-user readiness" notes in §2, §3, and §5.
+**Multi-user, with real per-account auth.** Every person gets their own account (via Neon
+Auth) and their own private set of logs — the schema and repository layer were built
+userId-scoped from day one specifically so this didn't require a rewrite (see §2, §3, §5).
 
 ---
 
@@ -41,19 +41,21 @@ Observations that shape the design:
 
 ## 2. Data model
 
-**Turso** (hosted SQLite-compatible libSQL) via **Drizzle ORM** — required because Vercel's
-filesystem is ephemeral, so a plain SQLite file won't persist there. Local development uses
-a local SQLite file through the same libSQL driver; the schema and queries are identical.
+**Postgres, hosted on Neon** (via `@neondatabase/serverless` + `drizzle-orm/neon-http`) —
+Vercel's filesystem is ephemeral, so the DB has to be a real hosted service, not a file.
 All DB access goes through a repository layer (see §5) so the storage backend can be swapped
 without touching UI or logic.
 
-```
-User
-  id, name, created_at
-  (one seeded row for now; auth fields like email/password hash arrive with real auth later)
+Identity is **Neon Auth** (Better Auth, hosted by Neon), which provisions its own
+`neon_auth.user` table (plus session/account/verification) in this same Postgres database —
+we don't keep a separate app-level users table. `daily_logs.user_id` is a `uuid` column that
+foreign-keys directly into `neon_auth.user.id` (a cross-schema constraint, hand-written in
+`src/db/migrations/0001_repoint-user-fk.sql` since drizzle-kit only manages the `public`
+schema — see the comment on `dailyLogs.userId` in `src/db/schema.ts`).
 
+```
 DailyLog
-  id, user_id → User
+  id, user_id → neon_auth.user.id
   date (unique per user)
   steps            int, nullable
   pain_morning     real 0–10 (0.5 steps), nullable
@@ -78,11 +80,11 @@ ExerciseEntry (0..n per DailyLog)
 
 Pain values are stored as `real` (not integer) to allow half-steps like `1.5`.
 
-**Multi-user readiness:** every log belongs to a `User` from day one, because retrofitting
-`user_id` onto years of existing rows is the painful part of going multi-user — adding it
-now costs one column. Repository methods take a `userId` parameter and always scope
-queries by it; today that id comes from a single seeded user, later it comes from the
-logged-in session, and no query code changes.
+**Multi-user by design:** every log belongs to a user from day one, because retrofitting
+`user_id` onto years of existing rows would have been the painful part of going multi-user.
+Repository methods take a `userId` parameter and always scope queries by it; that id comes
+from the signed-in Neon Auth session via `getCurrentUser()` (§3), so no query code needed to
+change when real auth replaced the single seeded user.
 
 Derived (computed by pure functions, never stored):
 - **Daily pain average** and **7-day rolling averages** per pain slot
@@ -128,22 +130,24 @@ Variable changes vs. the spreadsheet:
 - The spreadsheet view, kept: sortable/filterable table of all entries, inline edit,
   CSV export (data safety — never locked in).
 
-### One-time import
-- Script (`scripts/import-xlsx.ts`) that parses the existing spreadsheet into the DB:
-  pain → number (handles both `"2/10"` strings and plain numbers), intensity label →
-  min/max %, `"3x20"` → sets + hold seconds, activity notes → tags via keyword matching
-  (gym/rest/physio/walk), everything else preserved in notes fields. Run once, verify
-  against the sheet, done.
+### Spreadsheet import
+- The parsing logic (pain → number, handling both `"2/10"` strings and plain numbers;
+  intensity label → min/max %; `"3x20"` → sets + hold seconds; activity notes → tags via
+  keyword matching) lives in `src/domain/xlsx-import.ts`, pure and DB-agnostic.
+- An in-app "Import from spreadsheet" flow on `/log/import`: preview classifies each row
+  as new or an overwrite of an already-logged day without writing anything, then confirm
+  writes only what's approved (AGENTS.md's no-bulk-overwrite-without-confirmation rule) —
+  into the signed-in user's own account, so anyone with a same-format spreadsheet can
+  bring their own history in. Replaces the original single-user CLI script.
 
 ### Access control
-- The app is deployed publicly on Vercel but holds personal health data, so it needs a
-  simple gate: single-password login via middleware that sets a signed cookie. No user
-  accounts or third-party auth yet — just "not readable by strangers."
-- **Multi-user readiness:** all auth logic sits behind one server-side helper,
-  `getCurrentUser()` — pages and actions call it and never inspect cookies themselves.
-  Today it validates the password cookie and returns the seeded user; upgrading to real
-  auth (e.g. Auth.js with email login, per-user accounts) means reimplementing that one
-  helper plus a login page, while every page, action, and repository call stays untouched.
+- Real per-account auth via **Neon Auth** (Better Auth, hosted by Neon) — email/password
+  sign-up and sign-in, each account's data private to it. `src/proxy.ts` (Next 16's
+  `middleware.ts`) gates every route except `/login`, `/sign-up`, and static assets.
+- All auth logic sits behind one server-side helper, `getCurrentUser()`
+  (`src/auth/get-current-user.ts`) — pages and actions call it and never touch sessions or
+  cookies themselves. It resolves the real Neon Auth session; nothing else in the app needed
+  to change when this replaced the original single-password gate.
 
 ## 4. Tech stack
 
@@ -151,10 +155,11 @@ Variable changes vs. the spreadsheet:
 |---|---|---|
 | Framework | Next.js 16 App Router (already scaffolded) | server components + server actions = no separate API needed |
 | Language | TypeScript (already set up) | |
-| DB | **Turso (libSQL) + Drizzle ORM** | works on Vercel; SQLite-compatible; local dev uses a local file with the same driver |
+| DB | **Postgres (hosted on Neon) + Drizzle ORM** | works on Vercel (no ephemeral-filesystem problem); one DB for both app data and Neon Auth's own tables |
+| Auth | **Neon Auth** (Better Auth, hosted by Neon) | real per-account sign-up/sign-in without running our own auth infra |
 | UI components | **PrimeReact** + custom CSS where needed | user preference; rich component set (forms, table, chips) |
 | Charts | **Recharts**, wrapped behind our own chart components | composable enough for band charts/heatmaps; wrapper makes it swappable (see §5) |
-| Import | `xlsx` (SheetJS) in a one-off script | |
+| Import | `xlsx` (SheetJS) — moving from a one-off script to an in-app upload (Phase 8) | |
 | Validation | zod on form submission | |
 | Hosting | Vercel | |
 
@@ -173,9 +178,9 @@ src/
                  Drizzle implementation. UI and logic depend on the interface only —
                  swapping Turso → Postgres (or anything) means one new implementation.
                  All methods are scoped by userId (multi-user ready from day one).
-  auth/          getCurrentUser() and the password gate. The only place that knows how
-                 auth works — swapping to real multi-user auth changes only this folder
-                 plus a login page.
+  auth/          getCurrentUser(), plus the Neon Auth server/client instances. The only
+                 place that knows how auth works — every page and action calls
+                 getCurrentUser() and never touches sessions or cookies directly.
   domain/        Pure functions, zero dependencies: rolling averages, physio volume,
                  flare detection, lag correlations, week aggregation. Unit-testable
                  without a DB or browser; usable by any UI.
@@ -216,9 +221,31 @@ Stat tiles, pain timeline, calendar heatmap, load-vs-symptom chart, progression 
 Lag correlation scatters, flare-up review panel, weekly report card, CSV export.
 
 **Phase 5 — Deploy & polish**
-Turso production DB, password-gate middleware, Vercel deployment. Mobile-responsive
-pass (logging happens on the phone), dark mode, empty/loading states, chart annotations
-from notes.
+Mobile-responsive pass (logging happens on the phone), dark mode, empty/loading states,
+chart annotations from notes — done. DB and access control ended up switching from the
+original Turso + single-password plan to Neon Postgres + Neon Auth (real per-account
+sign-up), landed on the `neon-auth` branch; Vercel deployment itself is still pending.
+
+**Phase 6 — Cleanup after the Neon/auth switch**
+Repoint `daily_logs.userId` to `neon_auth.user.id` and drop the now-redundant local
+`users` table; remove dependencies left over from the Turso/libSQL setup; retire the
+single-user CLI import script; update env files and this plan — done. Also fixed a
+save-blocking bug found during verification: `@neondatabase/auth`'s beta middleware
+forwarded the original request's HTTP method to its internal session check, so every
+`/log` Server Action save was misread as unauthenticated (worked around in `proxy.ts`).
+
+**Phase 7 — Login/signup UX**
+Style `/login` and `/sign-up` with PrimeReact, matching the rest of the app. Real
+validation: confirm-password field on sign-up, email format, required name, clear error
+states for wrong credentials and for signing up with an already-registered email — done.
+
+**Phase 8 — In-app spreadsheet import**
+Replace the retired CLI script with an "Import from spreadsheet" flow at `/log/import`
+(preview → confirm, scoped to the signed-in user's own account), reusing the parsing
+logic moved to `src/domain/xlsx-import.ts` — done.
+
+**Phase 9 (future) — Auth completeness**
+Forgot-password flow and other auth gaps, scoped once Phases 6–8 are done.
 
 ## 7. Open questions
 
@@ -233,7 +260,8 @@ None remaining — plan approved, ready for Phase 0.
 
 ## 8. Future (explicitly out of scope for now)
 
-- **Multi-user support**: real auth (e.g. Auth.js), signup/login, per-user accounts.
-  The groundwork is already laid — `user_id` on all data, userId-scoped repositories,
-  auth behind `getCurrentUser()` — so this becomes an additive feature, not a rewrite.
-  Not being built until the single-user app is complete and useful.
+- **Auth completeness** (Phase 9): forgot-password flow and any other gaps found once
+  Phases 6–8 land.
+- **Smart watch data import**: motivated the move to Postgres ahead of schedule (more
+  headroom for higher-volume time-series data than SQLite/Turso would comfortably give).
+  Not yet scoped.

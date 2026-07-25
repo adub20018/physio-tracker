@@ -1,12 +1,26 @@
-// Drizzle schema for the physio tracker database (SQLite/libSQL dialect).
+// Drizzle schema for the physio tracker database (Postgres, hosted on Neon).
 // This is the single source of truth for table shapes — migrations are generated
 // from this file via `npm run db:generate`. See PLAN.md §2 for the data model.
-import { sqliteTable, text, integer, real, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  pgTable,
+  text,
+  integer,
+  real,
+  jsonb,
+  uniqueIndex,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 // Pain descriptors the user can attach to a day (multi-select, optional).
 // PAIN_TYPES are the suggested chips shown in the UI — the column itself
 // accepts any string, since the form also lets the user add a custom one.
-export const PAIN_TYPES = ["ache", "sharp", "stiffness", "numbness-tingling"] as const;
+export const PAIN_TYPES = [
+  "ache",
+  "sharp",
+  "stiffness",
+  "numbness-tingling",
+] as const;
 export type PainType = string;
 
 // Activity categories derived from the spreadsheet's activity notes.
@@ -14,30 +28,21 @@ export type PainType = string;
 export const ACTIVITY_TAGS = ["gym", "physio", "rest", "walking"] as const;
 export type ActivityTag = string;
 
-// App users. Single seeded row for now; auth fields (email, password hash)
-// arrive only when real multi-user auth is built (PLAN.md §8).
-export const users = sqliteTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  name: text("name").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
-
 // One row per tracked day. Every log belongs to a user from day one so that
 // multi-user support later is additive, not a data migration.
 // Pain values are REAL to allow half-steps (e.g. 1.5) on the 0–10 scale.
-export const dailyLogs = sqliteTable(
+export const dailyLogs = pgTable(
   "daily_logs",
   {
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id),
+    // References neon_auth.user.id (Neon Auth's own table, in a different
+    // Postgres schema in this same database). No Drizzle `.references()`
+    // here — drizzle-kit can't diff a schema it doesn't own — the actual FK
+    // constraint is created directly in migrations/0001_repoint-user-fk.sql
+    // and enforced by Postgres regardless.
+    userId: uuid("user_id").notNull(),
     // Calendar date in ISO format (YYYY-MM-DD); unique per user, not globally.
     date: text("date").notNull(),
     steps: integer("steps"),
@@ -45,22 +50,22 @@ export const dailyLogs = sqliteTable(
     painDaytime: real("pain_daytime"),
     painNight: real("pain_night"),
     // JSON arrays of tag strings (ActivityTag / PainType values).
-    activityTags: text("activity_tags", { mode: "json" }).$type<ActivityTag[]>(),
-    painTypes: text("pain_types", { mode: "json" }).$type<PainType[]>(),
+    activityTags: jsonb("activity_tags").$type<ActivityTag[]>(),
+    painTypes: jsonb("pain_types").$type<PainType[]>(),
     activityNotes: text("activity_notes"),
     generalNotes: text("general_notes"),
     sleepHours: real("sleep_hours"),
-    createdAt: integer("created_at", { mode: "timestamp" })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [uniqueIndex("daily_logs_user_date_unique").on(table.userId, table.date)]
+  (table) => [
+    uniqueIndex("daily_logs_user_date_unique").on(table.userId, table.date),
+  ],
 );
 
 // Physio exercises performed on a given day (0..n per daily log).
 // "3 sets of 20-second holds" → sets = 3, durationOrReps = 20, unit = "seconds".
 // The unit flag keeps the model open to rep-based exercises later.
-export const exerciseEntries = sqliteTable("exercise_entries", {
+export const exerciseEntries = pgTable("exercise_entries", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -81,7 +86,6 @@ export const exerciseEntries = sqliteTable("exercise_entries", {
 });
 
 // Row types inferred from the schema, for use by the repository layer.
-export type User = typeof users.$inferSelect;
 export type DailyLog = typeof dailyLogs.$inferSelect;
 export type NewDailyLog = typeof dailyLogs.$inferInsert;
 export type ExerciseEntry = typeof exerciseEntries.$inferSelect;

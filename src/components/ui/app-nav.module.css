@@ -1,5 +1,9 @@
-/* Top navigation: quiet wordmark on the left, three links on the right.
-   Active link is marked by a sage underline — no boxes, no noise. */
+/* Top navigation: logo on the left, links + account menu on the right.
+   Active link is marked by a sage underline — no boxes, no noise. Below
+   the phone breakpoint the links and desktop account avatar collapse into
+   a PrimeReact Drawer instead, opened via the hamburger trigger (see
+   .hamburger / .popup and friends below) — the drawer's own footer already
+   shows identity + a Logout item, so it replaces both. */
 
 .nav {
   display: flex;
@@ -16,26 +20,16 @@
 }
 
 .wordmark {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
 }
 
-.wordmark em {
-  font-style: italic;
-  color: var(--accent);
-}
-
-/* Groups the link row and the account menu so .nav's space-between still
-   only has two top-level children (wordmark + this). */
+/* Groups the link row, desktop account avatar, and drawer so .nav's
+   space-between still only has two top-level children (logo + this). */
 .navEnd {
   display: flex;
   align-items: center;
   gap: 1rem;
-  /* Without this, a flex item won't shrink below its content's natural
-     width — which would stop .links' own overflow-x:auto from ever
-     kicking in on narrow screens and instead push the avatar off-screen. */
   min-width: 0;
 }
 
@@ -62,7 +56,7 @@
   color: var(--foreground);
 }
 
-/* Sage underline for the active route */
+/* Sage underline for the active route (desktop tab row only) */
 .linkActive::after {
   content: "";
   position: absolute;
@@ -74,28 +68,165 @@
   background: var(--accent);
 }
 
-/* Phone widths: tighter chrome, and the links row scrolls if it must —
-   the nav never widens the page. */
+.desktopAccount {
+  display: inline-flex;
+}
+
+/* Opens the drawer. Hidden until the phone breakpoint below. Sized well
+   past its 22px icon for a comfortable ~44px tap target, not just the
+   icon's own bounds. */
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--foreground);
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.hamburger:hover {
+  background: var(--surface);
+}
+
+.popup {
+  /* !important: PrimeReact's own `.p-drawer[data-position="right"]` rule
+     sets `width: unset` and, by combining a class with an attribute
+     selector, out-specifies a plain single class every time — this is the
+     one legitimate case for it, overriding a specific known rule in
+     library CSS we don't control, not a specificity workaround for our
+     own styles. */
+  width: min(20rem, 85vw) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerHeader {
+  padding: 1rem 1.25rem !important;
+}
+
+.drawerTitle {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.drawerContent {
+  flex: 1;
+  /* !important: same `.p-drawer-content` padding-var tie as elsewhere in
+     this file. */
+  overflow-y: auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem !important;
+}
+
+/* Menu.Label and Menu.Item are siblings of the same .list, so giving them
+   identical left insets is what actually keeps icons and section labels
+   flush — the library's own `.p-menu-label`/`.p-menu-item` padding vars
+   differ from each other and from ours, which is what was pushing label
+   text to the right of the icons above. */
+.menuLabel {
+  margin: 1rem 0 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+/* Every drawer row — nav link or the Logout action — shares this layout so
+   icon/label spacing and the active indicator line up exactly, regardless
+   of whether the item renders as an <a> (nav links, via Menu.Item's
+   `as={Link}`) or the default <li> (Logout: an action, not a route). */
+.item {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  font-size: 0.95rem !important;
+  color: var(--muted);
+  position: relative;
+  cursor: pointer;
+}
+
+/* Hover and press both get the same neutral grey feedback — including on
+   the active route's item — so the grey never lingers as a "selected"
+   state; only the accent bar below does that. */
+.item:hover,
+.item:active,
+.item[data-focused] {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.item[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.item[data-disabled]:hover {
+  background: none;
+  color: var(--muted);
+}
+
+.itemActive {
+  color: var(--foreground);
+}
+
+/* Accent bar down the row's full height — icon included — rather than an
+   underline beneath just the label text; an underline is the desktop tab
+   treatment and doesn't read well on a stacked vertical list. */
+.itemActive::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.separator {
+  margin: 0.6rem 0.75rem;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+.separatorOuter {
+  margin: 0rem 0.75rem;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* Phone widths: links and the desktop avatar collapse into the drawer. */
 @media (max-width: 30rem) {
-  .nav {
-    padding: 0.6rem 0.75rem;
-    gap: 0.5rem;
-  }
-
   .links {
-    overflow-x: auto;
-    gap: 0;
-    scrollbar-width: none;
+    display: none;
   }
 
-  .link {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.85rem;
-    white-space: nowrap;
+  .desktopAccount {
+    display: none;
   }
 
-  .linkActive::after {
-    left: 0.55rem;
-    right: 0.55rem;
+  .hamburger {
+    display: inline-flex;
   }
 }

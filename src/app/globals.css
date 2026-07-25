@@ -130,7 +130,13 @@ h1 {
   margin-top: 0.25rem;
 }
 
-/* Makes the invalid border colour override the green focus border for invalid input text */
-.p-inputtext:enabled.p-invalid:focus {
-  border-color: var(--p-inputtext-invalid-border-color);
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.wordmark em {
+  font-style: italic;
+  color: var(--accent);
 }

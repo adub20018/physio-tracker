@@ -36,3 +36,43 @@
   font-size: 0.78rem;
   color: var(--muted);
 }
+
+/* Static identity row in the mobile drawer's footer (AccountSummary) — not
+   interactive, so no hover/focus treatment, just avatar + truncated
+   name/email. */
+.summary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0 0.125rem;
+  /* min-width: 0 on a flex item is required for its own text-overflow
+     ellipsis to kick in instead of overflowing the drawer. */
+  min-width: 0;
+}
+
+.summaryDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.summaryName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summaryEmail {
+  font-size: 0.76rem;
+  /* Dimmer than the app's usual --faint secondary-text color: this sits
+     directly under a bold name in a compact footer row, so it needs to
+     recede further than --faint's usual job of labeling standalone data
+     (chart ticks, table captions). */
+  color: color-mix(in srgb, var(--faint) 75%, var(--background));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

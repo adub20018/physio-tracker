@@ -93,9 +93,14 @@ export default async function LogOverviewPage({
         ))}
       </div>
 
-      <Link href={`/log/review?date=${date}`} className={styles.reviewLink}>
-        Review full day →
-      </Link>
+      <div className={styles.footerLinks}>
+        <Link href={`/log/review?date=${date}`} className={styles.reviewLink}>
+          Review full day →
+        </Link>
+        <Link href="/log/import" className={styles.importLink}>
+          Import from spreadsheet
+        </Link>
+      </div>
     </main>
   );
 }

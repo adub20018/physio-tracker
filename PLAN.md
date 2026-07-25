@@ -133,10 +133,12 @@ Variable changes vs. the spreadsheet:
 ### Spreadsheet import
 - The parsing logic (pain → number, handling both `"2/10"` strings and plain numbers;
   intensity label → min/max %; `"3x20"` → sets + hold seconds; activity notes → tags via
-  keyword matching) lives in `scripts/import-helpers.ts`, pure and DB-agnostic.
-- Originally a one-off CLI script tied to a single seeded user; being rebuilt as an
-  in-app "Import via spreadsheet" flow on `/log` so any signed-in user can upload a
-  same-format spreadsheet into their own account (see §6, upcoming phase).
+  keyword matching) lives in `src/domain/xlsx-import.ts`, pure and DB-agnostic.
+- An in-app "Import from spreadsheet" flow on `/log/import`: preview classifies each row
+  as new or an overwrite of an already-logged day without writing anything, then confirm
+  writes only what's approved (AGENTS.md's no-bulk-overwrite-without-confirmation rule) —
+  into the signed-in user's own account, so anyone with a same-format spreadsheet can
+  bring their own history in. Replaces the original single-user CLI script.
 
 ### Access control
 - Real per-account auth via **Neon Auth** (Better Auth, hosted by Neon) — email/password
@@ -227,17 +229,20 @@ sign-up), landed on the `neon-auth` branch; Vercel deployment itself is still pe
 **Phase 6 — Cleanup after the Neon/auth switch**
 Repoint `daily_logs.userId` to `neon_auth.user.id` and drop the now-redundant local
 `users` table; remove dependencies left over from the Turso/libSQL setup; retire the
-single-user CLI import script; update env files and this plan. (In progress.)
+single-user CLI import script; update env files and this plan — done. Also fixed a
+save-blocking bug found during verification: `@neondatabase/auth`'s beta middleware
+forwarded the original request's HTTP method to its internal session check, so every
+`/log` Server Action save was misread as unauthenticated (worked around in `proxy.ts`).
 
 **Phase 7 — Login/signup UX**
 Style `/login` and `/sign-up` with PrimeReact, matching the rest of the app. Real
 validation: confirm-password field on sign-up, email format, required name, clear error
-states for wrong credentials and for signing up with an already-registered email.
+states for wrong credentials and for signing up with an already-registered email — done.
 
 **Phase 8 — In-app spreadsheet import**
-Replace the retired CLI script with an "Import via spreadsheet" flow on `/log`, scoped to
-the signed-in user's own account, reusing `scripts/import-helpers.ts`'s parsing logic —
-so anyone with a same-format spreadsheet can bring their own history in.
+Replace the retired CLI script with an "Import from spreadsheet" flow at `/log/import`
+(preview → confirm, scoped to the signed-in user's own account), reusing the parsing
+logic moved to `src/domain/xlsx-import.ts` — done.
 
 **Phase 9 (future) — Auth completeness**
 Forgot-password flow and other auth gaps, scoped once Phases 6–8 are done.

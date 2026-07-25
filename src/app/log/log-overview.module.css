@@ -88,3 +88,16 @@
   font-size: 0.9rem;
   font-weight: 600;
 }
+
+.footerLinks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.importLink {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

@@ -1,16 +1,20 @@
-// Account dropdown in the nav's top-right: an initials avatar that opens a
-// menu with the signed-in user's name/email and a working sign-out. Menu.Trigger
-// is a headless, unstyled <button> re-exported straight from the primitive
-// layer (no PrimeReact button chrome) — left bare, the browser's native
-// button appearance (grey background, border) would show through around
-// the circular avatar, so it's reset via .trigger below.
+// Account identity for the nav: an initials avatar. AccountMenu is the
+// desktop dropdown (opens a Menu with name/email + sign-out) shown next to
+// the top-bar links; AccountSummary is a plain, non-interactive footer row
+// for the mobile drawer, which already has its own "Logout" item in the
+// nav list, so it only needs to show who's signed in, not another way to
+// sign out. Menu.Trigger is a headless, unstyled <button> re-exported
+// straight from the primitive layer (no PrimeReact button chrome) — left
+// bare, the browser's native button appearance (grey background, border)
+// would show through around the circular avatar, so it's reset via
+// .trigger below.
 "use client";
 
 import { useRouter } from "next/navigation";
 import { Menu } from "@primereact/ui/menu";
 import { Avatar } from "@primereact/ui/avatar";
 import { auth } from "@/auth/client";
-import { SignOut } from "@primeicons/react";
+import { SignOut } from "@primeicons/react/sign-out";
 import styles from "./account-menu.module.css";
 
 export type AccountUser = { name: string; email: string };
@@ -21,6 +25,16 @@ function initialsOf(name: string): string {
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// Shared circular initials avatar, used by both the trigger below and the
+// static drawer summary.
+function UserAvatar({ name }: { name: string }) {
+  return (
+    <Avatar.Root shape="circle">
+      <Avatar.Fallback>{initialsOf(name)}</Avatar.Fallback>
+    </Avatar.Root>
+  );
 }
 
 export function AccountMenu({ user }: { user: AccountUser }) {
@@ -35,9 +49,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
   return (
     <Menu.Root>
       <Menu.Trigger className={styles.trigger} aria-label="Account menu">
-        <Avatar.Root shape="circle">
-          <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
-        </Avatar.Root>
+        <UserAvatar name={user.name} />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner sideOffset={8} align="end">
@@ -64,37 +76,18 @@ export function AccountMenu({ user }: { user: AccountUser }) {
   );
 }
 
-export function AccountMenuExtended({ user }: { user: AccountUser }) {
+// Static identity row for the mobile drawer's footer — avatar, name, and
+// email only, no popup. The drawer's nav list already has its own "Logout"
+// item, so a second click-to-reveal menu here would just re-show the same
+// two lines of text with no new action behind it.
+export function AccountSummary({ user }: { user: AccountUser }) {
   return (
-    <Menu.Root>
-      <Menu.Trigger
-        className={styles.accountExtendedContainer}
-        aria-label="Account menu"
-      >
-        <Avatar.Root shape="circle">
-          <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
-        </Avatar.Root>
-        <div className={styles.userDetails}>
-          <label>{user.name}</label>
-          <p>{user.email}</p>
-        </div>
-      </Menu.Trigger>
-      <Menu.Portal>
-        <Menu.Positioner sideOffset={8} align="end">
-          <Menu.Popup>
-            <Menu.List>
-              <Menu.Group>
-                {/* We can eventually put account settings in here */}
-                <Menu.Label className={styles.accountLabel}>
-                  <span className={styles.accountName}>{user.name}</span>
-                  <span className={styles.accountEmail}>{user.email}</span>
-                </Menu.Label>
-              </Menu.Group>
-              <Menu.Separator />
-            </Menu.List>
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+    <div className={styles.summary}>
+      <UserAvatar name={user.name} />
+      <div className={styles.summaryDetails}>
+        <span className={styles.summaryName}>{user.name}</span>
+        <span className={styles.summaryEmail}>{user.email}</span>
+      </div>
+    </div>
   );
 }

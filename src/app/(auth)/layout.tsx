@@ -13,7 +13,7 @@ export default function AuthLayout({
   return (
     <>
       <header className={styles.header}>
-        <Link href="/" className={styles.wordmark}>
+        <Link href="/" className="wordmark">
           physio<em>track</em>
         </Link>
       </header>

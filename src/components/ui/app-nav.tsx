@@ -2,28 +2,31 @@
 // (app)/layout.tsx, not the root layout — /login and /sign-up get their
 // own minimal chrome instead, since these links are all dead ends for a
 // signed-out visitor). Client component so it can highlight the active
-// route and drive the mobile hamburger toggle. The account menu always
-// has a real user: this only ever mounts on routes already gated by
-// proxy.ts's middleware.
+// route and drive the mobile drawer. The account menu always has a real
+// user: this only ever mounts on routes already gated by proxy.ts's
+// middleware.
 "use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
-import { usePathname } from "next/navigation";
-import { AccountMenu, AccountMenuExtended } from "./account-menu";
-import { auth } from "@/auth/client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu } from "@primereact/ui/menu";
 import { Drawer } from "@primereact/ui/drawer";
+import { auth } from "@/auth/client";
+import { AccountMenu, AccountSummary } from "./account-menu";
 
-// Icons
+// Icons — subpath imports so each pulls in only its own module, not the
+// whole icon set.
 import { Bars } from "@primeicons/react/bars";
 import { Times } from "@primeicons/react/times";
-import { ObjectsColumn, SignOut } from "@primeicons/react";
-import { PenToSquare } from "@primeicons/react";
-import { ChartBar } from "@primeicons/react";
-import { History } from "@primeicons/react";
-import { Comments } from "@primeicons/react";
+import { ObjectsColumn } from "@primeicons/react/objects-column";
+import { PenToSquare } from "@primeicons/react/pen-to-square";
+import { ChartBar } from "@primeicons/react/chart-bar";
+import { History } from "@primeicons/react/history";
+import { Comments } from "@primeicons/react/comments";
+import { SignOut } from "@primeicons/react/sign-out";
+import { Refresh } from "@primeicons/react/refresh";
 import styles from "./app-nav.module.css";
 
 const LINKS = [
@@ -35,18 +38,18 @@ const LINKS = [
 
 export function AppNav({ user }: { user: { name: string; email: string } }) {
   const pathname = usePathname();
-  const navRef = useRef<HTMLElement>(null);
-
   const router = useRouter();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   async function logout() {
+    setIsDrawerOpen(false);
     await auth.signOut();
     router.push("/login");
     router.refresh();
   }
 
   return (
-    <nav className={styles.nav} ref={navRef}>
+    <nav className={styles.nav}>
       <Link href="/" className={styles.wordmark}>
         {/* Natural size is 65x89 (SVG in /public); fixed height keeps the
             aspect ratio without needing a static import (public/ assets
@@ -76,63 +79,94 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
           ))}
         </div>
 
-        {/* Mobile hamburger nav */}
-        <Drawer.Root position="right">
-          <Drawer.Trigger className={styles.hamburger}>
-            <Bars size={26} />
+        {/* Desktop-only avatar + dropdown. Hidden below the phone
+            breakpoint, where the drawer's own footer already shows identity
+            and its nav list already has a Logout item — a second avatar
+            trigger in the top bar would just duplicate both. */}
+        <div className={styles.desktopAccount}>
+          <AccountMenu user={user} />
+        </div>
+
+        {/* Mobile nav drawer. Controlled so nav links and Logout can close
+            it themselves on click — left uncontrolled, the drawer would
+            stay open after navigating away underneath it. */}
+        <Drawer.Root
+          position="right"
+          blockScroll
+          open={isDrawerOpen}
+          onOpenChange={(e: { value?: boolean }) =>
+            setIsDrawerOpen(e.value ?? false)
+          }
+        >
+          <Drawer.Trigger className={styles.hamburger} aria-label="Open menu">
+            <Bars size={22} />
           </Drawer.Trigger>
           <Drawer.Portal>
             <Drawer.Backdrop />
-            <Drawer.Popup>
-              <Drawer.Header>
-                <Drawer.Title>PhysioTracker</Drawer.Title>
-                <Drawer.Close className={styles.close} variant="text">
-                  <Times size={26} />
+            <Drawer.Popup className={styles.popup}>
+              <Drawer.Header className={styles.drawerHeader}>
+                <Drawer.Title className={styles.drawerTitle}>
+                  <Link href="/" className="wordmark">
+                    physio<em>track</em>
+                  </Link>
+                </Drawer.Title>
+                <Drawer.Close className={styles.close} aria-label="Close menu">
+                  <Times size={18} />
                 </Drawer.Close>
               </Drawer.Header>
-              <Drawer.Content>
+              <Menu.Separator className={styles.separatorOuter} />
+              <Drawer.Content className={styles.drawerContent}>
                 <Menu.Root>
                   <Menu.List className={styles.list}>
                     <Menu.Label className={styles.menuLabel}>
-                      NAVIGATION
+                      Navigation
                     </Menu.Label>
+                    {/* as={Link} composes Menu.Item's styling/keyboard-nav
+                        with real Next.js client-side navigation. Close on
+                        `onClick`, not `onSelect`: Link owns click handling
+                        once composed in, so Menu.Item's own onSelect never
+                        fires — confirmed by logging both in the browser. */}
                     {LINKS.map(({ href, label, icon }) => (
-                      <Menu.Item key={href} className={styles.item}>
+                      <Menu.Item
+                        key={href}
+                        as={Link}
+                        href={href}
+                        onClick={() => setIsDrawerOpen(false)}
+                        className={`${styles.item} ${pathname === href ? styles.itemActive : ""}`}
+                      >
                         {icon}
-                        <Link
-                          key={href}
-                          href={href}
-                          className={`${styles.link} ${pathname === href ? styles.linkActive : ""}`}
-                        >
-                          {label}
-                        </Link>
+                        <span>{label}</span>
                       </Menu.Item>
                     ))}
-                    <Menu.Label className={styles.menuLabel}>CHAT</Menu.Label>
-                    <Menu.Item className={styles.item}>
+                    <Menu.Label className={styles.menuLabel}>Chat</Menu.Label>
+                    <Menu.Item disabled className={styles.item}>
                       <Comments />
-                      <Link href="/" className={styles.link}>
-                        Coming soon
-                      </Link>
+                      <span>Coming soon</span>
                     </Menu.Item>
-                    <Menu.Label className={styles.menuLabel}>
-                      GENERAL
-                    </Menu.Label>
+                    <Menu.Separator className={styles.separator} />
+                    {/* Not a Link, so its own onSelect fires normally. */}
                     <Menu.Item onSelect={logout} className={styles.item}>
                       <SignOut />
-                      Logout
+                      <span>Logout</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      disabled
+                      onSelect={logout}
+                      className={styles.item}
+                    >
+                      <Refresh />
+                      <span>Reset Password (coming soon)</span>
                     </Menu.Item>
                   </Menu.List>
                 </Menu.Root>
               </Drawer.Content>
-              <Drawer.Footer>
-                <AccountMenuExtended user={user} />
+              <Menu.Separator className={styles.separatorOuter} />
+              <Drawer.Footer className={styles.drawerFooter}>
+                <AccountSummary user={user} />
               </Drawer.Footer>
             </Drawer.Popup>
           </Drawer.Portal>
         </Drawer.Root>
-
-        <AccountMenu user={user} />
       </div>
     </nav>
   );

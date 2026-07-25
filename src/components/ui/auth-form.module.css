@@ -34,6 +34,25 @@
   width: 100%;
 }
 
+/* Password fields are wrapped in IconField.Root for the show/hide toggle
+   (see PasswordField) — the icon field, not .p-password, is now the outer
+   box that needs to stretch full width. */
+.card :global(.p-iconfield) {
+  width: 100%;
+}
+
+.card :global(.p-iconfield .p-inputicon) {
+  cursor: pointer;
+}
+
+/* Per-field validation message — sits right under its input, same red as
+   the input's own invalid-state border (PrimeReact's form.field.invalid.*
+   tokens resolve to red.300 in this app's always-dark theme). */
+.fieldError {
+  font-size: 0.78rem;
+  color: var(--p-red-300, #fca5a5);
+}
+
 .actions {
   display: flex;
   flex-direction: column;

@@ -1,47 +1,71 @@
-// Sign-in form. Validates locally before ever calling the auth server, and
-// shows the server's own error (wrong email/password, etc.) if it rejects.
+// Sign-in form. Validates every field locally before ever calling the auth
+// server — all violations show at once, each with its own red border and
+// message. A rejected email/password can't be attributed to one field, so
+// credentialError marks both fields invalid with one shared message under
+// password, matching the sign-up page's per-field error styling.
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { InputText } from "@primereact/ui/inputtext";
-import { InputPassword } from "@primereact/ui/inputpassword";
 import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
-import { Message } from "@primereact/ui/message";
 import { auth } from "@/auth/client";
+import { PasswordField } from "@/components/ui/password-field";
 import styles from "@/components/ui/auth-form.module.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type FieldErrors = {
+  email?: string;
+  password?: string;
+};
+
+function validate(email: string, password: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (email.trim() === "" || !EMAIL_PATTERN.test(email))
+    errors.email = "Enter a valid email address.";
+  if (password === "") errors.password = "Enter your password.";
+  return errors;
+}
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [credentialError, setCredentialError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
 
   function login() {
-    if (email.trim() === "" || !EMAIL_PATTERN.test(email)) {
-      setError("Enter a valid email address.");
+    const fieldErrors = validate(email, password);
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      setCredentialError(null);
       return;
     }
-    if (password === "") {
-      setError("Enter your password.");
-      return;
-    }
-    setError(null);
+    setErrors({});
+    setCredentialError(null);
     startTransition(async () => {
       const result = await auth.signIn.email({ email, password });
       if (result.error) {
-        setError(result.error.message ?? "Couldn't log in — check your email and password.");
+        setCredentialError(
+          result.error.message ??
+            "Couldn't log in — check your email and password.",
+        );
         return;
       }
+      console.log("Successfully logged in");
       router.push("/");
       router.refresh();
     });
+  }
+
+  function clearError(field: keyof FieldErrors) {
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setCredentialError(null);
   }
 
   return (
@@ -61,36 +85,49 @@ export default function Login() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
+            invalid={!!errors.email || !!credentialError}
             value={email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setEmail(e.target.value);
+              clearError("email");
+            }}
           />
+          {errors.email && (
+            <span className={styles.fieldError}>{errors.email}</span>
+          )}
         </div>
         <div className={styles.field}>
           <Label htmlFor="login-password" className={styles.fieldLabel}>
             Password
           </Label>
-          <InputPassword
+          <PasswordField
             id="login-password"
             autoComplete="current-password"
-            feedback={false}
-            toggleMask
             placeholder="Password"
+            invalid={!!errors.password || !!credentialError}
             value={password}
-            onValueChange={(e: { value: string | null }) => setPassword(e.value ?? "")}
+            onValueChange={(value) => {
+              setPassword(value);
+              clearError("password");
+            }}
           />
+          {(errors.password || credentialError) && (
+            <span className={styles.fieldError}>
+              {errors.password ?? credentialError}
+            </span>
+          )}
         </div>
 
         <div className={styles.actions}>
-          <Button onClick={login} disabled={isPending} fluid size="large" severity="contrast">
+          <Button
+            onClick={login}
+            disabled={isPending}
+            fluid
+            size="large"
+            severity="contrast"
+          >
             {isPending ? "Logging in…" : "Log in"}
           </Button>
-          {error && (
-            <Message.Root severity="error" size="small">
-              <Message.Content>
-                <Message.Text>{error}</Message.Text>
-              </Message.Content>
-            </Message.Root>
-          )}
           <p className={styles.switchLink}>
             Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>
           </p>

@@ -129,8 +129,3 @@ h1 {
   font-size: 0.9rem;
   margin-top: 0.25rem;
 }
-
-/* Makes the invalid border colour override the green focus border for invalid input text */
-.p-inputtext:enabled.p-invalid:focus {
-  border-color: var(--p-inputtext-invalid-border-color);
-}

@@ -69,64 +69,33 @@
   background: var(--accent);
 }
 
-/* Hidden until the phone breakpoint below — .links is the visible nav
-   until there's no room for it. */
 .hamburger {
   display: none;
   background: none;
   border: none;
-  padding: 0.35rem;
-  margin: 0;
-  color: var(--foreground);
-  cursor: pointer;
-  border-radius: 6px;
-  line-height: 0;
+}
+.close {
+  background: none;
+  border: none;
 }
 
-.hamburger:hover {
-  background: var(--surface);
+.popup {
+  width: min(14rem, calc(100vw - 2rem));
 }
 
-/* The links, re-shown as a dropdown under the nav when the hamburger is
-   open. display:none outside the phone breakpoint regardless of the open
-   state, so resizing back to desktop while it's open can't leave it
-   stuck visible. */
-.mobilePanel {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  flex-direction: column;
-  padding: 0.5rem;
-  gap: 0.15rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--background);
-  backdrop-filter: blur(10px);
+.menuLabel {
+  margin-top: 1rem;
 }
-
-.mobileLink {
-  padding: 0.75rem 0.85rem;
-  font-size: 0.95rem;
-  color: var(--muted);
-  border-radius: 8px;
-}
-
-.mobileLink:hover {
-  color: var(--foreground);
-  background: var(--surface);
-}
-
-.mobileLinkActive {
-  color: var(--foreground);
-  background: var(--surface);
-}
-
 /* Phone widths: tighter chrome, links collapse into the hamburger. */
 @media (max-width: 30rem) {
-  .nav {
+  /* .nav {
     padding: 0.6rem 0.75rem;
     gap: 0.5rem;
+  } */
+
+  .link {
+    color: var(--foreground);
+    font-size: 14px;
   }
 
   .links {
@@ -135,9 +104,5 @@
 
   .hamburger {
     display: inline-flex;
-  }
-
-  .mobilePanel {
-    display: flex;
   }
 }

@@ -6,51 +6,44 @@
 // has a real user: this only ever mounts on routes already gated by
 // proxy.ts's middleware.
 "use client";
-
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRef } from "react";
 import { usePathname } from "next/navigation";
+import { AccountMenu, AccountMenuExtended } from "./account-menu";
+import { auth } from "@/auth/client";
+import { useRouter } from "next/navigation";
+import { Menu } from "@primereact/ui/menu";
+import { Drawer } from "@primereact/ui/drawer";
+
+// Icons
 import { Bars } from "@primeicons/react/bars";
 import { Times } from "@primeicons/react/times";
+import { ObjectsColumn, SignOut } from "@primeicons/react";
+import { PenToSquare } from "@primeicons/react";
+import { ChartBar } from "@primeicons/react";
+import { History } from "@primeicons/react";
+import { Comments } from "@primeicons/react";
 import styles from "./app-nav.module.css";
-import { AccountMenu } from "./account-menu";
 
 const LINKS = [
-  { href: "/", label: "Dashboard" },
-  { href: "/log", label: "Log" },
-  { href: "/insights", label: "Insights" },
-  { href: "/history", label: "History" },
+  { href: "/", label: "Dashboard", icon: <ObjectsColumn /> },
+  { href: "/log", label: "Log", icon: <PenToSquare /> },
+  { href: "/insights", label: "Insights", icon: <ChartBar /> },
+  { href: "/history", label: "History", icon: <History /> },
 ];
 
 export function AppNav({ user }: { user: { name: string; email: string } }) {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
 
-  // The links list doesn't fit alongside the logo and account menu at
-  // phone widths (see app-nav.module.css's breakpoint), so it collapses
-  // into this dropdown instead of the inline row below.
-  useEffect(() => {
-    if (!isMenuOpen) return;
+  const router = useRouter();
 
-    function handleOutsideOrEscape(e: MouseEvent | KeyboardEvent) {
-      if (e instanceof KeyboardEvent) {
-        if (e.key === "Escape") setIsMenuOpen(false);
-        return;
-      }
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleOutsideOrEscape);
-    document.addEventListener("keydown", handleOutsideOrEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideOrEscape);
-      document.removeEventListener("keydown", handleOutsideOrEscape);
-    };
-  }, [isMenuOpen]);
+  async function logout() {
+    await auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <nav className={styles.nav} ref={navRef}>
@@ -59,7 +52,13 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             aspect ratio without needing a static import (public/ assets
             aren't processed by the bundler, so they're referenced by URL,
             not import, and don't carry auto-derived dimensions). */}
-        <Image src="/physio-tracker-logo.svg" alt="Physio Tracker" width={26} height={36} priority />
+        <Image
+          src="/physio-tracker-logo.svg"
+          alt="Physio Tracker"
+          width={26}
+          height={36}
+          priority
+        />
       </Link>
       {/* Links + account menu are grouped together so .nav's own
           space-between only ever sees two children (wordmark, this group) —
@@ -76,31 +75,65 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             </Link>
           ))}
         </div>
-        <button
-          type="button"
-          className={styles.hamburger}
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isMenuOpen}
-          onClick={() => setIsMenuOpen((open) => !open)}
-        >
-          {isMenuOpen ? <Times size={20} /> : <Bars size={20} />}
-        </button>
+
+        {/* Mobile hamburger nav */}
+        <Drawer.Root position="right">
+          <Drawer.Trigger className={styles.hamburger}>
+            <Bars size={26} />
+          </Drawer.Trigger>
+          <Drawer.Portal>
+            <Drawer.Backdrop />
+            <Drawer.Popup>
+              <Drawer.Header>
+                <Drawer.Title>PhysioTracker</Drawer.Title>
+                <Drawer.Close className={styles.close} variant="text">
+                  <Times size={26} />
+                </Drawer.Close>
+              </Drawer.Header>
+              <Drawer.Content>
+                <Menu.Root>
+                  <Menu.List className={styles.list}>
+                    <Menu.Label className={styles.menuLabel}>
+                      NAVIGATION
+                    </Menu.Label>
+                    {LINKS.map(({ href, label, icon }) => (
+                      <Menu.Item key={href} className={styles.item}>
+                        {icon}
+                        <Link
+                          key={href}
+                          href={href}
+                          className={`${styles.link} ${pathname === href ? styles.linkActive : ""}`}
+                        >
+                          {label}
+                        </Link>
+                      </Menu.Item>
+                    ))}
+                    <Menu.Label className={styles.menuLabel}>CHAT</Menu.Label>
+                    <Menu.Item className={styles.item}>
+                      <Comments />
+                      <Link href="/" className={styles.link}>
+                        Coming soon
+                      </Link>
+                    </Menu.Item>
+                    <Menu.Label className={styles.menuLabel}>
+                      GENERAL
+                    </Menu.Label>
+                    <Menu.Item onSelect={logout} className={styles.item}>
+                      <SignOut />
+                      Logout
+                    </Menu.Item>
+                  </Menu.List>
+                </Menu.Root>
+              </Drawer.Content>
+              <Drawer.Footer>
+                <AccountMenuExtended user={user} />
+              </Drawer.Footer>
+            </Drawer.Popup>
+          </Drawer.Portal>
+        </Drawer.Root>
+
         <AccountMenu user={user} />
       </div>
-      {isMenuOpen && (
-        <div className={styles.mobilePanel}>
-          {LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`${styles.mobileLink} ${pathname === href ? styles.mobileLinkActive : ""}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-      )}
     </nav>
   );
 }

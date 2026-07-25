@@ -63,3 +63,38 @@ export function AccountMenu({ user }: { user: AccountUser }) {
     </Menu.Root>
   );
 }
+
+export function AccountMenuExtended({ user }: { user: AccountUser }) {
+  return (
+    <Menu.Root>
+      <Menu.Trigger
+        className={styles.accountExtendedContainer}
+        aria-label="Account menu"
+      >
+        <Avatar.Root shape="circle">
+          <Avatar.Fallback>{initialsOf(user.name)}</Avatar.Fallback>
+        </Avatar.Root>
+        <div className={styles.userDetails}>
+          <label>{user.name}</label>
+          <p>{user.email}</p>
+        </div>
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner sideOffset={8} align="end">
+          <Menu.Popup>
+            <Menu.List>
+              <Menu.Group>
+                {/* We can eventually put account settings in here */}
+                <Menu.Label className={styles.accountLabel}>
+                  <span className={styles.accountName}>{user.name}</span>
+                  <span className={styles.accountEmail}>{user.email}</span>
+                </Menu.Label>
+              </Menu.Group>
+              <Menu.Separator />
+            </Menu.List>
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  );
+}

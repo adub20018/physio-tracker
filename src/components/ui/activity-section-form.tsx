@@ -12,9 +12,9 @@ import { WavePulse } from "@primeicons/react/wave-pulse";
 import { Moon } from "@primeicons/react/moon";
 import { ACTIVITY_TAGS } from "@/db/schema";
 import { NumberField, TagMultiSelect } from "./log-fields";
-import { saveActivitySection } from "@/app/log/actions";
-import type { SaveResult } from "@/app/log/actions";
-import type { ActivitySectionValues } from "@/app/log/schema";
+import { saveActivitySection } from "@/app/(app)/log/actions";
+import type { SaveResult } from "@/app/(app)/log/actions";
+import type { ActivitySectionValues } from "@/app/(app)/log/schema";
 import styles from "./log-shared.module.css";
 
 export type ActivitySectionInit = {

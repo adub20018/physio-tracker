@@ -8,8 +8,8 @@
 import { useRef, useState, useTransition } from "react";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
-import { previewXlsxImport, confirmXlsxImport } from "@/app/log/import/actions";
-import type { ImportPreview } from "@/app/log/import/actions";
+import { previewXlsxImport, confirmXlsxImport } from "@/app/(app)/log/import/actions";
+import type { ImportPreview } from "@/app/(app)/log/import/actions";
 import styles from "./xlsx-import-form.module.css";
 
 type Stage =

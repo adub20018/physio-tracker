@@ -17,9 +17,9 @@ import {
   BLANK_EXERCISE,
   type ExerciseDraft,
 } from "./log-fields";
-import { savePhysioSection } from "@/app/log/actions";
-import type { SaveResult } from "@/app/log/actions";
-import type { PhysioSectionValues } from "@/app/log/schema";
+import { savePhysioSection } from "@/app/(app)/log/actions";
+import type { SaveResult } from "@/app/(app)/log/actions";
+import type { PhysioSectionValues } from "@/app/(app)/log/schema";
 import styles from "./log-shared.module.css";
 
 export type PhysioSectionInit = {

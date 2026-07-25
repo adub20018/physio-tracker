@@ -1,5 +1,9 @@
-// Top navigation bar shown on every page (mounted in the root layout).
-// Client component so it can highlight the active route.
+// Top navigation shown on every authenticated route (mounted in
+// (app)/layout.tsx, not the root layout — /login and /sign-up get their
+// own minimal chrome instead, since these links are all dead ends for a
+// signed-out visitor). Client component so it can highlight the active
+// route. The account menu always has a real user: this only ever mounts
+// on routes already gated by proxy.ts's middleware.
 "use client";
 
 import Link from "next/link";
@@ -14,7 +18,7 @@ const LINKS = [
   { href: "/history", label: "History" },
 ];
 
-export function AppNav({ user }: { user: { name: string; email: string } | null }) {
+export function AppNav({ user }: { user: { name: string; email: string } }) {
   const pathname = usePathname();
   return (
     <nav className={styles.nav}>
@@ -37,7 +41,7 @@ export function AppNav({ user }: { user: { name: string; email: string } | null 
             </Link>
           ))}
         </div>
-        {user && <AccountMenu user={user} />}
+        <AccountMenu user={user} />
       </div>
     </nav>
   );

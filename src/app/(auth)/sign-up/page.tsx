@@ -20,6 +20,7 @@ export default function Signup() {
     }
     console.log("Signup successful");
     router.push("/");
+    router.refresh();
   }
   return (
     <div>

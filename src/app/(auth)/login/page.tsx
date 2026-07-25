@@ -19,6 +19,7 @@ export default function Login() {
     }
     console.log("Login successful");
     router.push("/");
+    router.refresh();
   }
   return (
     <div>

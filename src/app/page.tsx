@@ -29,7 +29,6 @@ import {
   CalendarHeatmap,
   type HeatmapDay,
 } from "@/components/charts/calendar-heatmap";
-import LogoutButton from "@/components/ui/auth/logout-button";
 import styles from "./dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
@@ -127,7 +126,6 @@ export default async function DashboardPage() {
     <main className="page" style={{ maxWidth: "64rem" }}>
       <header className="page-header">
         <h1>Welcome back, {user.name}.</h1>
-        <LogoutButton />
         <p className="subtitle">
           {/* A template literal, not JSX text + {expr}: JSX collapses the
               whitespace around an expression when the surrounding text

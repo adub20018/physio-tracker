@@ -1,0 +1,38 @@
+/* Menu.Trigger is a bare, unstyled <button> (headless, no PrimeReact button
+   chrome) — reset to transparent/circular so only the avatar itself is
+   visible, with no native button background/border/padding showing through
+   around it. */
+.trigger {
+  display: inline-flex;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.accountLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  /* Not interactive — just identifies whose menu this is — so it shouldn't
+     read or hover like the "Sign out" item below it. */
+  cursor: default;
+}
+
+.accountName {
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.accountEmail {
+  font-size: 0.78rem;
+  color: var(--muted);
+}

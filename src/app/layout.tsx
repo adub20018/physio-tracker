@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppProviders } from "@/components/ui/app-providers";
 import { AppNav } from "@/components/ui/app-nav";
+import { getOptionalCurrentUser } from "@/auth/get-current-user";
 import "./globals.css";
 
 const instrument = Instrument_Sans({
@@ -27,11 +28,15 @@ export const metadata: Metadata = {
   description: "Personal rehab progress dashboard",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Optional — this layout also wraps /login and /sign-up, which have no
+  // session at all, so it can't use the throwing getCurrentUser() here.
+  const user = await getOptionalCurrentUser();
+
   return (
     // .app-dark commits the PrimeReact theme to its dark scheme, matching the
     // app's own always-dark palette (see darkModeSelector in AppProviders).
@@ -41,7 +46,7 @@ export default function RootLayout({
     >
       <body>
         <AppProviders>
-          <AppNav />
+          <AppNav user={user ? { name: user.name, email: user.email } : null} />
           {children}
         </AppProviders>
       </body>

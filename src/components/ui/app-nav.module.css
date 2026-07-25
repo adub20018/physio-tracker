@@ -27,9 +27,22 @@
   color: var(--accent);
 }
 
+/* Groups the link row and the account menu so .nav's space-between still
+   only has two top-level children (wordmark + this). */
+.navEnd {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  /* Without this, a flex item won't shrink below its content's natural
+     width — which would stop .links' own overflow-x:auto from ever
+     kicking in on narrow screens and instead push the avatar off-screen. */
+  min-width: 0;
+}
+
 .links {
   display: flex;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .link {

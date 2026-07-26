@@ -1,9 +1,10 @@
 // Load vs symptoms — answers "what did I do before it flared?". Three small
 // panels stacked on a shared, hover-synchronized x-axis: daily steps, physio
-// load (intensity-weighted — see domain/volume.ts), and the NEXT morning's
-// pain (load today, symptoms tomorrow — tendon response lags ~24h).
-// Deliberately not one dual-axis chart: the measures live on different
-// scales, so each gets its own panel and axis.
+// load (intensity-weighted — see domain/volume.ts), and the NEXT day's
+// morning/daytime/night pain (load today, symptoms tomorrow — tendon
+// response lags ~24h, and can show up in any of the next day's readings,
+// not just the first one taken). Deliberately not one dual-axis chart: the
+// measures live on different scales, so each gets its own panel and axis.
 "use client";
 
 import {
@@ -20,12 +21,14 @@ import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import styles from "./charts.module.css";
 
-// One day of load paired with the following morning's pain.
+// One day of load paired with the following day's pain, all three readings.
 export type LoadVsSymptomsPoint = {
   date: string;
   steps: number | null;
   physioVolume: number; // 0 on rest days
   nextMorningPain: number | null;
+  nextDaytimePain: number | null;
+  nextNightPain: number | null;
 };
 
 // Shared axis/grid props for the three synchronized panels.
@@ -78,9 +81,23 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         <span className={styles.legendItem}>
           <span
             className={styles.legendLine}
-            style={{ background: SERIES.rollingAvg }}
+            style={{ background: SERIES.morning }}
           />
-          Next-morning pain
+          Morning
+        </span>
+        <span className={styles.legendItem}>
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.daytime }}
+          />
+          Daytime
+        </span>
+        <span className={styles.legendItem}>
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.night }}
+          />
+          Night
         </span>
       </div>
 
@@ -170,7 +187,9 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
 
         <div className={styles.panelDivider} />
 
-        {/* Panel 3: next-morning pain (the symptom response) */}
+        {/* Panel 3: next-day pain (the symptom response), all three
+            readings — load can show up at any point in the next day, not
+            just the first reading taken. */}
         <ResponsiveContainer width="100%" height={130}>
           <ComposedChart
             data={data}
@@ -194,8 +213,32 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             />
             <Line
               dataKey="nextMorningPain"
-              name="Next-morning pain"
-              stroke={SERIES.rollingAvg}
+              name="Morning"
+              stroke={SERIES.morning}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
+            <Line
+              dataKey="nextDaytimePain"
+              name="Daytime"
+              stroke={SERIES.daytime}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
+            <Line
+              dataKey="nextNightPain"
+              name="Night"
+              stroke={SERIES.night}
               strokeWidth={2}
               dot={false}
               connectNulls

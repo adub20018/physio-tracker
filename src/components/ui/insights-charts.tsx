@@ -1,9 +1,10 @@
-// Client island for the insights page's range-dependent charts (the four
-// correlation/timeline sections — NOT Flare review or the Weekly report
-// card, which stay server-rendered and range-independent). Same pattern as
-// dashboard-charts.tsx: receives FULL (unfiltered) computed series from the
-// server component and does the cheap final slice to the selected range
-// in-memory, so switching ranges never needs a server round-trip.
+// Client island for the insights page's range-dependent charts (the three
+// correlation scatter sections — NOT Flare review or the Weekly report
+// card, which stay server-rendered and range-independent; "Sleep & pain
+// over time" moved to the dashboard). Same pattern as dashboard-charts.tsx:
+// receives FULL (unfiltered) computed series from the server component and
+// does the cheap final slice to the selected range in-memory, so switching
+// ranges never needs a server round-trip.
 "use client";
 
 import { useMemo } from "react";
@@ -20,10 +21,6 @@ import {
   MultiScatter,
   type ScatterSeries,
 } from "@/components/charts/multi-scatter";
-import {
-  SleepPainTimeline,
-  type SleepPainPoint,
-} from "@/components/charts/sleep-pain-timeline";
 import { SERIES } from "@/components/charts/chart-theme";
 import { InfoTooltip } from "./info-tooltip";
 import { TimeRangeSelector } from "./time-range-selector";
@@ -48,7 +45,6 @@ export function InsightsCharts({
   fullSleepVsMorning,
   fullSleepVsDaytime,
   fullSleepVsNight,
-  fullSleepTimelineData,
   today,
 }: {
   fullStepsPoints: PairedPoint[];
@@ -56,7 +52,6 @@ export function InsightsCharts({
   fullSleepVsMorning: PairedPoint[];
   fullSleepVsDaytime: PairedPoint[];
   fullSleepVsNight: PairedPoint[];
-  fullSleepTimelineData: SleepPainPoint[];
   today: string;
 }) {
   const [range, setRange] = usePersistedTimeRange(RANGE_STORAGE_KEY);
@@ -81,10 +76,6 @@ export function InsightsCharts({
   const sleepVsNight = useMemo(
     () => filterWindow(fullSleepVsNight, today, rangeDays),
     [fullSleepVsNight, today, rangeDays],
-  );
-  const sleepTimelineData = useMemo(
-    () => filterWindow(fullSleepTimelineData, today, rangeDays),
-    [fullSleepTimelineData, today, rangeDays],
   );
 
   const sleepScatterSeries: ScatterSeries[] = [
@@ -161,15 +152,6 @@ export function InsightsCharts({
           xLabel="Sleep (hours)"
           yLabel="Pain"
         />
-      </section>
-
-      <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Sleep &amp; pain over time</h2>
-        <p className={styles.cardSubtitle}>
-          The same relationship as an over-time view — sleep the night before,
-          and how the whole next day felt.
-        </p>
-        <SleepPainTimeline data={sleepTimelineData} />
       </section>
     </>
   );

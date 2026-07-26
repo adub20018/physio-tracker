@@ -27,6 +27,10 @@ import {
   ProgressionChart,
   type ProgressionPoint,
 } from "@/components/charts/progression-chart";
+import {
+  SleepPainTimeline,
+  type SleepPainPoint,
+} from "@/components/charts/sleep-pain-timeline";
 import styles from "./dashboard.module.css";
 
 const RANGE_STORAGE_KEY = "physimate:dashboard-range";
@@ -35,12 +39,14 @@ export function DashboardCharts({
   fullTimeline,
   fullLoad,
   fullProgression,
+  fullSleepTimelineData,
   today,
   children,
 }: {
   fullTimeline: PainTimelinePoint[];
   fullLoad: LoadVsSymptomsPoint[];
   fullProgression: ProgressionPoint[];
+  fullSleepTimelineData: SleepPainPoint[];
   today: string;
   // The stat tiles — rendered server-side (they're a fixed 7-day window,
   // independent of the range picked here) but need to sit visually between
@@ -64,6 +70,10 @@ export function DashboardCharts({
     () => filterWindow(fullProgression, today, rangeDays),
     [fullProgression, today, rangeDays],
   );
+  const sleepTimelineData = useMemo(
+    () => filterWindow(fullSleepTimelineData, today, rangeDays),
+    [fullSleepTimelineData, today, rangeDays],
+  );
 
   return (
     <>
@@ -83,13 +93,25 @@ export function DashboardCharts({
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Load vs next-morning pain</h2>
+        <h2 className={styles.cardTitle}>Load vs next-day pain</h2>
         <p className={styles.cardSubtitle}>
-          What you did each day, paired with how the tendon felt the next
-          morning. Physio load here is the same intensity-weighted metric as the
+          What you did each day, paired with how the tendon felt across all of
+          the next day&apos;s readings — morning, daytime, and night. Load can
+          show up at any point the next day, not just the first reading taken.
+          Physio load here is the same intensity-weighted metric as the
           dashboard tile, shown per day instead of summed over the week.
         </p>
         <LoadVsSymptoms data={load} />
+      </section>
+
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Sleep &amp; pain over time</h2>
+        <p className={styles.cardSubtitle}>
+          Sleep the night before, and how the whole next day felt — sleep
+          hours logged on a date are the hours slept the night before waking
+          up that day, so they precede all three of that day&apos;s readings.
+        </p>
+        <SleepPainTimeline data={sleepTimelineData} />
       </section>
 
       <section className={styles.card}>

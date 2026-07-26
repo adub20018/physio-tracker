@@ -2,10 +2,11 @@
 // Pearson r, the flare-up review with its "days before" context, and the
 // weekly report card. Server component: loads logs, computes everything
 // with pure domain functions, and hands display-ready data to client
-// components. The four correlation/timeline sections render via
+// components. The three correlation scatter sections render via
 // <InsightsCharts>, a client component that owns the time-range picker's
 // state and does its own (cheap, in-memory) filtering — Flare review and
 // the Weekly report card are range-independent and render directly here.
+// "Sleep & pain over time" moved to the dashboard.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
@@ -25,7 +26,6 @@ import {
   type WeeklyRow,
 } from "@/components/ui/weekly-report-table";
 import { InsightsCharts } from "@/components/ui/insights-charts";
-import type { SleepPainPoint } from "@/components/charts/sleep-pain-timeline";
 import { FLARE_PAIN_THRESHOLD } from "@/domain/constants";
 import styles from "@/components/ui/dashboard.module.css";
 
@@ -109,13 +109,6 @@ export default async function InsightsPage() {
     dates,
     dates,
   );
-  const fullSleepTimelineData: SleepPainPoint[] = days.map((d) => ({
-    date: d.date,
-    sleepHours: d.sleepHours,
-    painMorning: d.painMorning,
-    painDaytime: d.painDaytime,
-    painNight: d.painNight,
-  }));
 
   // ── Flare review ──────────────────────────────────────────────────────
   const episodes: FlareEpisodeView[] = flareEpisodes(
@@ -190,7 +183,6 @@ export default async function InsightsPage() {
         fullSleepVsMorning={fullSleepVsMorning}
         fullSleepVsDaytime={fullSleepVsDaytime}
         fullSleepVsNight={fullSleepVsNight}
-        fullSleepTimelineData={fullSleepTimelineData}
         today={today}
       />
 

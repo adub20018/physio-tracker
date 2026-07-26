@@ -18,12 +18,18 @@ import { dailyPainAverage, windowComparison } from "@/domain/aggregate";
 import { rollingAverage } from "@/domain/rolling";
 import { dailyPhysioVolume } from "@/domain/volume";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
-import { addDays, nextMorningPain } from "@/domain/lag";
+import {
+  addDays,
+  nextDaytimePain,
+  nextMorningPain,
+  nextNightPain,
+} from "@/domain/lag";
 import { StatTile } from "@/components/ui/stat-tile";
 import { DashboardCharts } from "@/components/ui/dashboard-charts";
 import type { PainTimelinePoint } from "@/components/charts/pain-timeline";
 import type { LoadVsSymptomsPoint } from "@/components/charts/load-vs-symptoms";
 import type { ProgressionPoint } from "@/components/charts/progression-chart";
+import type { SleepPainPoint } from "@/components/charts/sleep-pain-timeline";
 import {
   CalendarHeatmap,
   type HeatmapDay,
@@ -104,13 +110,30 @@ export default async function DashboardPage() {
     };
   });
 
-  // ── Load vs symptoms, full history (next-morning pain) ────────────────
-  const nextPain = nextMorningPain(days);
+  // ── Load vs symptoms, full history (next-day pain, all three readings) ─
+  const nextMorning = nextMorningPain(days);
+  const nextDaytime = nextDaytimePain(days);
+  const nextNight = nextNightPain(days);
   const fullLoad: LoadVsSymptomsPoint[] = days.map((d, i) => ({
     date: d.date,
     steps: d.steps,
     physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
-    nextMorningPain: nextPain[i],
+    nextMorningPain: nextMorning[i],
+    nextDaytimePain: nextDaytime[i],
+    nextNightPain: nextNight[i],
+  }));
+
+  // ── Sleep & pain over time, full history (moved here from Insights) ────
+  // Deliberately SAME-DAY, not lagged: sleep hours logged on a date are the
+  // hours slept the night before waking up that day, so they already
+  // precede that day's readings (unlike steps/physio load above, whose
+  // effect on the tendon shows up the NEXT morning).
+  const fullSleepTimelineData: SleepPainPoint[] = days.map((d) => ({
+    date: d.date,
+    sleepHours: d.sleepHours,
+    painMorning: d.painMorning,
+    painDaytime: d.painDaytime,
+    painNight: d.painNight,
   }));
 
   // ── Progression, full history (physio days only) ──────────────────────
@@ -172,6 +195,7 @@ export default async function DashboardPage() {
         fullTimeline={fullTimeline}
         fullLoad={fullLoad}
         fullProgression={fullProgression}
+        fullSleepTimelineData={fullSleepTimelineData}
         today={today}
       >
         <div className={styles.tiles}>

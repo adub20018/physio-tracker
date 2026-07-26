@@ -142,7 +142,7 @@ export default async function DashboardPage() {
 
       <div className={styles.tiles}>
         <StatTile
-          label="7-day avg pain"
+          label="Avg pain"
           value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
           unit="/10"
           delta={fmtDelta(current.painAvg, previous.painAvg, 1)}
@@ -151,10 +151,10 @@ export default async function DashboardPage() {
               ? current.painAvg <= previous.painAvg
               : null
           }
-          hint="Mean of each day's recorded morning/daytime/night pain, averaged over the last 7 complete days (today is excluded until it's fully logged, so a half-logged day can't skew this)."
+          hint="7-day average of each day's recorded morning/day/night pain combined"
         />
         <StatTile
-          label="7-day Avg daily steps"
+          label="Avg daily steps"
           value={
             current.stepsAvg != null
               ? Math.round(current.stepsAvg).toLocaleString()
@@ -170,10 +170,10 @@ export default async function DashboardPage() {
               ? current.stepsAvg >= previous.stepsAvg
               : null
           }
-          hint="Average of the step counts you've logged over the last 7 complete days. Today is excluded (steps usually aren't known until the day is over), and days with no step count logged aren't counted as 0 — they're just left out of the average."
+          hint="7-day average of each day's daily steps"
         />
         <StatTile
-          label="7-day avg sleep"
+          label="Avg sleep"
           value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
           unit="hrs"
           delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
@@ -182,10 +182,10 @@ export default async function DashboardPage() {
               ? current.sleepAvg >= previous.sleepAvg
               : null
           }
-          hint="Average hours of sleep logged over the last 7 complete days. Sleep hours logged on a date are the hours slept the night before waking up that day — so they pair with that SAME day's morning pain, not the next day's."
+          hint="7-day average of each night's sleep"
         />
         <StatTile
-          label="Physio load (7d)"
+          label="Physio load"
           value={Math.round(current.physioVolume).toLocaleString()}
           delta={fmtDelta(
             Math.round(current.physioVolume),
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
             0,
           )}
           deltaIsGood={current.physioVolume >= previous.physioVolume}
-          hint="Sum of each day's sets × hold time × average intensity %, added up over the last 7 complete days. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds."
+          hint="7-day average of each day’s physio load. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)"
         />
       </div>
 

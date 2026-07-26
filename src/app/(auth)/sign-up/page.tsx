@@ -4,7 +4,7 @@
 // error (e.g. email already registered) onto the relevant field too.
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { InputText } from "@primereact/ui/inputtext";
@@ -52,7 +52,8 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [isPending, startTransition] = useTransition();
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
@@ -75,23 +76,34 @@ export default function Signup() {
     return () => clearTimeout(timer);
   }, [password, confirmPassword]);
 
-  function signup() {
+  async function signup() {
     const fieldErrors = validate(name, email, password, confirmPassword);
+
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
+      setGeneralError(null);
       return;
     }
+
+    setIsLoading(true);
     setErrors({});
-    startTransition(async () => {
+    setGeneralError(null);
+
+    try {
       const result = await auth.signUp.email({ email, password, name });
+
       if (result.error) {
-        setErrors({
-          email: result.error.message ?? "Couldn't create an account.",
-        });
+        setGeneralError(result.error.message ?? "Couldn't create an account.");
         return;
       }
-      window.location.replace("/");
-    });
+
+      router.replace("/");
+    } catch (error) {
+      console.error("Signup failed: ", error);
+      setGeneralError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -116,6 +128,7 @@ export default function Signup() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setName(e.target.value);
               setErrors((prev) => ({ ...prev, name: undefined }));
+              setGeneralError(null);
             }}
           />
           {errors.name && (
@@ -136,6 +149,7 @@ export default function Signup() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setEmail(e.target.value);
               setErrors((prev) => ({ ...prev, email: undefined }));
+              setGeneralError(null);
             }}
           />
           {errors.email && (
@@ -159,6 +173,7 @@ export default function Signup() {
                 password: undefined,
                 confirmPassword: undefined,
               }));
+              setGeneralError(null);
             }}
           />
           {errors.password && (
@@ -181,22 +196,25 @@ export default function Signup() {
             onValueChange={(value) => {
               setConfirmPassword(value);
               setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+              setGeneralError(null);
             }}
           />
           {errors.confirmPassword && (
             <span className={styles.fieldError}>{errors.confirmPassword}</span>
           )}
         </div>
-
         <div className={styles.actions}>
+          {generalError && (
+            <span className={styles.fieldError}>{generalError}</span>
+          )}
           <Button
             onClick={signup}
-            disabled={isPending}
+            disabled={isLoading}
             fluid
             size="large"
             severity="contrast"
           >
-            {isPending ? "Creating account…" : "Sign up"}
+            {isLoading ? "Creating account…" : "Sign up"}
           </Button>
           <p className={styles.switchLink}>
             Already have an account? <Link href="/login">Log in</Link>

@@ -11,10 +11,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Menu } from "@primereact/ui/menu";
 import { Avatar } from "@primereact/ui/avatar";
 import { auth } from "@/auth/client";
 import { SignOut } from "@primeicons/react/sign-out";
+import { UserEdit } from "@primeicons/react/user-edit";
+import { SlidersH } from "@primeicons/react/sliders-h";
+import { Download } from "@primeicons/react/download";
+import { Shield } from "@primeicons/react/shield";
 import styles from "./account-menu.module.css";
 
 export type AccountUser = { name: string; email: string };
@@ -60,6 +65,26 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                   <span className={styles.accountName}>{user.name}</span>
                   <span className={styles.accountEmail}>{user.email}</span>
                 </Menu.Label>
+              </Menu.Group>
+              <Menu.Separator />
+              <Menu.Group>
+                <Menu.Item as={Link} href="/account/profile">
+                  <UserEdit />
+                  Edit profile
+                </Menu.Item>
+                <Menu.Item as={Link} href="/account/config">
+                  <SlidersH />
+                  App config
+                </Menu.Item>
+                {/* Plain anchor: a download must be a real navigation, not a client route. */}
+                <Menu.Item as="a" href="/history/export" download>
+                  <Download />
+                  Export data
+                </Menu.Item>
+                <Menu.Item as={Link} href="/account/privacy">
+                  <Shield />
+                  Privacy
+                </Menu.Item>
               </Menu.Group>
               <Menu.Separator />
               <Menu.Group>

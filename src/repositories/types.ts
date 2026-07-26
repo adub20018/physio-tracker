@@ -28,3 +28,20 @@ export interface DailyLogRepository {
   // Removes a day's log (and, via cascade, its exercises).
   deleteByDate(userId: string, date: string): Promise<void>;
 }
+
+// App-level settings for one user — just the configurable values themselves,
+// not DB plumbing (no userId/updatedAt), so callers don't need to know this
+// is backed by a database row at all.
+export type UserSettings = {
+  flareThreshold: number;
+};
+
+export interface UserSettingsRepository {
+  // The user's saved settings, or the default values if they've never
+  // saved any (no row yet doesn't mean an error — it means "using defaults").
+  get(userId: string): Promise<UserSettings>;
+  // Creates the user's settings row, or updates it if one already exists.
+  // Partial: only the provided fields change, everything else keeps its
+  // current (or default) value.
+  upsert(userId: string, input: Partial<UserSettings>): Promise<UserSettings>;
+}

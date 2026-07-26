@@ -28,6 +28,10 @@ import { History } from "@primeicons/react/history";
 import { Comments } from "@primeicons/react/comments";
 import { SignOut } from "@primeicons/react/sign-out";
 import { Refresh } from "@primeicons/react/refresh";
+import { UserEdit } from "@primeicons/react/user-edit";
+import { SlidersH } from "@primeicons/react/sliders-h";
+import { Download } from "@primeicons/react/download";
+import { Shield } from "@primeicons/react/shield";
 import styles from "./app-nav.module.css";
 
 const LINKS = [
@@ -137,6 +141,45 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                         <span>{label}</span>
                       </Menu.Item>
                     ))}
+                    <Menu.Label className={styles.menuLabel}>Account</Menu.Label>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/profile"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <UserEdit />
+                      <span>Edit profile</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/config"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <SlidersH />
+                      <span>App config</span>
+                    </Menu.Item>
+                    {/* Plain anchor: a download must be a real navigation, not a client route. */}
+                    <Menu.Item
+                      as="a"
+                      href="/history/export"
+                      download
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <Download />
+                      <span>Export data</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/privacy"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <Shield />
+                      <span>Privacy</span>
+                    </Menu.Item>
                     <Menu.Label className={styles.menuLabel}>Chat</Menu.Label>
                     <Menu.Item disabled className={styles.item}>
                       <Comments />
@@ -148,11 +191,7 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                       <SignOut />
                       <span>Logout</span>
                     </Menu.Item>
-                    <Menu.Item
-                      disabled
-                      onSelect={logout}
-                      className={styles.item}
-                    >
+                    <Menu.Item disabled className={styles.item}>
                       <Refresh />
                       <span>Reset Password (coming soon)</span>
                     </Menu.Item>

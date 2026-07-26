@@ -1,15 +1,17 @@
 // Flare detection. Per physio guidance, pain under 3/10 means exercises can
-// continue — so any reading at or above FLARE_PAIN_THRESHOLD flags the day
-// (PLAN.md §2). Threshold lives in constants.ts.
-import { FLARE_PAIN_THRESHOLD } from "./constants";
+// continue — so any reading at or above the flare threshold flags the day
+// (PLAN.md §2). The threshold is a per-user setting, not a fixed constant
+// (see DEFAULT_FLARE_PAIN_THRESHOLD in constants.ts for the fallback), so
+// every function here takes it as an explicit parameter.
 import type { DomainDay } from "./types";
 
 // True when any of the day's pain readings reaches the flare threshold.
 export function isFlareDay(
-  day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">
+  day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">,
+  flareThreshold: number,
 ): boolean {
   return [day.painMorning, day.painDaytime, day.painNight].some(
-    (p) => p != null && p >= FLARE_PAIN_THRESHOLD
+    (p) => p != null && p >= flareThreshold
   );
 }
 
@@ -31,9 +33,13 @@ export type FlareEpisode = {
 };
 
 // All flare days (newest first) with their lookback context.
-export function flareEpisodes(days: DomainDay[], lookback: number): FlareEpisode[] {
+export function flareEpisodes(
+  days: DomainDay[],
+  lookback: number,
+  flareThreshold: number,
+): FlareEpisode[] {
   return days
-    .filter(isFlareDay)
+    .filter((d) => isFlareDay(d, flareThreshold))
     .map((day) => ({
       day,
       precedingDays: days.filter((d) => {
@@ -46,10 +52,17 @@ export function flareEpisodes(days: DomainDay[], lookback: number): FlareEpisode
 
 // Days since the most recent flare, measured from `today`.
 // null when no flare has ever been logged. 0 means today flared.
-export function daysSinceLastFlare(days: DomainDay[], today: string): number | null {
+export function daysSinceLastFlare(
+  days: DomainDay[],
+  today: string,
+  flareThreshold: number,
+): number | null {
   let lastFlareDate: string | null = null;
   for (const day of days) {
-    if (isFlareDay(day) && (lastFlareDate === null || day.date > lastFlareDate)) {
+    if (
+      isFlareDay(day, flareThreshold) &&
+      (lastFlareDate === null || day.date > lastFlareDate)
+    ) {
       lastFlareDate = day.date;
     }
   }

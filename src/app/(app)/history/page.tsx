@@ -3,7 +3,7 @@
 // repository, flattens them into display-ready rows, and hands them to the
 // client-side HistoryTable.
 import { getCurrentUser } from "@/auth/get-current-user";
-import { dailyLogRepository } from "@/repositories";
+import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { HistoryTable, type HistoryRow } from "@/components/ui/history-table";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
 
@@ -13,7 +13,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
   const user = await getCurrentUser();
-  const logs = await dailyLogRepository.listAll(user.id);
+  const [logs, { flareThreshold }] = await Promise.all([
+    dailyLogRepository.listAll(user.id),
+    userSettingsRepository.get(user.id),
+  ]);
 
   const rows: HistoryRow[] = logs.map((log) => ({
     id: log.id,
@@ -55,7 +58,7 @@ export default async function HistoryPage() {
           ⤓ Export CSV
         </a>
       </header>
-      <HistoryTable rows={rows} />
+      <HistoryTable rows={rows} flareThreshold={flareThreshold} />
     </main>
   );
 }

@@ -6,7 +6,7 @@
 // (cheap, in-memory) filtering — see dashboard-charts.tsx for why that's a
 // client component instead of a searchParam this page reads.
 import { getCurrentUser } from "@/auth/get-current-user";
-import { dailyLogRepository } from "@/repositories";
+import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import {
@@ -53,7 +53,10 @@ function fmtDelta(
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const logs = await dailyLogRepository.listAll(user.id);
+  const [logs, { flareThreshold }] = await Promise.all([
+    dailyLogRepository.listAll(user.id),
+    userSettingsRepository.get(user.id),
+  ]);
   const days = toDomainDays(logs);
   const today = todayIso();
 
@@ -76,7 +79,7 @@ export default async function DashboardPage() {
     addDays(today, -1),
     statWindowDays,
   );
-  const flareGap = daysSinceLastFlare(days, today);
+  const flareGap = daysSinceLastFlare(days, today, flareThreshold);
 
   // WindowStats.physioVolume is a raw SUM over the window — meaningful for
   // the weekly report card (always a fixed 7-day week), but here the
@@ -106,7 +109,7 @@ export default async function DashboardPage() {
       daytime: d.painDaytime,
       night: d.painNight,
       rollingAvg: rolling[i] != null ? Number(rolling[i]!.toFixed(2)) : null,
-      flareValue: isFlareDay(d) ? Math.max(...readings) : null,
+      flareValue: isFlareDay(d, flareThreshold) ? Math.max(...readings) : null,
     };
   });
 

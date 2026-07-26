@@ -17,13 +17,17 @@ function day(date: string, pains: [number | null, number | null, number | null])
 }
 
 describe("isFlareDay", () => {
-  it("flags any reading at or above 3", () => {
-    expect(isFlareDay(day("2026-07-01", [1, 3, 0]))).toBe(true);
-    expect(isFlareDay(day("2026-07-01", [4.5, null, null]))).toBe(true);
+  it("flags any reading at or above the threshold", () => {
+    expect(isFlareDay(day("2026-07-01", [1, 3, 0]), 3)).toBe(true);
+    expect(isFlareDay(day("2026-07-01", [4.5, null, null]), 3)).toBe(true);
   });
-  it("does not flag pain below 3 or unrecorded days", () => {
-    expect(isFlareDay(day("2026-07-01", [2.5, 2.5, 2.5]))).toBe(false);
-    expect(isFlareDay(day("2026-07-01", [null, null, null]))).toBe(false);
+  it("does not flag pain below the threshold or unrecorded days", () => {
+    expect(isFlareDay(day("2026-07-01", [2.5, 2.5, 2.5]), 3)).toBe(false);
+    expect(isFlareDay(day("2026-07-01", [null, null, null]), 3)).toBe(false);
+  });
+  it("respects a custom threshold", () => {
+    expect(isFlareDay(day("2026-07-01", [2, null, null]), 2)).toBe(true);
+    expect(isFlareDay(day("2026-07-01", [2, null, null]), 4)).toBe(false);
   });
 });
 
@@ -43,7 +47,7 @@ describe("flareEpisodes", () => {
     day("2026-07-07", [3, 0, 0]), // flare
   ];
   it("returns flares newest-first with lookback context", () => {
-    const episodes = flareEpisodes(days, 3);
+    const episodes = flareEpisodes(days, 3, 3);
     expect(episodes.map((e) => e.day.date)).toEqual(["2026-07-07", "2026-07-04"]);
     // 07-07 looks back to 07-04..07-06: logged days are 07-04 and 07-05
     expect(episodes[0].precedingDays.map((d) => d.date)).toEqual(["2026-07-04", "2026-07-05"]);
@@ -60,12 +64,12 @@ describe("daysSinceLastFlare", () => {
     day("2026-07-05", [2, 2, 2]),
   ];
   it("measures from the most recent flare", () => {
-    expect(daysSinceLastFlare(days, "2026-07-10")).toBe(6);
+    expect(daysSinceLastFlare(days, "2026-07-10", 3)).toBe(6);
   });
   it("returns 0 when today flared", () => {
-    expect(daysSinceLastFlare(days, "2026-07-04")).toBe(0);
+    expect(daysSinceLastFlare(days, "2026-07-04", 3)).toBe(0);
   });
   it("returns null when no flare exists", () => {
-    expect(daysSinceLastFlare([day("2026-07-01", [1, 1, 1])], "2026-07-10")).toBeNull();
+    expect(daysSinceLastFlare([day("2026-07-01", [1, 1, 1])], "2026-07-10", 3)).toBeNull();
   });
 });

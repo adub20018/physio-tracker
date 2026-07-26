@@ -30,7 +30,13 @@ const SEVERITY_COLOR: Record<PainSeverity, "secondary" | "success" | "warn" | "d
   flare: "danger",
 };
 
-export function WeeklyReportTable({ rows }: { rows: WeeklyRow[] }) {
+export function WeeklyReportTable({
+  rows,
+  flareThreshold,
+}: {
+  rows: WeeklyRow[];
+  flareThreshold: number;
+}) {
   return (
     <div className={styles.wrapper}>
       <DataTable.Root
@@ -71,7 +77,7 @@ export function WeeklyReportTable({ rows }: { rows: WeeklyRow[] }) {
                         <span className={styles.dim}>–</span>
                       ) : (
                         <span className={styles.painCell}>
-                          <Tag severity={SEVERITY_COLOR[painSeverity(w.painAvg)]}>
+                          <Tag severity={SEVERITY_COLOR[painSeverity(w.painAvg, flareThreshold)]}>
                             {w.painAvg.toFixed(1)}
                           </Tag>
                           {w.painDelta && (

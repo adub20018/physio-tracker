@@ -3,24 +3,36 @@
 // Decision support, not medical analysis: with ~50 points the coefficient
 // is suggestive, never proof (see PLAN.md §3 caveat).
 
-// One paired observation with both values present.
-export type PairedPoint = { x: number; y: number; label: string };
+// One paired observation with both values present. `date` is the anchor
+// day's ISO date (kept separate from the display-only `label`, which may
+// have extra text like "2026-07-04 → next morning") so callers can apply
+// calendar-window filtering (e.g. time-range selection) without parsing it
+// back out of the label.
+export type PairedPoint = { x: number; y: number; label: string; date: string };
 
 // Pairs two same-length series by index, keeping only positions where both
-// values are present (pairwise deletion). Labels ride along for tooltips.
+// values are present (pairwise deletion). Labels ride along for tooltips;
+// dates ride along for filtering.
 export function pairSeries(
   xs: (number | null)[],
   ys: (number | null)[],
-  labels: string[]
+  labels: string[],
+  dates: string[]
 ): PairedPoint[] {
-  if (xs.length !== ys.length || xs.length !== labels.length) {
+  if (
+    xs.length !== ys.length ||
+    xs.length !== labels.length ||
+    xs.length !== dates.length
+  ) {
     throw new Error("pairSeries inputs must have equal length");
   }
   const pairs: PairedPoint[] = [];
   for (let i = 0; i < xs.length; i++) {
     const x = xs[i];
     const y = ys[i];
-    if (x != null && y != null) pairs.push({ x, y, label: labels[i] });
+    if (x != null && y != null) {
+      pairs.push({ x, y, label: labels[i], date: dates[i] });
+    }
   }
   return pairs;
 }

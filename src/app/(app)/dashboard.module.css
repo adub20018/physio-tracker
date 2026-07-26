@@ -1,5 +1,35 @@
 /* Dashboard layout: stat tile row + a stack of chart cards. */
 
+/* Title/subtitle on the left, time-range picker (+ caption) on the right —
+   wraps to stack on narrow widths rather than squeezing the picker next to
+   the title text. No justify-content here: .rangeControl's own
+   margin-left: auto is what pushes it right, and unlike justify-content
+   that still holds true once it wraps onto its own line. */
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* Groups the picker with a caption explaining its scope — stat tiles are
+   deliberately NOT part of what it controls (see page.tsx), which isn't
+   obvious from the picker alone. */
+.rangeControl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.rangeCaption {
+  font-size: 0.72rem;
+  color: var(--faint);
+  text-align: right;
+  max-width: 14rem;
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

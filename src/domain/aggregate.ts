@@ -13,11 +13,18 @@ export function dailyPainAverage(
   return average([day.painMorning, day.painDaytime, day.painNight]);
 }
 
-// Days whose date falls in the calendar window [end - (nDays-1), end].
+// Items whose date falls in the calendar window [end - (nDays-1), end].
 // Calendar-based (not "last N logged rows") so missed days count as missing.
-export function filterWindow(days: DomainDay[], end: string, nDays: number): DomainDay[] {
-  return days.filter((d) => {
-    const diff = daysBetween(d.date, end);
+// Generic over anything with a `date`, not just DomainDay, so the same
+// windowing logic filters display-ready chart/point arrays too (dashboard
+// and insights time-range selection) without duplicating this check.
+export function filterWindow<T extends { date: string }>(
+  items: T[],
+  end: string,
+  nDays: number
+): T[] {
+  return items.filter((item) => {
+    const diff = daysBetween(item.date, end);
     return diff >= 0 && diff < nDays;
   });
 }

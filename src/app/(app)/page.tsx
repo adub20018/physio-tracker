@@ -7,12 +7,23 @@ import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
-import { dailyPainAverage, windowComparison } from "@/domain/aggregate";
+import {
+  daysForRange,
+  parseTimeRange,
+  TIME_RANGE_COMPARISON_LABELS,
+  TIME_RANGE_HINT_PHRASES,
+} from "@/lib/time-range";
+import {
+  dailyPainAverage,
+  filterWindow,
+  windowComparison,
+} from "@/domain/aggregate";
 import { rollingAverage } from "@/domain/rolling";
 import { dailyPhysioVolume } from "@/domain/volume";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
 import { addDays, nextMorningPain } from "@/domain/lag";
 import { StatTile } from "@/components/ui/stat-tile";
+import { TimeRangeSelector } from "@/components/ui/time-range-selector";
 import {
   PainTimeline,
   type PainTimelinePoint,
@@ -46,23 +57,62 @@ function fmtDelta(
   return diff >= 0 ? `+${text}` : `−${text}`;
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
   const user = await getCurrentUser();
   const logs = await dailyLogRepository.listAll(user.id);
   const days = toDomainDays(logs);
   const today = todayIso();
 
-  // ── Stat tiles: the last 7 COMPLETE days vs the 7 before ──────────────
-  // Today is excluded: a partially-logged day (morning pain entered, steps
-  // not yet known) would bias the averages. Days-since-flare still counts
-  // from today — a flare logged this morning must show immediately.
-  const { current, previous } = windowComparison(days, addDays(today, -1), 7);
+  const { range: rangeParam } = await searchParams;
+  const range = parseTimeRange(rangeParam);
+  const rangeDays = daysForRange(range);
+
+  // ── Stat tiles: always the last 7 days, independent of the selected
+  // chart range ────────────────────────────────────────────────────────
+  // A stat tile answers "how am I doing right now" — averaging that over
+  // months smears an improving baseline together with early, low numbers
+  // and answers a different question than the tile is for. Charts benefit
+  // from a wide range (the shape of change over time is the point); tiles
+  // don't, so they stay locked to a week regardless of what range the
+  // charts below are showing. Today is excluded from the window: a
+  // partially-logged day (morning pain entered, steps not yet known) would
+  // bias the averages. Days-since-flare still counts from today — a flare
+  // logged this morning must show immediately.
+  const statWindowDays = daysForRange("7d");
+  const statDeltaLabel = TIME_RANGE_COMPARISON_LABELS["7d"];
+  const statRangePhrase = TIME_RANGE_HINT_PHRASES["7d"];
+  const { current, previous } = windowComparison(
+    days,
+    addDays(today, -1),
+    statWindowDays,
+  );
   const flareGap = daysSinceLastFlare(days, today);
 
+  // WindowStats.physioVolume is a raw SUM over the window — meaningful for
+  // the weekly report card (always a fixed 7-day week), but here the
+  // window length varies with the selected range, so a sum mechanically
+  // grows with a wider range regardless of whether load actually went up.
+  // Divide by loggedDays for a range-stable daily rate, consistent with
+  // painAvg/stepsAvg/sleepAvg, which are already per-day averages.
+  const currentPhysioLoadAvg =
+    current.loggedDays > 0 ? current.physioVolume / current.loggedDays : null;
+  const previousPhysioLoadAvg =
+    previous.loggedDays > 0
+      ? previous.physioVolume / previous.loggedDays
+      : null;
+
   // ── Pain timeline ─────────────────────────────────────────────────────
+  // Rolling average is computed over the FULL history first, then the
+  // result is sliced to the selected range below — otherwise the first
+  // visible days of a narrowed range would show an artificially truncated
+  // average with no earlier days to draw context from.
   const painAvgs = days.map(dailyPainAverage);
   const rolling = rollingAverage(painAvgs, 7);
-  const timeline: PainTimelinePoint[] = days.map((d, i) => {
+  const fullTimeline: PainTimelinePoint[] = days.map((d, i) => {
     // Flare dot sits at the day's WORST reading — the one that crossed the
     // threshold — so dots always appear at ≥ 3, matching the flare rule.
     const readings = [d.painMorning, d.painDaytime, d.painNight].filter(
@@ -77,18 +127,24 @@ export default async function DashboardPage() {
       flareValue: isFlareDay(d) ? Math.max(...readings) : null,
     };
   });
+  const timeline = filterWindow(fullTimeline, today, rangeDays);
 
   // ── Load vs symptoms (next-morning pain) ──────────────────────────────
+  // Same reasoning: nextMorningPain looks up the FOLLOWING day within the
+  // full `days` array, so it has to run before range-filtering, or the
+  // last visible day in a narrowed range would wrongly show no next-day
+  // pain (its real next day would already have been filtered out).
   const nextPain = nextMorningPain(days);
-  const load: LoadVsSymptomsPoint[] = days.map((d, i) => ({
+  const fullLoad: LoadVsSymptomsPoint[] = days.map((d, i) => ({
     date: d.date,
     steps: d.steps,
     physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
     nextMorningPain: nextPain[i],
   }));
+  const load = filterWindow(fullLoad, today, rangeDays);
 
   // ── Progression (physio days only) ────────────────────────────────────
-  const progression: ProgressionPoint[] = days
+  const fullProgression: ProgressionPoint[] = days
     .filter((d) => d.exercises.length > 0)
     .map((d) => {
       const mins = d.exercises
@@ -111,8 +167,11 @@ export default async function DashboardPage() {
         physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
       };
     });
+  const progression = filterWindow(fullProgression, today, rangeDays);
 
   // ── Heatmap: full calendar range, unlogged days included ──────────────
+  // Deliberately ignores the selected time range — a heatmap narrowed to
+  // "7D" would just be seven squares, which isn't what it's for.
   const byDate = new Map(days.map((d) => [d.date, d]));
   const heatmap: HeatmapDay[] = [];
   if (days.length > 0) {
@@ -124,25 +183,34 @@ export default async function DashboardPage() {
 
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
-      <header className="page-header">
-        <h1>Welcome back, {user.name}.</h1>
-        <p className="subtitle">
-          {/* A template literal, not JSX text + {expr}: JSX collapses the
-              whitespace around an expression when the surrounding text
-              wraps across lines, silently eating the space right after
-              {days.length} ("54days logged"). One expression sidesteps
-              that entirely. */}
-          {`${days.length} days logged · ${
-            flareGap != null
-              ? `${flareGap} ${flareGap === 1 ? "day" : "days"} since flare`
-              : "no flares logged"
-          }`}
-        </p>
-      </header>
+      <div className={styles.headerRow}>
+        <header className="page-header">
+          <h1>Welcome back, {user.name}.</h1>
+          <p className="subtitle">
+            {/* A template literal, not JSX text + {expr}: JSX collapses the
+                whitespace around an expression when the surrounding text
+                wraps across lines, silently eating the space right after
+                {days.length} ("54days logged"). One expression sidesteps
+                that entirely. */}
+            {`${days.length} days logged · ${
+              flareGap != null
+                ? `${flareGap} ${flareGap === 1 ? "day" : "days"} since flare`
+                : "no flares logged"
+            }`}
+          </p>
+        </header>
+        <div className={styles.rangeControl}>
+          <TimeRangeSelector />
+          <p className={styles.rangeCaption}>
+            Applies to the charts below — stat tiles always show the last 7
+            days.
+          </p>
+        </div>
+      </div>
 
       <div className={styles.tiles}>
         <StatTile
-          label="Avg pain"
+          label="Avg pain (7D)"
           value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
           unit="/10"
           delta={fmtDelta(current.painAvg, previous.painAvg, 1)}
@@ -151,10 +219,11 @@ export default async function DashboardPage() {
               ? current.painAvg <= previous.painAvg
               : null
           }
-          hint="7-day average of each day's recorded morning/day/night pain combined"
+          deltaLabel={statDeltaLabel}
+          hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
         />
         <StatTile
-          label="Avg daily steps"
+          label="Avg daily steps (7D)"
           value={
             current.stepsAvg != null
               ? Math.round(current.stepsAvg).toLocaleString()
@@ -170,10 +239,11 @@ export default async function DashboardPage() {
               ? current.stepsAvg >= previous.stepsAvg
               : null
           }
-          hint="7-day average of each day's daily steps"
+          deltaLabel={statDeltaLabel}
+          hint={`Average of each day's daily steps, ${statRangePhrase}.`}
         />
         <StatTile
-          label="Avg sleep"
+          label="Avg sleep (7D)"
           value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
           unit="hrs"
           delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
@@ -182,18 +252,32 @@ export default async function DashboardPage() {
               ? current.sleepAvg >= previous.sleepAvg
               : null
           }
-          hint="7-day average of each night's sleep"
+          deltaLabel={statDeltaLabel}
+          hint={`Average of each night's sleep, ${statRangePhrase}.`}
         />
         <StatTile
-          label="Physio load"
-          value={Math.round(current.physioVolume).toLocaleString()}
+          label="Physio load (7D)"
+          value={
+            currentPhysioLoadAvg != null
+              ? Math.round(currentPhysioLoadAvg).toLocaleString()
+              : "—"
+          }
           delta={fmtDelta(
-            Math.round(current.physioVolume),
-            Math.round(previous.physioVolume),
+            currentPhysioLoadAvg != null
+              ? Math.round(currentPhysioLoadAvg)
+              : null,
+            previousPhysioLoadAvg != null
+              ? Math.round(previousPhysioLoadAvg)
+              : null,
             0,
           )}
-          deltaIsGood={current.physioVolume >= previous.physioVolume}
-          hint="7-day average of each day’s physio load. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)"
+          deltaIsGood={
+            currentPhysioLoadAvg != null && previousPhysioLoadAvg != null
+              ? currentPhysioLoadAvg >= previousPhysioLoadAvg
+              : null
+          }
+          deltaLabel={statDeltaLabel}
+          hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
         />
       </div>
 

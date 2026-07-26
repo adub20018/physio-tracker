@@ -77,7 +77,9 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <XAxis dataKey="date" hide height={4} />
+            {/* scale="band" explicitly, matching Panel 2's Line-only axis —
+                see the note there for why both panels need to agree. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               domain={[0, "auto"]}
               interval={0}
@@ -116,8 +118,15 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            {/* scale="band": this panel is Line-only, so Recharts would
+                otherwise auto-pick "point" scale here vs "band" on Panel 1
+                (which has a Bar) — the two scales agree near the middle of
+                the domain but diverge toward the edges, which desyncs the
+                hover cursor from the line there. Forcing both to band keeps
+                them identical. */}
             <XAxis
               dataKey="date"
+              scale="band"
               tickFormatter={shortDate}
               tick={CHART_CHROME.tick}
               axisLine={{ stroke: CHART_CHROME.axisLine }}

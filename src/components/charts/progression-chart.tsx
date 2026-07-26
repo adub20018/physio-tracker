@@ -104,7 +104,13 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <XAxis dataKey="date" hide height={4} />
+            {/* scale="band": this panel is Area+Line only (no Bar), so
+                Recharts would otherwise auto-pick "point" scale here vs
+                "band" on the Bar panels below — the two scales agree near
+                the middle of the domain but diverge toward the edges,
+                desyncing the synced hover cursor there. Forcing every
+                panel to band keeps them all identical. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               domain={[0, 50]}
               ticks={[0, 25, 50]}
@@ -162,7 +168,9 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <XAxis dataKey="date" hide height={4} />
+            {/* scale="band" explicitly, matching Panel 1 — see the note
+                there for why every synced panel needs to agree. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               domain={[0, "auto"]}
               interval={0}
@@ -199,8 +207,10 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            {/* scale="band" explicitly, matching Panels 1 & 2. */}
             <XAxis
               dataKey="date"
+              scale="band"
               tickFormatter={shortDate}
               tick={CHART_CHROME.tick}
               axisLine={{ stroke: CHART_CHROME.axisLine }}

@@ -48,6 +48,14 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
   return (
     <XAxis
       dataKey="date"
+      // Recharts auto-picks "band" scale for a panel with a Bar (which needs
+      // bandwidth to size the bar) and "point" scale otherwise — since the
+      // steps/load panels have Bars but this synced panel is Line-only, left
+      // on auto they'd get different scales. Band and point scales agree
+      // near the middle of the domain but diverge toward the edges, which is
+      // exactly the "hover cursor drifts off the line at the ends" bug.
+      // Forcing band scale here too keeps every synced panel identical.
+      scale="band"
       tickFormatter={shortDate}
       tick={CHART_CHROME.tick}
       axisLine={{ stroke: CHART_CHROME.axisLine }}

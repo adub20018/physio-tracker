@@ -38,7 +38,9 @@ export type ProgressionPoint = {
 };
 
 // Recharts range areas take a [low, high] tuple per point.
-type RangePoint = ProgressionPoint & { intensityRange: [number, number] | null };
+type RangePoint = ProgressionPoint & {
+  intensityRange: [number, number] | null;
+};
 
 const SYNC_ID = "progression";
 
@@ -63,16 +65,25 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
           <InfoTooltip text="The lightest and heaviest load used that day, as a % of bodyweight/resistance — e.g. a session at 20–25% shows as a band from 20 to 25." />
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.rollingAvg }} />
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.rollingAvg }}
+          />
           Midpoint
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.holdVolume }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.holdVolume }}
+          />
           Hold volume (sets×sec)
           <InfoTooltip text="Raw work performed: sets × hold time (or reps), summed across exercises. Unlike Physio load, this ignores intensity % — a heavier set and a lighter set of the same length count the same." />
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.volume }}
+          />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %. The same metric as the dashboard tile and Load vs symptoms. Weighted by intensity — can move opposite to Hold volume, e.g. longer holds at lower intensity raise Hold volume while Physio load falls." />
         </span>
@@ -87,7 +98,11 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             reserved space below the 0 gridline, and Recharts otherwise drops
             the 0% tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer width="100%" height={170}>
-          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 6, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={withRange}
+            syncId={SYNC_ID}
+            margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <XAxis dataKey="date" hide height={4} />
             <YAxis
@@ -105,7 +120,9 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ stroke: CHART_CHROME.axisLine }}
               formatter={(value, name) =>
-                Array.isArray(value) ? [`${value[0]}–${value[1]}%`, name] : [value, name]
+                Array.isArray(value)
+                  ? [`${value[0]}–${value[1]}%`, name]
+                  : [value, name]
               }
             />
             <Area
@@ -115,7 +132,10 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               fill={SERIES.rollingAvg}
               fillOpacity={0.22}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
             <Line
               dataKey="intensityMid"
@@ -124,7 +144,10 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>
@@ -133,7 +156,11 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
 
         {/* Panel 2: hold volume */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={withRange}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <XAxis dataKey="date" hide height={4} />
             <YAxis
@@ -154,7 +181,10 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               name="Hold volume"
               fill={SERIES.holdVolume}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>
@@ -163,7 +193,11 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
 
         {/* Panel 3: physio load */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={withRange} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+          <ComposedChart
+            data={withRange}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <XAxis
               dataKey="date"
@@ -191,7 +225,10 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
               name="Physio load"
               fill={SERIES.volume}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>

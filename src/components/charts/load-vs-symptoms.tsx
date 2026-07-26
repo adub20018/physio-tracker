@@ -61,16 +61,25 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
     <div>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.steps }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.steps }}
+          />
           Steps
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.volume }}
+          />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %, for that day. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds with no intensity factored in." />
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.rollingAvg }} />
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.rollingAvg }}
+          />
           Next-morning pain
         </span>
       </div>
@@ -84,7 +93,11 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             below the 0 gridline, so the "0" tick label gets clipped by the
             container edge without it. */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
@@ -104,7 +117,16 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
             />
-            <Bar dataKey="steps" name="Steps" fill={SERIES.steps} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar
+              dataKey="steps"
+              name="Steps"
+              fill={SERIES.steps}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
           </ComposedChart>
         </ResponsiveContainer>
 
@@ -112,7 +134,11 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
 
         {/* Panel 2: physio load */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
@@ -134,7 +160,10 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
               name="Physio load"
               fill={SERIES.volume}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>
@@ -143,7 +172,11 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
 
         {/* Panel 3: next-morning pain (the symptom response) */}
         <ResponsiveContainer width="100%" height={130}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden={false} />
             <YAxis
@@ -166,7 +199,10 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>

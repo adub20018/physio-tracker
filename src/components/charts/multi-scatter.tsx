@@ -39,7 +39,10 @@ export function MultiScatter({
       <div className={styles.legend}>
         {series.map((s) => (
           <span key={s.key} className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: s.color }} />
+            <span
+              className={styles.legendDot}
+              style={{ background: s.color }}
+            />
             {s.label}
           </span>
         ))}
@@ -100,7 +103,10 @@ export function MultiScatter({
               name={s.label}
               fill={s.color}
               fillOpacity={0.75}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           ))}
         </ScatterChart>

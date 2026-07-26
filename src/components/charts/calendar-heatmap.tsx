@@ -38,7 +38,9 @@ function weekdayIndex(iso: string): number {
 // before the first date's weekday are padded with nulls.
 function toWeeks(days: HeatmapDay[]): (HeatmapDay | null)[][] {
   const weeks: (HeatmapDay | null)[][] = [];
-  let week: (HeatmapDay | null)[] = new Array(days.length > 0 ? weekdayIndex(days[0].date) : 0).fill(null);
+  let week: (HeatmapDay | null)[] = new Array(
+    days.length > 0 ? weekdayIndex(days[0].date) : 0,
+  ).fill(null);
   for (const day of days) {
     week.push(day);
     if (week.length === 7) {
@@ -65,11 +67,15 @@ export function CalendarHeatmap({ data }: { data: HeatmapDay[] }) {
                 <span
                   key={di}
                   className={`${styles.heatmapCell} ${day.avgPain == null ? styles.heatmapEmpty : ""}`}
-                  style={day.avgPain != null ? { background: bucketColor(day.avgPain) } : undefined}
+                  style={
+                    day.avgPain != null
+                      ? { background: bucketColor(day.avgPain) }
+                      : undefined
+                  }
                   // Native tooltip carries the exact value — no color-reading needed.
                   title={`${day.date} — ${day.avgPain == null ? "not logged" : `avg pain ${day.avgPain.toFixed(1)}`}`}
                 />
-              )
+              ),
             )}
           </div>
         ))}
@@ -77,12 +83,19 @@ export function CalendarHeatmap({ data }: { data: HeatmapDay[] }) {
       <div className={styles.heatmapLegend}>
         <span>0</span>
         {RAMP.map((c) => (
-          <span key={c} className={styles.heatmapCell} style={{ background: c }} />
+          <span
+            key={c}
+            className={styles.heatmapCell}
+            style={{ background: c }}
+          />
         ))}
         <span>5+ avg pain</span>
         <span style={{ marginLeft: "0.75rem" }}>
-          <span className={`${styles.heatmapCell} ${styles.heatmapEmpty}`} style={{ display: "inline-block", verticalAlign: "middle" }} />
-          {" "}not logged
+          <span
+            className={`${styles.heatmapCell} ${styles.heatmapEmpty}`}
+            style={{ display: "inline-block", verticalAlign: "middle" }}
+          />{" "}
+          not logged
         </span>
       </div>
     </div>

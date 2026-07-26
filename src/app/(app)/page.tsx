@@ -1,46 +1,34 @@
 // / — the dashboard (PLAN.md §3). Server component: loads all logs, maps
 // them to domain shape, computes every derived series with the pure domain
-// functions, and renders stat tiles + the four charts. No business logic
-// here beyond wiring — calculations live in domain/, chart internals in
-// components/charts/.
+// functions, and renders stat tiles + the calendar heatmap directly. The
+// three range-dependent charts render via <DashboardCharts>, a client
+// component that owns the time-range picker's state and does its own
+// (cheap, in-memory) filtering — see dashboard-charts.tsx for why that's a
+// client component instead of a searchParam this page reads.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import {
   daysForRange,
-  parseTimeRange,
   TIME_RANGE_COMPARISON_LABELS,
   TIME_RANGE_HINT_PHRASES,
 } from "@/lib/time-range";
-import {
-  dailyPainAverage,
-  filterWindow,
-  windowComparison,
-} from "@/domain/aggregate";
+import { dailyPainAverage, windowComparison } from "@/domain/aggregate";
 import { rollingAverage } from "@/domain/rolling";
 import { dailyPhysioVolume } from "@/domain/volume";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
 import { addDays, nextMorningPain } from "@/domain/lag";
 import { StatTile } from "@/components/ui/stat-tile";
-import { TimeRangeSelector } from "@/components/ui/time-range-selector";
-import {
-  PainTimeline,
-  type PainTimelinePoint,
-} from "@/components/charts/pain-timeline";
-import {
-  LoadVsSymptoms,
-  type LoadVsSymptomsPoint,
-} from "@/components/charts/load-vs-symptoms";
-import {
-  ProgressionChart,
-  type ProgressionPoint,
-} from "@/components/charts/progression-chart";
+import { DashboardCharts } from "@/components/ui/dashboard-charts";
+import type { PainTimelinePoint } from "@/components/charts/pain-timeline";
+import type { LoadVsSymptomsPoint } from "@/components/charts/load-vs-symptoms";
+import type { ProgressionPoint } from "@/components/charts/progression-chart";
 import {
   CalendarHeatmap,
   type HeatmapDay,
 } from "@/components/charts/calendar-heatmap";
-import styles from "./dashboard.module.css";
+import styles from "@/components/ui/dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
 export const dynamic = "force-dynamic";
@@ -57,22 +45,14 @@ function fmtDelta(
   return diff >= 0 ? `+${text}` : `−${text}`;
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ range?: string }>;
-}) {
+export default async function DashboardPage() {
   const user = await getCurrentUser();
   const logs = await dailyLogRepository.listAll(user.id);
   const days = toDomainDays(logs);
   const today = todayIso();
 
-  const { range: rangeParam } = await searchParams;
-  const range = parseTimeRange(rangeParam);
-  const rangeDays = daysForRange(range);
-
-  // ── Stat tiles: always the last 7 days, independent of the selected
-  // chart range ────────────────────────────────────────────────────────
+  // ── Stat tiles: always the last 7 days, independent of the chart range
+  // picked in <DashboardCharts> below ─────────────────────────────────────
   // A stat tile answers "how am I doing right now" — averaging that over
   // months smears an improving baseline together with early, low numbers
   // and answers a different question than the tile is for. Charts benefit
@@ -105,11 +85,7 @@ export default async function DashboardPage({
       ? previous.physioVolume / previous.loggedDays
       : null;
 
-  // ── Pain timeline ─────────────────────────────────────────────────────
-  // Rolling average is computed over the FULL history first, then the
-  // result is sliced to the selected range below — otherwise the first
-  // visible days of a narrowed range would show an artificially truncated
-  // average with no earlier days to draw context from.
+  // ── Pain timeline (full history — <DashboardCharts> slices to range) ──
   const painAvgs = days.map(dailyPainAverage);
   const rolling = rollingAverage(painAvgs, 7);
   const fullTimeline: PainTimelinePoint[] = days.map((d, i) => {
@@ -127,13 +103,8 @@ export default async function DashboardPage({
       flareValue: isFlareDay(d) ? Math.max(...readings) : null,
     };
   });
-  const timeline = filterWindow(fullTimeline, today, rangeDays);
 
-  // ── Load vs symptoms (next-morning pain) ──────────────────────────────
-  // Same reasoning: nextMorningPain looks up the FOLLOWING day within the
-  // full `days` array, so it has to run before range-filtering, or the
-  // last visible day in a narrowed range would wrongly show no next-day
-  // pain (its real next day would already have been filtered out).
+  // ── Load vs symptoms, full history (next-morning pain) ────────────────
   const nextPain = nextMorningPain(days);
   const fullLoad: LoadVsSymptomsPoint[] = days.map((d, i) => ({
     date: d.date,
@@ -141,9 +112,8 @@ export default async function DashboardPage({
     physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
     nextMorningPain: nextPain[i],
   }));
-  const load = filterWindow(fullLoad, today, rangeDays);
 
-  // ── Progression (physio days only) ────────────────────────────────────
+  // ── Progression, full history (physio days only) ──────────────────────
   const fullProgression: ProgressionPoint[] = days
     .filter((d) => d.exercises.length > 0)
     .map((d) => {
@@ -167,7 +137,6 @@ export default async function DashboardPage({
         physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
       };
     });
-  const progression = filterWindow(fullProgression, today, rangeDays);
 
   // ── Heatmap: full calendar range, unlogged days included ──────────────
   // Deliberately ignores the selected time range — a heatmap narrowed to
@@ -183,134 +152,97 @@ export default async function DashboardPage({
 
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
-      <div className={styles.headerRow}>
-        <header className="page-header">
-          <h1>Welcome back, {user.name}.</h1>
-          <p className="subtitle">
-            {/* A template literal, not JSX text + {expr}: JSX collapses the
-                whitespace around an expression when the surrounding text
-                wraps across lines, silently eating the space right after
-                {days.length} ("54days logged"). One expression sidesteps
-                that entirely. */}
-            {`${days.length} days logged · ${
-              flareGap != null
-                ? `${flareGap} ${flareGap === 1 ? "day" : "days"} since flare`
-                : "no flares logged"
-            }`}
-          </p>
-        </header>
-        <div className={styles.rangeControl}>
-          <TimeRangeSelector />
-          <p className={styles.rangeCaption}>
-            Applies to the charts below — stat tiles always show the last 7
-            days.
-          </p>
+      <header className="page-header">
+        <h1>Welcome back, {user.name}.</h1>
+        <p className="subtitle">
+          {/* A template literal, not JSX text + {expr}: JSX collapses the
+              whitespace around an expression when the surrounding text
+              wraps across lines, silently eating the space right after
+              {days.length} ("54days logged"). One expression sidesteps
+              that entirely. */}
+          {`${days.length} days logged · ${
+            flareGap != null
+              ? `${flareGap} ${flareGap === 1 ? "day" : "days"} since flare`
+              : "no flares logged"
+          }`}
+        </p>
+      </header>
+
+      <DashboardCharts
+        fullTimeline={fullTimeline}
+        fullLoad={fullLoad}
+        fullProgression={fullProgression}
+        today={today}
+      >
+        <div className={styles.tiles}>
+          <StatTile
+            label="Avg pain (7D)"
+            value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
+            unit="/10"
+            delta={fmtDelta(current.painAvg, previous.painAvg, 1)}
+            deltaIsGood={
+              current.painAvg != null && previous.painAvg != null
+                ? current.painAvg <= previous.painAvg
+                : null
+            }
+            deltaLabel={statDeltaLabel}
+            hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
+          />
+          <StatTile
+            label="Avg daily steps (7D)"
+            value={
+              current.stepsAvg != null
+                ? Math.round(current.stepsAvg).toLocaleString()
+                : "—"
+            }
+            delta={fmtDelta(
+              current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
+              previous.stepsAvg != null ? Math.round(previous.stepsAvg) : null,
+              0,
+            )}
+            deltaIsGood={
+              current.stepsAvg != null && previous.stepsAvg != null
+                ? current.stepsAvg >= previous.stepsAvg
+                : null
+            }
+            deltaLabel={statDeltaLabel}
+            hint={`Average of each day's daily steps, ${statRangePhrase}.`}
+          />
+          <StatTile
+            label="Avg sleep (7D)"
+            value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
+            unit="hrs"
+            delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
+            deltaIsGood={
+              current.sleepAvg != null && previous.sleepAvg != null
+                ? current.sleepAvg >= previous.sleepAvg
+                : null
+            }
+            deltaLabel={statDeltaLabel}
+            hint={`Average of each night's sleep, ${statRangePhrase}.`}
+          />
+          <StatTile
+            label="Physio load (7D)"
+            value={
+              currentPhysioLoadAvg != null
+                ? Math.round(currentPhysioLoadAvg).toLocaleString()
+                : "—"
+            }
+            delta={fmtDelta(
+              currentPhysioLoadAvg != null ? Math.round(currentPhysioLoadAvg) : null,
+              previousPhysioLoadAvg != null ? Math.round(previousPhysioLoadAvg) : null,
+              0,
+            )}
+            deltaIsGood={
+              currentPhysioLoadAvg != null && previousPhysioLoadAvg != null
+                ? currentPhysioLoadAvg >= previousPhysioLoadAvg
+                : null
+            }
+            deltaLabel={statDeltaLabel}
+            hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
+          />
         </div>
-      </div>
-
-      <div className={styles.tiles}>
-        <StatTile
-          label="Avg pain (7D)"
-          value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
-          unit="/10"
-          delta={fmtDelta(current.painAvg, previous.painAvg, 1)}
-          deltaIsGood={
-            current.painAvg != null && previous.painAvg != null
-              ? current.painAvg <= previous.painAvg
-              : null
-          }
-          deltaLabel={statDeltaLabel}
-          hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
-        />
-        <StatTile
-          label="Avg daily steps (7D)"
-          value={
-            current.stepsAvg != null
-              ? Math.round(current.stepsAvg).toLocaleString()
-              : "—"
-          }
-          delta={fmtDelta(
-            current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
-            previous.stepsAvg != null ? Math.round(previous.stepsAvg) : null,
-            0,
-          )}
-          deltaIsGood={
-            current.stepsAvg != null && previous.stepsAvg != null
-              ? current.stepsAvg >= previous.stepsAvg
-              : null
-          }
-          deltaLabel={statDeltaLabel}
-          hint={`Average of each day's daily steps, ${statRangePhrase}.`}
-        />
-        <StatTile
-          label="Avg sleep (7D)"
-          value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
-          unit="hrs"
-          delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
-          deltaIsGood={
-            current.sleepAvg != null && previous.sleepAvg != null
-              ? current.sleepAvg >= previous.sleepAvg
-              : null
-          }
-          deltaLabel={statDeltaLabel}
-          hint={`Average of each night's sleep, ${statRangePhrase}.`}
-        />
-        <StatTile
-          label="Physio load (7D)"
-          value={
-            currentPhysioLoadAvg != null
-              ? Math.round(currentPhysioLoadAvg).toLocaleString()
-              : "—"
-          }
-          delta={fmtDelta(
-            currentPhysioLoadAvg != null
-              ? Math.round(currentPhysioLoadAvg)
-              : null,
-            previousPhysioLoadAvg != null
-              ? Math.round(previousPhysioLoadAvg)
-              : null,
-            0,
-          )}
-          deltaIsGood={
-            currentPhysioLoadAvg != null && previousPhysioLoadAvg != null
-              ? currentPhysioLoadAvg >= previousPhysioLoadAvg
-              : null
-          }
-          deltaLabel={statDeltaLabel}
-          hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
-        />
-      </div>
-
-      <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Pain over time</h2>
-        <p className={styles.cardSubtitle}>
-          Raw readings with the 7-day trend — the line that answers &ldquo;am I
-          actually progressing?&rdquo;
-        </p>
-        <PainTimeline data={timeline} />
-      </section>
-
-      <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Load vs next-morning pain</h2>
-        <p className={styles.cardSubtitle}>
-          What you did each day, paired with how the tendon felt the next
-          morning. Physio load here is the same intensity-weighted metric as the
-          dashboard tile, shown per day instead of summed over the week.
-        </p>
-        <LoadVsSymptoms data={load} />
-      </section>
-
-      <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Physio progression</h2>
-        <p className={styles.cardSubtitle}>
-          Intensity range, hold volume, and Physio load across sessions — the
-          program advancing is progress too. Hold volume and Physio load can
-          move in opposite directions (e.g. longer holds at lower intensity
-          raise one and lower the other), so both are shown rather than just
-          one.
-        </p>
-        <ProgressionChart data={progression} />
-      </section>
+      </DashboardCharts>
 
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Calendar</h2>

@@ -39,7 +39,8 @@ export default function Login() {
 
   const router = useRouter();
 
-  async function login() {
+  async function login(e: React.FormEvent) {
+    e.preventDefault();
     const fieldErrors = validate(email, password);
 
     if (Object.keys(fieldErrors).length > 0) {
@@ -84,7 +85,7 @@ export default function Login() {
         <p className="subtitle">Welcome back.</p>
       </header>
 
-      <div className={styles.card}>
+      <form className={styles.card} onSubmit={login}>
         <div className={styles.field}>
           <Label htmlFor="login-email" className={styles.fieldLabel}>
             Email
@@ -129,7 +130,7 @@ export default function Login() {
 
         <div className={styles.actions}>
           <Button
-            onClick={login}
+            type="submit"
             disabled={isLoading}
             fluid
             size="large"
@@ -141,7 +142,7 @@ export default function Login() {
             Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>
           </p>
         </div>
-      </div>
+      </form>
     </main>
   );
 }

@@ -76,7 +76,8 @@ export default function Signup() {
     return () => clearTimeout(timer);
   }, [password, confirmPassword]);
 
-  async function signup() {
+  async function signup(e: React.FormEvent) {
+    e.preventDefault();
     const fieldErrors = validate(name, email, password, confirmPassword);
 
     if (Object.keys(fieldErrors).length > 0) {
@@ -113,7 +114,7 @@ export default function Signup() {
         <p className="subtitle">Your own private set of logs.</p>
       </header>
 
-      <div className={styles.card}>
+      <form className={styles.card} onSubmit={signup}>
         <div className={styles.field}>
           <Label htmlFor="signup-name" className={styles.fieldLabel}>
             Name
@@ -208,7 +209,7 @@ export default function Signup() {
             <span className={styles.fieldError}>{generalError}</span>
           )}
           <Button
-            onClick={signup}
+            type="submit"
             disabled={isLoading}
             fluid
             size="large"
@@ -220,7 +221,7 @@ export default function Signup() {
             Already have an account? <Link href="/login">Log in</Link>
           </p>
         </div>
-      </div>
+      </form>
     </main>
   );
 }

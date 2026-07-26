@@ -17,3 +17,15 @@ export function nextMorningPain(days: DomainDay[]): (number | null)[] {
   const byDate = new Map(days.map((d) => [d.date, d]));
   return days.map((d) => byDate.get(addDays(d.date, 1))?.painMorning ?? null);
 }
+
+// Same lag, the following day's daytime/night pain — load can show up in
+// any of the next day's readings, not just the first one taken.
+export function nextDaytimePain(days: DomainDay[]): (number | null)[] {
+  const byDate = new Map(days.map((d) => [d.date, d]));
+  return days.map((d) => byDate.get(addDays(d.date, 1))?.painDaytime ?? null);
+}
+
+export function nextNightPain(days: DomainDay[]): (number | null)[] {
+  const byDate = new Map(days.map((d) => [d.date, d]));
+  return days.map((d) => byDate.get(addDays(d.date, 1))?.painNight ?? null);
+}

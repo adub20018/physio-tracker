@@ -1,9 +1,10 @@
 // Load vs symptoms — answers "what did I do before it flared?". Three small
 // panels stacked on a shared, hover-synchronized x-axis: daily steps, physio
-// load (intensity-weighted — see domain/volume.ts), and the NEXT morning's
-// pain (load today, symptoms tomorrow — tendon response lags ~24h).
-// Deliberately not one dual-axis chart: the measures live on different
-// scales, so each gets its own panel and axis.
+// load (intensity-weighted — see domain/volume.ts), and the NEXT day's
+// morning/daytime/night pain (load today, symptoms tomorrow — tendon
+// response lags ~24h, and can show up in any of the next day's readings,
+// not just the first one taken). Deliberately not one dual-axis chart: the
+// measures live on different scales, so each gets its own panel and axis.
 "use client";
 
 import {
@@ -20,12 +21,14 @@ import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import styles from "./charts.module.css";
 
-// One day of load paired with the following morning's pain.
+// One day of load paired with the following day's pain, all three readings.
 export type LoadVsSymptomsPoint = {
   date: string;
   steps: number | null;
   physioVolume: number; // 0 on rest days
   nextMorningPain: number | null;
+  nextDaytimePain: number | null;
+  nextNightPain: number | null;
 };
 
 // Shared axis/grid props for the three synchronized panels.
@@ -45,6 +48,14 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
   return (
     <XAxis
       dataKey="date"
+      // Recharts auto-picks "band" scale for a panel with a Bar (which needs
+      // bandwidth to size the bar) and "point" scale otherwise — since the
+      // steps/load panels have Bars but this synced panel is Line-only, left
+      // on auto they'd get different scales. Band and point scales agree
+      // near the middle of the domain but diverge toward the edges, which is
+      // exactly the "hover cursor drifts off the line at the ends" bug.
+      // Forcing band scale here too keeps every synced panel identical.
+      scale="band"
       tickFormatter={shortDate}
       tick={CHART_CHROME.tick}
       axisLine={{ stroke: CHART_CHROME.axisLine }}
@@ -61,17 +72,40 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
     <div>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.steps }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.steps }}
+          />
           Steps
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.volume }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.volume }}
+          />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %, for that day. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds with no intensity factored in." />
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.rollingAvg }} />
-          Next-morning pain
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.morning }}
+          />
+          Morning
+        </span>
+        <span className={styles.legendItem}>
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.daytime }}
+          />
+          Daytime
+        </span>
+        <span className={styles.legendItem}>
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.night }}
+          />
+          Night
         </span>
       </div>
 
@@ -84,7 +118,11 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             below the 0 gridline, so the "0" tick label gets clipped by the
             container edge without it. */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
@@ -104,7 +142,16 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
             />
-            <Bar dataKey="steps" name="Steps" fill={SERIES.steps} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar
+              dataKey="steps"
+              name="Steps"
+              fill={SERIES.steps}
+              radius={[3, 3, 0, 0]}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
           </ComposedChart>
         </ResponsiveContainer>
 
@@ -112,7 +159,11 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
 
         {/* Panel 2: physio load */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
@@ -134,16 +185,25 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
               name="Physio load"
               fill={SERIES.volume}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>
 
         <div className={styles.panelDivider} />
 
-        {/* Panel 3: next-morning pain (the symptom response) */}
+        {/* Panel 3: next-day pain (the symptom response), all three
+            readings — load can show up at any point in the next day, not
+            just the first reading taken. */}
         <ResponsiveContainer width="100%" height={130}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden={false} />
             <YAxis
@@ -161,12 +221,39 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             />
             <Line
               dataKey="nextMorningPain"
-              name="Next-morning pain"
-              stroke={SERIES.rollingAvg}
+              name="Morning"
+              stroke={SERIES.morning}
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
+            <Line
+              dataKey="nextDaytimePain"
+              name="Daytime"
+              stroke={SERIES.daytime}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
+            />
+            <Line
+              dataKey="nextNightPain"
+              name="Night"
+              stroke={SERIES.night}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={true}
+              animationBegin={75}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>

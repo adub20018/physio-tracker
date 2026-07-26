@@ -13,12 +13,23 @@ export type StatTileProps = {
   delta?: string | null;
   // Whether an increase is good ("up") or bad ("down"); styles the delta.
   deltaIsGood?: boolean | null;
+  // What the delta is compared against ("vs previous month") — the caller
+  // knows the comparison window, since it depends on the selected time range.
+  deltaLabel?: string;
   // Optional formula/definition shown in a "?" tooltip — for numbers whose
   // meaning isn't obvious from the label alone.
   hint?: string;
 };
 
-export function StatTile({ label, value, unit, delta, deltaIsGood, hint }: StatTileProps) {
+export function StatTile({
+  label,
+  value,
+  unit,
+  delta,
+  deltaIsGood,
+  deltaLabel = "vs previous period",
+  hint,
+}: StatTileProps) {
   return (
     <div className={styles.tile}>
       <span className={styles.label}>
@@ -35,7 +46,7 @@ export function StatTile({ label, value, unit, delta, deltaIsGood, hint }: StatT
             deltaIsGood == null ? "" : deltaIsGood ? styles.deltaGood : styles.deltaBad
           }`}
         >
-          {delta} vs last week
+          {delta} {deltaLabel}
         </span>
       )}
     </div>

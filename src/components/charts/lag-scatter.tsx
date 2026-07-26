@@ -82,7 +82,10 @@ export function LagScatter({
           data={points}
           fill={SERIES.rollingAvg}
           fillOpacity={0.75}
-          isAnimationActive={false}
+          isAnimationActive={true}
+          animationDuration={300}
+          animationBegin={0}
+          animationEasing="linear"
         />
       </ScatterChart>
     </ResponsiveContainer>

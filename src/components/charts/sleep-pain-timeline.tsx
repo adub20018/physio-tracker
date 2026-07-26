@@ -35,19 +35,31 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
     <div>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: SERIES.sleep }} />
+          <span
+            className={styles.legendSwatch}
+            style={{ background: SERIES.sleep }}
+          />
           Sleep (hours)
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.morning }} />
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.morning }}
+          />
           Morning
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.daytime }} />
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.daytime }}
+          />
           Daytime
         </span>
         <span className={styles.legendItem}>
-          <span className={styles.legendLine} style={{ background: SERIES.night }} />
+          <span
+            className={styles.legendLine}
+            style={{ background: SERIES.night }}
+          />
           Night
         </span>
       </div>
@@ -59,9 +71,15 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
             the 0 tick's <text> entirely on panels like this one — both
             lessons learned on the Load vs symptoms chart. */}
         <ResponsiveContainer width="100%" height={110}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 8, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <XAxis dataKey="date" hide height={4} />
+            {/* scale="band" explicitly, matching Panel 2's Line-only axis —
+                see the note there for why both panels need to agree. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               domain={[0, "auto"]}
               interval={0}
@@ -80,7 +98,10 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
               name="Sleep (hours)"
               fill={SERIES.sleep}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>
@@ -91,10 +112,21 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
             just affect the immediate waking reading, so all of the day's
             readings are shown against the same night's sleep. */}
         <ResponsiveContainer width="100%" height={130}>
-          <ComposedChart data={data} syncId={SYNC_ID} margin={{ top: 4, right: 12, bottom: 0, left: -18 }}>
+          <ComposedChart
+            data={data}
+            syncId={SYNC_ID}
+            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+          >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
+            {/* scale="band": this panel is Line-only, so Recharts would
+                otherwise auto-pick "point" scale here vs "band" on Panel 1
+                (which has a Bar) — the two scales agree near the middle of
+                the domain but diverge toward the edges, which desyncs the
+                hover cursor from the line there. Forcing both to band keeps
+                them identical. */}
             <XAxis
               dataKey="date"
+              scale="band"
               tickFormatter={shortDate}
               tick={CHART_CHROME.tick}
               axisLine={{ stroke: CHART_CHROME.axisLine }}
@@ -121,7 +153,10 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
             <Line
               dataKey="painDaytime"
@@ -130,7 +165,10 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
             <Line
               dataKey="painNight"
@@ -139,7 +177,10 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationBegin={150}
+              animationDuration={300}
+              animationEasing="linear"
             />
           </ComposedChart>
         </ResponsiveContainer>

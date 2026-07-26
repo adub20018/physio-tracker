@@ -3,15 +3,17 @@ import { describe, expect, it } from "vitest";
 import { correlationStrength, pairSeries, pearson } from "../correlation";
 
 describe("pairSeries", () => {
+  const dates = ["2026-07-01", "2026-07-02", "2026-07-03", "2026-07-04"];
+
   it("keeps only positions where both values exist", () => {
-    const pairs = pairSeries([1, null, 3, 4], [10, 20, null, 40], ["a", "b", "c", "d"]);
+    const pairs = pairSeries([1, null, 3, 4], [10, 20, null, 40], ["a", "b", "c", "d"], dates);
     expect(pairs).toEqual([
-      { x: 1, y: 10, label: "a" },
-      { x: 4, y: 40, label: "d" },
+      { x: 1, y: 10, label: "a", date: "2026-07-01" },
+      { x: 4, y: 40, label: "d", date: "2026-07-04" },
     ]);
   });
   it("rejects mismatched lengths", () => {
-    expect(() => pairSeries([1], [1, 2], ["a", "b"])).toThrow();
+    expect(() => pairSeries([1], [1, 2], ["a", "b"], ["2026-07-01", "2026-07-02"])).toThrow();
   });
 });
 

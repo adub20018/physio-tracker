@@ -1,0 +1,8 @@
+/* Pushed to the right edge of its flex row via auto margin rather than the
+   row's own justify-content — that way it stays right-aligned even when the
+   row wraps (justify-content: space-between only pushes it right when it
+   shares a line with the header; once it wraps to its own line, a lone
+   flex item under space-between just sits at flex-start, i.e. the left). */
+.group {
+  margin-left: auto;
+}

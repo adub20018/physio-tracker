@@ -58,8 +58,7 @@ export default function Login() {
         return;
       }
       console.log("Successfully logged in");
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     });
   }
 

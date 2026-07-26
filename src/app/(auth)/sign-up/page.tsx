@@ -28,14 +28,21 @@ type FieldErrors = {
   confirmPassword?: string;
 };
 
-function validate(name: string, email: string, password: string, confirmPassword: string): FieldErrors {
+function validate(
+  name: string,
+  email: string,
+  password: string,
+  confirmPassword: string,
+): FieldErrors {
   const errors: FieldErrors = {};
   if (name.trim() === "") errors.name = "Enter your name.";
-  if (email.trim() === "" || !EMAIL_PATTERN.test(email)) errors.email = "Enter a valid email address.";
+  if (email.trim() === "" || !EMAIL_PATTERN.test(email))
+    errors.email = "Enter a valid email address.";
   if (password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `Needs at least ${MIN_PASSWORD_LENGTH} characters.`;
   }
-  if (confirmPassword !== password) errors.confirmPassword = "Passwords don't match.";
+  if (confirmPassword !== password)
+    errors.confirmPassword = "Passwords don't match.";
   return errors;
 }
 
@@ -60,7 +67,9 @@ export default function Signup() {
       setErrors((prev) => ({
         ...prev,
         confirmPassword:
-          confirmPassword === "" || confirmPassword === password ? undefined : "Passwords don't match.",
+          confirmPassword === "" || confirmPassword === password
+            ? undefined
+            : "Passwords don't match.",
       }));
     }, delay);
     return () => clearTimeout(timer);
@@ -76,11 +85,12 @@ export default function Signup() {
     startTransition(async () => {
       const result = await auth.signUp.email({ email, password, name });
       if (result.error) {
-        setErrors({ email: result.error.message ?? "Couldn't create an account." });
+        setErrors({
+          email: result.error.message ?? "Couldn't create an account.",
+        });
         return;
       }
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     });
   }
 
@@ -108,7 +118,9 @@ export default function Signup() {
               setErrors((prev) => ({ ...prev, name: undefined }));
             }}
           />
-          {errors.name && <span className={styles.fieldError}>{errors.name}</span>}
+          {errors.name && (
+            <span className={styles.fieldError}>{errors.name}</span>
+          )}
         </div>
         <div className={styles.field}>
           <Label htmlFor="signup-email" className={styles.fieldLabel}>
@@ -126,7 +138,9 @@ export default function Signup() {
               setErrors((prev) => ({ ...prev, email: undefined }));
             }}
           />
-          {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+          {errors.email && (
+            <span className={styles.fieldError}>{errors.email}</span>
+          )}
         </div>
         <div className={styles.field}>
           <Label htmlFor="signup-password" className={styles.fieldLabel}>
@@ -140,13 +154,22 @@ export default function Signup() {
             value={password}
             onValueChange={(value) => {
               setPassword(value);
-              setErrors((prev) => ({ ...prev, password: undefined, confirmPassword: undefined }));
+              setErrors((prev) => ({
+                ...prev,
+                password: undefined,
+                confirmPassword: undefined,
+              }));
             }}
           />
-          {errors.password && <span className={styles.fieldError}>{errors.password}</span>}
+          {errors.password && (
+            <span className={styles.fieldError}>{errors.password}</span>
+          )}
         </div>
         <div className={styles.field}>
-          <Label htmlFor="signup-confirm-password" className={styles.fieldLabel}>
+          <Label
+            htmlFor="signup-confirm-password"
+            className={styles.fieldLabel}
+          >
             Confirm password
           </Label>
           <PasswordField
@@ -160,11 +183,19 @@ export default function Signup() {
               setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
             }}
           />
-          {errors.confirmPassword && <span className={styles.fieldError}>{errors.confirmPassword}</span>}
+          {errors.confirmPassword && (
+            <span className={styles.fieldError}>{errors.confirmPassword}</span>
+          )}
         </div>
 
         <div className={styles.actions}>
-          <Button onClick={signup} disabled={isPending} fluid size="large" severity="contrast">
+          <Button
+            onClick={signup}
+            disabled={isPending}
+            fluid
+            size="large"
+            severity="contrast"
+          >
             {isPending ? "Creating account…" : "Sign up"}
           </Button>
           <p className={styles.switchLink}>

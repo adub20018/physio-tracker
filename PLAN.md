@@ -265,3 +265,29 @@ None remaining — plan approved, ready for Phase 0.
 - **Smart watch data import**: motivated the move to Postgres ahead of schedule (more
   headroom for higher-volume time-series data than SQLite/Turso would comfortably give).
   Not yet scoped.
+
+## 9. Potential charts (backlog)
+
+Dashboard stat-tile/chart ideas discussed but deliberately deferred until the MVP is more
+fleshed out (and, for the Garmin-dependent ones, until that import exists at all). Not
+scheduled to a phase — pull from here when there's room.
+
+- **Pain-vs-load trend** — not a stat tile: with the current amount of data, a single
+  Pearson r isn't meaningful yet, and a static correlation number wouldn't show what's
+  actually wanted, which is whether the pain-per-unit-load relationship is *improving*
+  over time (handling more physio load for less pain). Needs either a rolling correlation
+  recomputed over trailing multi-week windows, or a load-vs-pain scatter shaded by date so
+  the cluster's drift over time is visible directly.
+- **Time-of-day pain skew** — a chart, not a tile. The existing "Pain over time" chart
+  already plots morning/daytime/night as separate series but only computes one combined
+  7-day rolling average; running `rollingAverage()` separately on each of the three
+  series (instead of once on the combined data) and plotting three trend lines would
+  surface whether pain is shifting between times of day (e.g. morning-dominant →
+  night-dominant) — a pattern the combined average hides.
+- **Sleep stage correlation** — depends on Garmin import (not yet scoped). Once raw stage
+  minutes (deep/REM/light/awake) are available, run the same correlation machinery
+  already used for load-vs-pain against each stage separately, rather than trusting
+  Garmin's opaque composite "sleep score," which blends in inputs (restlessness, bedtime
+  consistency) unrelated to tendon recovery specifically.
+- **Logging streak** — a small badge/icon (e.g. near the account menu), not a stat tile.
+  Nice-to-have habit nudge, not a rehab metric.

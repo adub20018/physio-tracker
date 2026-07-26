@@ -132,7 +132,11 @@ export default async function DashboardPage() {
               wraps across lines, silently eating the space right after
               {days.length} ("54days logged"). One expression sidesteps
               that entirely. */}
-          {`${days.length} days logged · flare threshold 3/10 per physio guidance · weekly tiles cover the last 7 complete days (today excluded until it's fully logged)`}
+          {`${days.length} days logged · ${
+            flareGap != null
+              ? `${flareGap} ${flareGap === 1 ? "day" : "days"} since flare`
+              : "no flares logged"
+          }`}
         </p>
       </header>
 
@@ -190,12 +194,6 @@ export default async function DashboardPage() {
           )}
           deltaIsGood={current.physioVolume >= previous.physioVolume}
           hint="Sum of each day's sets × hold time × average intensity %, added up over the last 7 complete days. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds."
-        />
-        <StatTile
-          label="Days since flare"
-          value={flareGap != null ? String(flareGap) : "—"}
-          unit={flareGap === 1 ? "day" : "days"}
-          hint="Days since any pain reading last hit 3/10 or higher — the threshold your physio set for 'safe to continue exercises.' Counts today, so a flare logged this morning shows as 0 immediately."
         />
       </div>
 

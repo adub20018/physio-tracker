@@ -60,14 +60,15 @@ export default function Login() {
           result.error.message ??
             "Couldn't log in — check your email and password.",
         );
+        setIsLoading(false);
         return;
       }
       console.log("Successfully logged in");
       router.replace("/");
-    } catch {
-      setCredentialError("Something went wrong. Please try again.");
-    } finally {
+    } catch (error) {
+      console.error("Login failed: ", error);
       setIsLoading(false);
+      setCredentialError("Something went wrong. Please try again.");
     }
   }
 

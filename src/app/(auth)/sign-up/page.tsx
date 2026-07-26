@@ -94,15 +94,15 @@ export default function Signup() {
 
       if (result.error) {
         setGeneralError(result.error.message ?? "Couldn't create an account.");
+        setIsLoading(false);
         return;
       }
 
       router.replace("/");
     } catch (error) {
       console.error("Signup failed: ", error);
-      setGeneralError("Something went wrong. Please try again.");
-    } finally {
       setIsLoading(false);
+      setGeneralError("Something went wrong. Please try again.");
     }
   }
 

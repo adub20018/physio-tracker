@@ -90,6 +90,7 @@ export default function Signup() {
         });
         return;
       }
+      router.refresh();
       router.replace("/");
     });
   }

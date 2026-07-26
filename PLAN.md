@@ -1,4 +1,4 @@
-# Physio Tracker — Project Plan
+# PhysiMate — Project Plan
 
 A personal web dashboard to track rehab progress for a tibialis posterior tendon injury,
 replacing the current spreadsheet with structured daily logging and visualisations that

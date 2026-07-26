@@ -40,13 +40,13 @@ export async function GET() {
       summarizeExercises(l),
       l.activityNotes,
       l.generalNotes,
-    ])
+    ]),
   );
 
   return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="physio-tracker-${todayIso()}.csv"`,
+      "Content-Disposition": `attachment; filename="PhysiMate-${todayIso()}.csv"`,
     },
   });
 }

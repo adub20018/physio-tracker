@@ -26,7 +26,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Physio Tracker",
+  title: "PhysiMate",
   description: "Personal rehab progress dashboard",
 };
 

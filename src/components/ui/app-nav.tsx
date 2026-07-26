@@ -15,6 +15,7 @@ import { Menu } from "@primereact/ui/menu";
 import { Drawer } from "@primereact/ui/drawer";
 import { auth } from "@/auth/client";
 import { AccountMenu, AccountSummary } from "./account-menu";
+import { Wordmark } from "./wordmark";
 
 // Icons — subpath imports so each pulls in only its own module, not the
 // whole icon set.
@@ -56,8 +57,8 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             aren't processed by the bundler, so they're referenced by URL,
             not import, and don't carry auto-derived dimensions). */}
         <Image
-          src="/physio-tracker-logo.svg"
-          alt="Physio Tracker"
+          src="/PhysiMate-logo.svg"
+          alt="PhysiMate"
           width={26}
           height={36}
           priority
@@ -106,9 +107,7 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             <Drawer.Popup className={styles.popup}>
               <Drawer.Header className={styles.drawerHeader}>
                 <Drawer.Title className={styles.drawerTitle}>
-                  <Link href="/" className="wordmark">
-                    physio<em>track</em>
-                  </Link>
+                  <Wordmark />
                 </Drawer.Title>
                 <Drawer.Close className={styles.close} aria-label="Close menu">
                   <Times size={18} />

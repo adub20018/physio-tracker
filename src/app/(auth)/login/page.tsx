@@ -5,7 +5,7 @@
 // password, matching the sign-up page's per-field error styling.
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { InputText } from "@primereact/ui/inputtext";
@@ -35,31 +35,41 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [credentialError, setCredentialError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
-  function login() {
+  async function login() {
     const fieldErrors = validate(email, password);
+
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       setCredentialError(null);
       return;
     }
+
+    setIsLoading(true);
     setErrors({});
     setCredentialError(null);
-    startTransition(async () => {
+
+    try {
       const result = await auth.signIn.email({ email, password });
+
       if (result.error) {
         setCredentialError(
           result.error.message ??
             "Couldn't log in — check your email and password.",
         );
+        setIsLoading(false);
         return;
       }
       console.log("Successfully logged in");
       router.replace("/");
-    });
+    } catch (error) {
+      console.error("Login failed: ", error);
+      setIsLoading(false);
+      setCredentialError("Something went wrong. Please try again.");
+    }
   }
 
   function clearError(field: keyof FieldErrors) {
@@ -120,12 +130,12 @@ export default function Login() {
         <div className={styles.actions}>
           <Button
             onClick={login}
-            disabled={isPending}
+            disabled={isLoading}
             fluid
             size="large"
             severity="contrast"
           >
-            {isPending ? "Logging in…" : "Log in"}
+            {isLoading ? "Logging in…" : "Log in"}
           </Button>
           <p className={styles.switchLink}>
             Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>

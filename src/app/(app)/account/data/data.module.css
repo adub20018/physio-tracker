@@ -1,0 +1,73 @@
+/* /account/data — an info card (what's stored) plus one action card
+   (export/delete), same card language as the rest of the account pages. */
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+  padding-left: 1.1rem;
+}
+
+.list strong {
+  color: var(--foreground);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.row + .row {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.rowHint {
+  font-size: 0.82rem;
+  color: var(--muted);
+}

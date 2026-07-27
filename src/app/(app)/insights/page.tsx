@@ -8,7 +8,7 @@
 // the Weekly report card are range-independent and render directly here.
 // "Sleep & pain over time" moved to the dashboard.
 import { getCurrentUser } from "@/auth/get-current-user";
-import { dailyLogRepository } from "@/repositories";
+import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
@@ -26,7 +26,6 @@ import {
   type WeeklyRow,
 } from "@/components/ui/weekly-report-table";
 import { InsightsCharts } from "@/components/ui/insights-charts";
-import { FLARE_PAIN_THRESHOLD } from "@/domain/constants";
 import styles from "@/components/ui/dashboard.module.css";
 
 // Always render at request time — insights must reflect the latest logs.
@@ -61,7 +60,10 @@ function weekLabel(startIso: string, endIso: string): string {
 
 export default async function InsightsPage() {
   const user = await getCurrentUser();
-  const logs = await dailyLogRepository.listAll(user.id);
+  const [logs, { flareThreshold }] = await Promise.all([
+    dailyLogRepository.listAll(user.id),
+    userSettingsRepository.get(user.id),
+  ]);
   const days = toDomainDays(logs);
   const logByDate = new Map(logs.map((l) => [l.date, l]));
   const today = todayIso();
@@ -114,6 +116,7 @@ export default async function InsightsPage() {
   const episodes: FlareEpisodeView[] = flareEpisodes(
     days,
     FLARE_LOOKBACK_DAYS,
+    flareThreshold,
   ).map((ep) => {
     // The reading(s) that crossed the threshold, with explicit slot names.
     const readings = (
@@ -125,7 +128,7 @@ export default async function InsightsPage() {
     )
       .filter((entry): entry is [(typeof entry)[0], number] => {
         const v = entry[1];
-        return v != null && v >= FLARE_PAIN_THRESHOLD;
+        return v != null && v >= flareThreshold;
       })
       .map(([slot, value]) => ({ slot, value }));
     return {
@@ -148,7 +151,7 @@ export default async function InsightsPage() {
   });
 
   // ── Weekly report card with week-over-week pain deltas ────────────────
-  const weeks = weeklyReport(days);
+  const weeks = weeklyReport(days, flareThreshold);
   const weeklyRows: WeeklyRow[] = weeks.map((w, i) => {
     const prev = i > 0 ? weeks[i - 1] : null;
     const delta =
@@ -189,7 +192,7 @@ export default async function InsightsPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Flare review</h2>
         <p className={styles.cardSubtitle}>
-          Every day a reading hit {FLARE_PAIN_THRESHOLD}/10, with the {FLARE_LOOKBACK_DAYS} days
+          Every day a reading hit {flareThreshold}/10, with the {FLARE_LOOKBACK_DAYS} days
           leading up to it.
         </p>
         <FlareReview episodes={episodes} />
@@ -200,7 +203,7 @@ export default async function InsightsPage() {
         <p className={styles.cardSubtitle}>
           Averages per calendar week, newest first — click Week to flip the order.
         </p>
-        <WeeklyReportTable rows={weeklyRows} />
+        <WeeklyReportTable rows={weeklyRows} flareThreshold={flareThreshold} />
       </section>
     </main>
   );

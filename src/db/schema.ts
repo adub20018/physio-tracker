@@ -85,6 +85,21 @@ export const exerciseEntries = pgTable("exercise_entries", {
   notes: text("notes"),
 });
 
+// One row per user, holding app config that used to be hardcoded constants
+// (starting with the flare pain threshold — see domain/constants.ts). userId
+// is the primary key rather than a separate id + unique index, since this is
+// inherently a 1:1 relationship with the user, not a log with many rows.
+// New settings get their own nullable/defaulted column here as they're
+// added — no generic JSON blob, so every setting stays typed.
+export const userSettings = pgTable("user_settings", {
+  // References neon_auth.user.id — same cross-schema situation as
+  // dailyLogs.userId (see the comment there); the FK constraint is
+  // hand-written in migrations/0002_mature_imperial_guard.sql.
+  userId: uuid("user_id").primaryKey(),
+  flareThreshold: real("flare_threshold").notNull().default(3),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Row types inferred from the schema, for use by the repository layer.
 export type DailyLog = typeof dailyLogs.$inferSelect;
 export type NewDailyLog = typeof dailyLogs.$inferInsert;

@@ -27,7 +27,10 @@ import { ChartBar } from "@primeicons/react/chart-bar";
 import { History } from "@primeicons/react/history";
 import { Comments } from "@primeicons/react/comments";
 import { SignOut } from "@primeicons/react/sign-out";
-import { Refresh } from "@primeicons/react/refresh";
+import { UserEdit } from "@primeicons/react/user-edit";
+import { SlidersH } from "@primeicons/react/sliders-h";
+import { Database } from "@primeicons/react/database";
+import { Shield } from "@primeicons/react/shield";
 import styles from "./app-nav.module.css";
 
 const LINKS = [
@@ -137,6 +140,43 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                         <span>{label}</span>
                       </Menu.Item>
                     ))}
+                    <Menu.Label className={styles.menuLabel}>Account</Menu.Label>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/profile"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <UserEdit />
+                      <span>Profile</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/preferences"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <SlidersH />
+                      <span>Preferences</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/data"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <Database />
+                      <span>Data</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      as={Link}
+                      href="/account/security"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className={styles.item}
+                    >
+                      <Shield />
+                      <span>Account</span>
+                    </Menu.Item>
                     <Menu.Label className={styles.menuLabel}>Chat</Menu.Label>
                     <Menu.Item disabled className={styles.item}>
                       <Comments />
@@ -147,14 +187,6 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                     <Menu.Item onSelect={logout} className={styles.item}>
                       <SignOut />
                       <span>Logout</span>
-                    </Menu.Item>
-                    <Menu.Item
-                      disabled
-                      onSelect={logout}
-                      className={styles.item}
-                    >
-                      <Refresh />
-                      <span>Reset Password (coming soon)</span>
                     </Menu.Item>
                   </Menu.List>
                 </Menu.Root>

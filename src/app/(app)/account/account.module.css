@@ -1,0 +1,55 @@
+/* Settings-home tile list — one tappable row per settings area, icon +
+   title + short description, stacked (not a grid like /log's overview)
+   since there are few enough tiles that a single column reads better. */
+
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color 0.15s ease;
+}
+
+.tile:hover {
+  border-color: var(--border-strong);
+}
+
+.tileIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--accent);
+}
+
+.tileBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.tileTitle {
+  font-size: 1rem;
+  font-family: var(--font-display);
+}
+
+.tileDescription {
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: break-word;
+}

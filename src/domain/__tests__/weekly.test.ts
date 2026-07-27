@@ -31,7 +31,7 @@ describe("weeklyReport", () => {
       day("2026-07-13", { painMorning: 1, steps: 2000 }), // week of 07-13
       day("2026-07-15", { painMorning: 2, steps: 3000 }), // week of 07-13
     ];
-    const report = weeklyReport(days);
+    const report = weeklyReport(days, 3);
     expect(report.map((w) => w.weekStart)).toEqual(["2026-07-06", "2026-07-13"]);
     expect(report[0].flareDays).toBe(1);
     expect(report[0].weekEnd).toBe("2026-07-12");

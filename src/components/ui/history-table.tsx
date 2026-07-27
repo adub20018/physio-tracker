@@ -40,7 +40,15 @@ const SEVERITY_VAR: Record<PainSeverity, string> = {
 const STEPS_BAR_SCALE = 3000;
 
 // One pain reading: slot letter, severity dot, value ("–" when unrecorded).
-function PainReading({ slot, value }: { slot: string; value: number | null }) {
+function PainReading({
+  slot,
+  value,
+  flareThreshold,
+}: {
+  slot: string;
+  value: number | null;
+  flareThreshold: number;
+}) {
   return (
     <span className={styles.painReading}>
       <span className={styles.slotLetter}>{slot}</span>
@@ -50,7 +58,7 @@ function PainReading({ slot, value }: { slot: string; value: number | null }) {
         <>
           <span
             className={styles.painDot}
-            style={{ background: SEVERITY_VAR[painSeverity(value)] }}
+            style={{ background: SEVERITY_VAR[painSeverity(value, flareThreshold)] }}
           />
           {value}
         </>
@@ -114,7 +122,13 @@ function DayDetail({ row }: { row: HistoryRow }) {
   );
 }
 
-export function HistoryTable({ rows }: { rows: HistoryRow[] }) {
+export function HistoryTable({
+  rows,
+  flareThreshold,
+}: {
+  rows: HistoryRow[];
+  flareThreshold: number;
+}) {
   return (
     <div className={styles.wrapper}>
       <DataTable.Root
@@ -163,9 +177,21 @@ export function HistoryTable({ rows }: { rows: HistoryRow[] }) {
                       </DataTable.Cell>
                       <DataTable.Cell>
                         <span className={styles.painTrio}>
-                          <PainReading slot="M" value={item.painMorning} />
-                          <PainReading slot="D" value={item.painDaytime} />
-                          <PainReading slot="N" value={item.painNight} />
+                          <PainReading
+                            slot="M"
+                            value={item.painMorning}
+                            flareThreshold={flareThreshold}
+                          />
+                          <PainReading
+                            slot="D"
+                            value={item.painDaytime}
+                            flareThreshold={flareThreshold}
+                          />
+                          <PainReading
+                            slot="N"
+                            value={item.painNight}
+                            flareThreshold={flareThreshold}
+                          />
                         </span>
                       </DataTable.Cell>
                       <DataTable.Cell className={styles.steps}>

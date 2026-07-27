@@ -3,7 +3,8 @@
 Pure calculation functions with zero dependencies — the app's single source
 of truth for derived metrics.
 
-- `constants.ts` — flare threshold (≥ 3/10, per physio guidance), pain scale,
+- `constants.ts` — default flare threshold (≥ 3/10, per physio guidance —
+  overridable per user, see repositories/types.ts UserSettings), pain scale,
   severity buckets for color coding
 - `types.ts` — the domain's own view of a logged day (`DomainDay`); the app
   layer maps DB rows into it

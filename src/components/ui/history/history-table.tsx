@@ -6,7 +6,7 @@
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";
-import { SortableHeader } from "./datatable-sort-header";
+import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./history-table.module.css";
 

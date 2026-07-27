@@ -8,7 +8,7 @@
 // app doesn't have configured — revisit once Neon ships self-service
 // deletion, or if that key gets added later.
 import { Button } from "@primereact/ui/button";
-import { ChangePasswordForm } from "@/components/ui/change-password-form";
+import { ChangePasswordForm } from "@/components/ui/account/change-password-form";
 import styles from "./security.module.css";
 
 export default function AccountSecurityPage() {

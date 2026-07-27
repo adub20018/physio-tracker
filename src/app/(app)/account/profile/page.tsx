@@ -3,7 +3,7 @@
 // so this talks to it directly (this isn't app data, PLAN.md §5's
 // repository rule doesn't apply).
 import { getCurrentUser } from "@/auth/get-current-user";
-import { EditProfileForm } from "@/components/ui/edit-profile-form";
+import { EditProfileForm } from "@/components/ui/account/edit-profile-form";
 
 export const dynamic = "force-dynamic";
 

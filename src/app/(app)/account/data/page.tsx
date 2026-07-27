@@ -2,7 +2,7 @@
 // server component apart from the two small client actions (export is a
 // plain download link; delete goes through DeleteDataButton's confirmation).
 import { Button } from "@primereact/ui/button";
-import { DeleteDataButton } from "@/components/ui/delete-data-button";
+import { DeleteDataButton } from "@/components/ui/account/delete-data-button";
 import styles from "./data.module.css";
 
 export default function DataPage() {

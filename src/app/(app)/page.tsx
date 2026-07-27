@@ -24,8 +24,8 @@ import {
   nextMorningPain,
   nextNightPain,
 } from "@/domain/lag";
-import { StatTile } from "@/components/ui/stat-tile";
-import { DashboardCharts } from "@/components/ui/dashboard-charts";
+import { StatTile } from "@/components/ui/dashboard/stat-tile";
+import { DashboardCharts } from "@/components/ui/dashboard/dashboard-charts";
 import type { PainTimelinePoint } from "@/components/charts/pain-timeline";
 import type { LoadVsSymptomsPoint } from "@/components/charts/load-vs-symptoms";
 import type { ProgressionPoint } from "@/components/charts/progression-chart";
@@ -34,7 +34,7 @@ import {
   CalendarHeatmap,
   type HeatmapDay,
 } from "@/components/charts/calendar-heatmap";
-import styles from "@/components/ui/dashboard.module.css";
+import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
 export const dynamic = "force-dynamic";

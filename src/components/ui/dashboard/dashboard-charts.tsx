@@ -14,7 +14,7 @@ import { useMemo } from "react";
 import { filterWindow } from "@/domain/aggregate";
 import { daysForRange } from "@/lib/time-range";
 import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
-import { TimeRangeSelector } from "./time-range-selector";
+import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import {
   PainTimeline,
   type PainTimelinePoint,

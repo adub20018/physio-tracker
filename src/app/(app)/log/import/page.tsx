@@ -4,8 +4,8 @@
 // anyone can bring their own history in, not just the original owner.
 import Link from "next/link";
 import { ChevronLeft } from "@primeicons/react/chevron-left";
-import { XlsxImportForm } from "@/components/ui/xlsx-import-form";
-import styles from "@/components/ui/log-section-header.module.css";
+import { XlsxImportForm } from "@/components/ui/log/xlsx-import-form";
+import styles from "@/components/ui/log/log-section-header.module.css";
 
 export default function ImportPage() {
   return (

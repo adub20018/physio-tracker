@@ -2,7 +2,7 @@
 // with room for more configurable settings as they're added.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { userSettingsRepository } from "@/repositories";
-import { AppConfigForm } from "@/components/ui/app-config-form";
+import { AppConfigForm } from "@/components/ui/account/app-config-form";
 
 export const dynamic = "force-dynamic";
 

@@ -18,7 +18,7 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "./charts.module.css";
 
 // One day of load paired with the following day's pain, all three readings.

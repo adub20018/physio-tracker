@@ -16,9 +16,9 @@ import {
   notesFullText,
   notesProgress,
 } from "@/lib/log-summaries";
-import { LogSectionHeader } from "@/components/ui/log-section-header";
-import { SegmentProgress } from "@/components/ui/segment-progress";
-import sharedStyles from "@/components/ui/log-shared.module.css";
+import { LogSectionHeader } from "@/components/ui/log/log-section-header";
+import { SegmentProgress } from "@/components/ui/log/segment-progress";
+import sharedStyles from "@/components/ui/log/log-shared.module.css";
 import styles from "./review.module.css";
 
 export const dynamic = "force-dynamic";

@@ -22,9 +22,9 @@ import {
   type ScatterSeries,
 } from "@/components/charts/multi-scatter";
 import { SERIES } from "@/components/charts/chart-theme";
-import { InfoTooltip } from "./info-tooltip";
-import { TimeRangeSelector } from "./time-range-selector";
-import styles from "./dashboard.module.css";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
+import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 const RANGE_STORAGE_KEY = "physimate:insights-range";
 

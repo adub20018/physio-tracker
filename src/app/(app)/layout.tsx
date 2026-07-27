@@ -4,7 +4,7 @@
 // proxy.ts's middleware, so getCurrentUser() here is guaranteed a real
 // session; no null-handling needed (see PLAN.md §5).
 import { getCurrentUser } from "@/auth/get-current-user";
-import { AppNav } from "@/components/ui/app-nav";
+import { AppNav } from "@/components/ui/nav/app-nav";
 
 export default async function AppLayout({
   children,

@@ -3,8 +3,8 @@
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
-import { LogSectionHeader } from "@/components/ui/log-section-header";
-import { ActivitySectionForm } from "@/components/ui/activity-section-form";
+import { LogSectionHeader } from "@/components/ui/log/log-section-header";
+import { ActivitySectionForm } from "@/components/ui/log/activity-section-form";
 
 export const dynamic = "force-dynamic";
 

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
-import { NumberField } from "./log-fields";
+import { NumberField } from "@/components/ui/log/log-fields";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
 import { saveFlareThreshold } from "@/app/(app)/account/preferences/actions";
 import styles from "./account-form.module.css";

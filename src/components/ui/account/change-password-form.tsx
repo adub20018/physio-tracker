@@ -9,7 +9,7 @@ import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { auth } from "@/auth/client";
-import { PasswordField } from "./password-field";
+import { PasswordField } from "@/components/ui/shared/password-field";
 import styles from "./account-form.module.css";
 
 const MIN_PASSWORD_LENGTH = 7;

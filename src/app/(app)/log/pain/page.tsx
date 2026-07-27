@@ -3,8 +3,8 @@
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
-import { LogSectionHeader } from "@/components/ui/log-section-header";
-import { PainSectionForm } from "@/components/ui/pain-section-form";
+import { LogSectionHeader } from "@/components/ui/log/log-section-header";
+import { PainSectionForm } from "@/components/ui/log/pain-section-form";
 
 export const dynamic = "force-dynamic";
 

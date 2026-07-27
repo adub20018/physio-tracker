@@ -11,7 +11,7 @@
 // separate serif — plus IBM Plex Mono for data.
 import type { Metadata } from "next";
 import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
-import { AppProviders } from "@/components/ui/app-providers";
+import { AppProviders } from "@/components/app-providers";
 import "./globals.css";
 
 const instrument = Instrument_Sans({

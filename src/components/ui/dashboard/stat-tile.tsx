@@ -1,7 +1,7 @@
 // Stat tile: one headline number with a label and an optional week-over-week
 // delta. Direction-aware coloring: for pain, going DOWN is good; for steps
 // and volume, going UP is good — the tile is told which via `goodDirection`.
-import { InfoTooltip } from "./info-tooltip";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "./stat-tile.module.css";
 
 export type StatTileProps = {

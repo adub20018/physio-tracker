@@ -8,7 +8,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@primereact/ui/button";
 import { deleteAllData } from "@/app/(app)/account/data/actions";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 
 export function DeleteDataButton() {
   const router = useRouter();

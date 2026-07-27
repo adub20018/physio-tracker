@@ -6,8 +6,8 @@
 
 import { DataTable } from "@primereact/ui/datatable";
 import { Tag } from "@primereact/ui/tag";
-import { SortableHeader } from "./datatable-sort-header";
-import { InfoTooltip } from "./info-tooltip";
+import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./weekly-report-table.module.css";
 

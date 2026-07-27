@@ -12,8 +12,8 @@ import { InputText } from "@primereact/ui/inputtext";
 import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { auth } from "@/auth/client";
-import { PasswordField } from "@/components/ui/password-field";
-import styles from "@/components/ui/auth-form.module.css";
+import { PasswordField } from "@/components/ui/shared/password-field";
+import styles from "@/components/ui/auth/auth-form.module.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

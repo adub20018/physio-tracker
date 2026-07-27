@@ -5,8 +5,8 @@
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
-import { LogSectionHeader } from "@/components/ui/log-section-header";
-import { PhysioSectionForm } from "@/components/ui/physio-section-form";
+import { LogSectionHeader } from "@/components/ui/log/log-section-header";
+import { PhysioSectionForm } from "@/components/ui/log/physio-section-form";
 
 export const dynamic = "force-dynamic";
 

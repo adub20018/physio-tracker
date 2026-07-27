@@ -20,13 +20,13 @@ import { pairSeries } from "@/domain/correlation";
 import {
   FlareReview,
   type FlareEpisodeView,
-} from "@/components/ui/flare-review";
+} from "@/components/ui/insights/flare-review";
 import {
   WeeklyReportTable,
   type WeeklyRow,
-} from "@/components/ui/weekly-report-table";
-import { InsightsCharts } from "@/components/ui/insights-charts";
-import styles from "@/components/ui/dashboard.module.css";
+} from "@/components/ui/insights/weekly-report-table";
+import { InsightsCharts } from "@/components/ui/insights/insights-charts";
+import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — insights must reflect the latest logs.
 export const dynamic = "force-dynamic";

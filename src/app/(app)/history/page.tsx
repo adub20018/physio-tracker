@@ -4,7 +4,7 @@
 // client-side HistoryTable.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, userSettingsRepository } from "@/repositories";
-import { HistoryTable, type HistoryRow } from "@/components/ui/history-table";
+import { HistoryTable, type HistoryRow } from "@/components/ui/history/history-table";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
 
 // Always render at request time: this page shows live database contents and

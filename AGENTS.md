@@ -16,7 +16,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Components are **compound**: `<CardRoot><CardBody><CardTitle>…` instead of v10's
   `<Card title=…>`. v10 knowledge does not transfer; check the docs.
 - **SSR styling** requires the `PrimeReactStyleSheet` + `useServerInsertedHTML` wiring that
-  lives in `src/components/ui/app-providers.tsx` (from the official Next.js guide). Without
+  lives in `src/components/app-providers.tsx` (from the official Next.js guide). Without
   it, only theme CSS variables are injected and components render unstyled.
 - **Slot parts often need `as={…}` composition to pick up styling.** e.g.
   `<DatePicker.Input as={InputText} />` (otherwise the input renders with no text-field

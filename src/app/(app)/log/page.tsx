@@ -18,8 +18,8 @@ import {
   notesSummary,
   notesProgress,
 } from "@/lib/log-summaries";
-import { LogDateBar } from "@/components/ui/log-date-bar";
-import { SegmentProgress } from "@/components/ui/segment-progress";
+import { LogDateBar } from "@/components/ui/log/log-date-bar";
+import { SegmentProgress } from "@/components/ui/log/segment-progress";
 import styles from "./log-overview.module.css";
 
 // Always render at request time — the active date's log must be fresh.

@@ -1,0 +1,34 @@
+/* Hidden by default (desktop already has "Log" in the top nav); shown only
+   below the phone breakpoint, matching app-nav.module.css's own
+   hamburger/drawer cutover. position: fixed anchors it to the viewport
+   corner rather than the page, so it stays in place across scroll. z-index
+   sits above page content and the sticky top nav (z-index: 10) but well
+   below any PrimeReact portal overlay (menu/drawer/dialog), which auto-
+   assigns a much higher z-index of its own — so opening one still layers
+   on top of this. */
+.button {
+  display: none;
+}
+
+@media (max-width: 30rem) {
+  .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--background);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    z-index: 20;
+    transition: transform 0.1s ease;
+  }
+
+  .button:active {
+    transform: scale(0.94);
+  }
+}

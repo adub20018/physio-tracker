@@ -4,7 +4,7 @@
 // Physio guidance: pain under 3/10 means exercises can continue. A pain
 // reading at or above this value counts as a flare (PLAN.md §2). This is
 // only the fallback/seed value — the threshold is a per-user setting
-// (Account → App config, see repositories/types.ts UserSettings), so
+// (Account → Preferences, see repositories/types.ts UserSettings), so
 // domain functions take the active threshold as an explicit parameter
 // rather than importing this constant directly.
 export const DEFAULT_FLARE_PAIN_THRESHOLD = 3;

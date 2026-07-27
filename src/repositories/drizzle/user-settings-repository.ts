@@ -34,4 +34,8 @@ export class DrizzleUserSettingsRepository implements UserSettingsRepository {
       .returning();
     return { flareThreshold: row.flareThreshold };
   }
+
+  async delete(userId: string): Promise<void> {
+    await db.delete(userSettings).where(eq(userSettings.userId, userId));
+  }
 }

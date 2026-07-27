@@ -1,6 +1,7 @@
-// App config form for /account/config. Currently just the flare threshold,
-// but the form/action split (one field here, one server action per setting)
-// is meant to extend cleanly as more configurable settings are added.
+// App Settings form for /account/preferences. Currently just the flare
+// threshold, but the form/action split (one field here, one server action
+// per setting) is meant to extend cleanly as more configurable settings
+// are added.
 "use client";
 
 import { useState, useTransition } from "react";
@@ -10,7 +11,7 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { NumberField } from "./log-fields";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
-import { saveFlareThreshold } from "@/app/(app)/account/config/actions";
+import { saveFlareThreshold } from "@/app/(app)/account/preferences/actions";
 import styles from "./account-form.module.css";
 
 export function AppConfigForm({

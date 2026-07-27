@@ -1,6 +1,8 @@
-// Name-change form for /account/profile. Calls Better Auth's client-side
-// updateUser() directly — no server action, since this only touches Neon
-// Auth's own user record, not our app data.
+// Profile form for /account/profile: editable name, plus a display-only
+// email field (changing it needs verification, which requires an email
+// provider this app doesn't have yet — see AGENTS.md/PLAN.md). Name saves
+// via Better Auth's client-side updateUser() directly — no server action,
+// since this only touches Neon Auth's own user record, not our app data.
 "use client";
 
 import { useState } from "react";
@@ -12,7 +14,13 @@ import { Message } from "@primereact/ui/message";
 import { auth } from "@/auth/client";
 import styles from "./account-form.module.css";
 
-export function EditProfileForm({ initialName }: { initialName: string }) {
+export function EditProfileForm({
+  initialName,
+  email,
+}: {
+  initialName: string;
+  email: string;
+}) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [isSaving, setIsSaving] = useState(false);
@@ -66,6 +74,14 @@ export function EditProfileForm({ initialName }: { initialName: string }) {
             setSaved(false);
           }}
         />
+      </div>
+      <div className={styles.field}>
+        <Label htmlFor="profile-email" className={styles.fieldLabel}>
+          Email
+        </Label>
+        {/* Display only for now — changing email needs verification, which
+            requires an email provider this app doesn't have yet. */}
+        <InputText id="profile-email" type="email" value={email} disabled />
       </div>
       <div className={styles.actions}>
         {error && <span className={styles.fieldError}>{error}</span>}

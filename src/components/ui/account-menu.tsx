@@ -18,7 +18,7 @@ import { auth } from "@/auth/client";
 import { SignOut } from "@primeicons/react/sign-out";
 import { UserEdit } from "@primeicons/react/user-edit";
 import { SlidersH } from "@primeicons/react/sliders-h";
-import { Download } from "@primeicons/react/download";
+import { Database } from "@primeicons/react/database";
 import { Shield } from "@primeicons/react/shield";
 import styles from "./account-menu.module.css";
 
@@ -70,20 +70,19 @@ export function AccountMenu({ user }: { user: AccountUser }) {
               <Menu.Group>
                 <Menu.Item as={Link} href="/account/profile">
                   <UserEdit />
-                  Edit profile
+                  Profile
                 </Menu.Item>
-                <Menu.Item as={Link} href="/account/config">
+                <Menu.Item as={Link} href="/account/preferences">
                   <SlidersH />
-                  App config
+                  Preferences
                 </Menu.Item>
-                {/* Plain anchor: a download must be a real navigation, not a client route. */}
-                <Menu.Item as="a" href="/history/export" download>
-                  <Download />
-                  Export data
+                <Menu.Item as={Link} href="/account/data">
+                  <Database />
+                  Data
                 </Menu.Item>
-                <Menu.Item as={Link} href="/account/privacy">
+                <Menu.Item as={Link} href="/account/security">
                   <Shield />
-                  Privacy
+                  Account
                 </Menu.Item>
               </Menu.Group>
               <Menu.Separator />

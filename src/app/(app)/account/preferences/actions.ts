@@ -1,4 +1,4 @@
-// Server action for the App config page. Only the flare threshold exists
+// Server action for the Preferences page. Only the flare threshold exists
 // today, but this file is the natural place for more configurable settings
 // to grow into as they're added (see UserSettings in repositories/types.ts).
 "use server";

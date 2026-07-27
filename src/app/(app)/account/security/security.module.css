@@ -1,0 +1,54 @@
+/* /account/security ("Account" in the nav) — a plain card for login
+   settings, and a warning-colored Danger Zone card that visually separates
+   itself from the calmer content above it. */
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.dangerCard {
+  border: 1px solid var(--p-red-300, #fca5a5);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+}
+
+.dangerTitle {
+  font-size: 1.05rem;
+  color: var(--p-red-300, #fca5a5);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.rowHint {
+  font-size: 0.82rem;
+  color: var(--muted);
+}

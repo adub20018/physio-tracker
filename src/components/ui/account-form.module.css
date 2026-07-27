@@ -1,4 +1,4 @@
-/* Shared layout for the account settings forms (Edit profile, App config) —
+/* Shared layout for the account settings forms (Profile, Preferences) —
    same nested-card visual language as auth-form.module.css and
    log-shared.module.css, kept as its own module since these pages are a
    distinct concern (account settings, not auth or daily logging). */

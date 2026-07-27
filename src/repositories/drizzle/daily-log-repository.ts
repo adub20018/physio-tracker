@@ -98,4 +98,9 @@ export class DrizzleDailyLogRepository implements DailyLogRepository {
       .delete(dailyLogs)
       .where(and(eq(dailyLogs.userId, userId), eq(dailyLogs.date, date)));
   }
+
+  // Every log for a user, in one statement — exercises cascade automatically.
+  async deleteAll(userId: string): Promise<void> {
+    await db.delete(dailyLogs).where(eq(dailyLogs.userId, userId));
+  }
 }

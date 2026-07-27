@@ -27,6 +27,9 @@ export interface DailyLogRepository {
   upsert(userId: string, input: DailyLogInput): Promise<DailyLogWithExercises>;
   // Removes a day's log (and, via cascade, its exercises).
   deleteByDate(userId: string, date: string): Promise<void>;
+  // Removes every log for a user (and, via cascade, their exercises) —
+  // the "delete all data" account action. Does not touch the account itself.
+  deleteAll(userId: string): Promise<void>;
 }
 
 // App-level settings for one user — just the configurable values themselves,
@@ -44,4 +47,7 @@ export interface UserSettingsRepository {
   // Partial: only the provided fields change, everything else keeps its
   // current (or default) value.
   upsert(userId: string, input: Partial<UserSettings>): Promise<UserSettings>;
+  // Removes the user's settings row entirely, so get() falls back to
+  // defaults again — part of the "delete all data" account action.
+  delete(userId: string): Promise<void>;
 }

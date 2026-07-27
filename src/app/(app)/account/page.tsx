@@ -1,32 +1,36 @@
 // /account — settings home: a simple list of tappable tiles linking to each
-// settings area, plus a direct export action. Keeps every setting on its own
-// page (PLAN.md-style separation) rather than one long form, and gives
-// future settings (password/email change, once email verification exists) a
-// natural place to slot in.
+// settings area. Keeps every setting on its own page (PLAN.md-style
+// separation) rather than one long form.
 import Link from "next/link";
 import { UserEdit } from "@primeicons/react/user-edit";
 import { SlidersH } from "@primeicons/react/sliders-h";
-import { Download } from "@primeicons/react/download";
+import { Database } from "@primeicons/react/database";
 import { Shield } from "@primeicons/react/shield";
 import styles from "./account.module.css";
 
 const TILES = [
   {
     href: "/account/profile",
-    title: "Edit profile",
-    description: "Change the name shown around the app.",
+    title: "Profile",
+    description: "Change your name and view your email.",
     icon: <UserEdit />,
   },
   {
-    href: "/account/config",
-    title: "App config",
+    href: "/account/preferences",
+    title: "Preferences",
     description: "Adjust configurable settings like the flare pain threshold.",
     icon: <SlidersH />,
   },
   {
-    href: "/account/privacy",
-    title: "Privacy",
-    description: "What's stored, and how to request deletion.",
+    href: "/account/data",
+    title: "Data",
+    description: "Export your data as CSV, or delete it.",
+    icon: <Database />,
+  },
+  {
+    href: "/account/security",
+    title: "Account",
+    description: "Password and account deletion.",
     icon: <Shield />,
   },
 ];
@@ -49,18 +53,6 @@ export default function AccountPage() {
             </span>
           </Link>
         ))}
-        {/* Plain anchor: a download must be a real navigation, not a client route. */}
-        <a href="/history/export" download className={styles.tile}>
-          <span className={styles.tileIcon}>
-            <Download />
-          </span>
-          <span className={styles.tileBody}>
-            <span className={styles.tileTitle}>Export data</span>
-            <span className={styles.tileDescription}>
-              Download every logged day as a CSV file.
-            </span>
-          </span>
-        </a>
       </div>
     </main>
   );

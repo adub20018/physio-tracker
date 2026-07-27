@@ -1,0 +1,19 @@
+/* Minor layout tweaks on top of PrimeReact's own dialog theme (pulled in
+   automatically by @primereact/ui/dialog) — just width and button spacing. */
+
+.popup {
+  width: min(24rem, calc(100vw - 2rem));
+}
+
+.content p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

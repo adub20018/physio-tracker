@@ -12,6 +12,7 @@ import { Message } from "@primereact/ui/message";
 import { saveNotesSection } from "@/app/(app)/log/actions";
 import type { SaveResult } from "@/app/(app)/log/actions";
 import type { NotesSectionValues } from "@/app/(app)/log/schema";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./log-shared.module.css";
 
 export type NotesSectionInit = {
@@ -82,7 +83,14 @@ export function NotesSectionForm({ init }: { init: NotesSectionInit }) {
 
       <div className={styles.actions}>
         <Button onClick={submit} disabled={isPending} fluid size="large" severity="contrast">
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? (
+            <>
+              <ButtonSpinner />
+              Saving…
+            </>
+          ) : (
+            "Save"
+          )}
         </Button>
         {result && !result.ok && (
           <Message.Root severity="error" size="small">

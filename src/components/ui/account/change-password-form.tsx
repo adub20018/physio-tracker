@@ -10,6 +10,7 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { auth } from "@/auth/client";
 import { PasswordField } from "@/components/ui/shared/password-field";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./account-form.module.css";
 
 const MIN_PASSWORD_LENGTH = 7;
@@ -168,7 +169,14 @@ export function ChangePasswordForm() {
           </Message.Root>
         )}
         <Button type="submit" disabled={isSaving} fluid size="large" severity="contrast">
-          {isSaving ? "Saving…" : "Change password"}
+          {isSaving ? (
+            <>
+              <ButtonSpinner />
+              Saving…
+            </>
+          ) : (
+            "Change password"
+          )}
         </Button>
       </div>
     </form>

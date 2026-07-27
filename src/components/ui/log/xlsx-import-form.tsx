@@ -10,6 +10,7 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { previewXlsxImport, confirmXlsxImport } from "@/app/(app)/log/import/actions";
 import type { ImportPreview } from "@/app/(app)/log/import/actions";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./xlsx-import-form.module.css";
 
 type Stage =
@@ -106,11 +107,16 @@ export function XlsxImportForm() {
         )}
         <div className={styles.actions}>
           <Button onClick={confirm} disabled={isPending} fluid size="large" severity="contrast">
-            {isPending
-              ? "Importing…"
-              : `Import ${includeOverwrites ? preview.parsed.length : preview.newDates.length} day${
-                  (includeOverwrites ? preview.parsed.length : preview.newDates.length) === 1 ? "" : "s"
-                }`}
+            {isPending ? (
+              <>
+                <ButtonSpinner />
+                Importing…
+              </>
+            ) : (
+              `Import ${includeOverwrites ? preview.parsed.length : preview.newDates.length} day${
+                (includeOverwrites ? preview.parsed.length : preview.newDates.length) === 1 ? "" : "s"
+              }`
+            )}
           </Button>
           <Button onClick={reset} disabled={isPending} fluid severity="secondary">
             Choose a different file
@@ -125,7 +131,14 @@ export function XlsxImportForm() {
       <input ref={fileInputRef} type="file" accept=".xlsx" className={styles.fileInput} />
       <div className={styles.actions}>
         <Button onClick={pickAndPreview} disabled={isPending} fluid size="large" severity="contrast">
-          {isPending ? "Reading file…" : "Preview import"}
+          {isPending ? (
+            <>
+              <ButtonSpinner />
+              Reading file…
+            </>
+          ) : (
+            "Preview import"
+          )}
         </Button>
         {error && (
           <Message.Root severity="error" size="small">

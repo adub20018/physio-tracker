@@ -12,6 +12,7 @@ import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { auth } from "@/auth/client";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./account-form.module.css";
 
 export function EditProfileForm({
@@ -93,7 +94,14 @@ export function EditProfileForm({
           </Message.Root>
         )}
         <Button type="submit" disabled={isSaving} fluid size="large" severity="contrast">
-          {isSaving ? "Saving…" : "Save"}
+          {isSaving ? (
+            <>
+              <ButtonSpinner />
+              Saving…
+            </>
+          ) : (
+            "Save"
+          )}
         </Button>
       </div>
     </form>

@@ -27,17 +27,31 @@
   border-radius: 12px;
   background: var(--surface);
   overflow: hidden;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.1s ease,
+    transform 0.1s ease;
 }
 
 .tile:hover {
   border-color: var(--border-strong);
 }
 
-/* Not logged yet: a visibly quieter card, so filled-in sections stand out
-   as "done" without needing a separate checkmark icon. */
+/* Instant tactile feedback on tap/click — the page-level loading state
+   (loading.tsx) takes a moment to appear, so without this a click can feel
+   like it didn't register at all in that gap. */
+.tile:active {
+  transform: scale(0.97);
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+/* Not logged yet: a visibly quieter card (transparent background), so
+   filled-in sections stand out as "done" without needing a separate
+   checkmark icon — the progress bar underneath already communicates how
+   much of the section is filled in, so the border itself stays a regular
+   solid line rather than needing its own dashed treatment. */
 .tileEmpty {
-  border-style: dashed;
   background: transparent;
 }
 

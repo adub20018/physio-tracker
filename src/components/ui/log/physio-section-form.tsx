@@ -20,6 +20,7 @@ import {
 import { savePhysioSection } from "@/app/(app)/log/actions";
 import type { SaveResult } from "@/app/(app)/log/actions";
 import type { PhysioSectionValues } from "@/app/(app)/log/schema";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./log-shared.module.css";
 
 export type PhysioSectionInit = {
@@ -170,7 +171,14 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
 
       <div className={styles.actions}>
         <Button onClick={submit} disabled={isPending} fluid size="large" severity="contrast">
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? (
+            <>
+              <ButtonSpinner />
+              Saving…
+            </>
+          ) : (
+            "Save"
+          )}
         </Button>
         {result && !result.ok && (
           <Message.Root severity="error" size="small">

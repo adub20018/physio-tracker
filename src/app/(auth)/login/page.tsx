@@ -13,6 +13,7 @@ import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { auth } from "@/auth/client";
 import { PasswordField } from "@/components/ui/shared/password-field";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "@/components/ui/auth/auth-form.module.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -136,7 +137,14 @@ export default function Login() {
             size="large"
             severity="contrast"
           >
-            {isLoading ? "Logging in…" : "Log in"}
+            {isLoading ? (
+              <>
+                <ButtonSpinner />
+                Logging in…
+              </>
+            ) : (
+              "Log in"
+            )}
           </Button>
           <p className={styles.switchLink}>
             Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>

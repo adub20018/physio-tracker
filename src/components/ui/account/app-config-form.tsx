@@ -12,6 +12,7 @@ import { Message } from "@primereact/ui/message";
 import { NumberField } from "@/components/ui/log/log-fields";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
 import { saveFlareThreshold } from "@/app/(app)/account/preferences/actions";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./account-form.module.css";
 
 export function AppConfigForm({
@@ -81,7 +82,14 @@ export function AppConfigForm({
           </Message.Root>
         )}
         <Button type="submit" disabled={isPending} fluid size="large" severity="contrast">
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? (
+            <>
+              <ButtonSpinner />
+              Saving…
+            </>
+          ) : (
+            "Save"
+          )}
         </Button>
       </div>
     </form>

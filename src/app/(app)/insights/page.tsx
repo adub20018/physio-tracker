@@ -155,14 +155,18 @@ export default async function InsightsPage() {
   const weeklyRows: WeeklyRow[] = weeks.map((w, i) => {
     const prev = i > 0 ? weeks[i - 1] : null;
     const delta =
-      w.painAvg != null && prev?.painAvg != null ? w.painAvg - prev.painAvg : null;
+      w.painAvg != null && prev?.painAvg != null
+        ? w.painAvg - prev.painAvg
+        : null;
     return {
       weekStart: w.weekStart,
       weekLabel: weekLabel(w.weekStart, w.weekEnd),
       loggedDays: w.loggedDays,
       painAvg: w.painAvg,
       painDelta:
-        delta != null ? `${delta < 0 ? "−" : "+"}${Math.abs(delta).toFixed(1)}` : null,
+        delta != null
+          ? `${delta < 0 ? "−" : "+"}${Math.abs(delta).toFixed(1)}`
+          : null,
       painImproved: delta != null ? delta <= 0 : null,
       stepsAvg: w.stepsAvg,
       physioVolume: w.physioVolume,
@@ -174,10 +178,7 @@ export default async function InsightsPage() {
     <main className="page" style={{ maxWidth: "64rem" }}>
       <header className="page-header">
         <h1>Insights</h1>
-        <p className="subtitle">
-          Load vs response, flare context, and week-by-week progress. Correlations are
-          suggestive, not proof — sanity-check surprises with your physio.
-        </p>
+        <p className="subtitle">More detailed visualisations of progress.</p>
       </header>
 
       <InsightsCharts
@@ -192,8 +193,8 @@ export default async function InsightsPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Flare review</h2>
         <p className={styles.cardSubtitle}>
-          Every day a reading hit {flareThreshold}/10, with the {FLARE_LOOKBACK_DAYS} days
-          leading up to it.
+          Every day a reading hit {flareThreshold}/10, with the{" "}
+          {FLARE_LOOKBACK_DAYS} days leading up to it.
         </p>
         <FlareReview episodes={episodes} />
       </section>
@@ -201,7 +202,8 @@ export default async function InsightsPage() {
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Weekly report card</h2>
         <p className={styles.cardSubtitle}>
-          Averages per calendar week, newest first — click Week to flip the order.
+          Averages per calendar week, newest first — click Week to flip the
+          order.
         </p>
         <WeeklyReportTable rows={weeklyRows} flareThreshold={flareThreshold} />
       </section>

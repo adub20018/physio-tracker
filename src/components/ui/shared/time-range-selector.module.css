@@ -5,4 +5,5 @@
    flex item under space-between just sits at flex-start, i.e. the left). */
 .group {
   margin-left: auto;
+  border: 1px solid var(--border-muted);
 }

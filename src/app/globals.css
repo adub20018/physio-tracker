@@ -12,6 +12,7 @@
   --surface: var(--p-surface-900, #18181b);
   --surface-raised: var(--p-surface-800, #27272a);
   --border: var(--p-surface-700, #3f3f46);
+  --border-muted: var(--p-surface-900, #151516);
   --border-strong: var(--p-surface-600, #52525b);
   /* One notch darker than --surface, for a card nested inside another card
      (e.g. an exercise entry inside the Physio exercises section) — there's
@@ -66,8 +67,8 @@ body {
   color: var(--foreground);
   background:
     radial-gradient(
-      120rem 60rem at 85% -20%,
-      color-mix(in srgb, var(--accent) 5%, transparent),
+      120rem 60rem at 85% -10%,
+      color-mix(in srgb, var(--accent) 6%, transparent),
       transparent 60%
     ),
     var(--background);
@@ -142,4 +143,9 @@ h1 {
 .wordmark em {
   font-style: italic;
   color: var(--accent);
+}
+
+/* Makes the invalid border colour override the green focus border for invalid input text */
+.p-inputtext:enabled.p-invalid:focus {
+  border-color: var(--p-inputtext-invalid-border-color);
 }

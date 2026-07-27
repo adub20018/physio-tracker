@@ -64,14 +64,28 @@
 
 .tileHeader {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
 .tileTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 1.05rem;
   font-family: var(--font-display);
+}
+
+/* Icon(s) hinting at the specific fields behind each tile — e.g. Activity
+   shows the same steps/sleep icons used on its own inputs, so the tile
+   previews what's inside without needing to open it. No color of its own:
+   the icons render via currentColor, so they inherit .tileTitle's color
+   (including the --faint dimming below for empty tiles) automatically. */
+.tileIcons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .tileCount {
@@ -82,6 +96,7 @@
   white-space: nowrap;
 }
 
+.tileEmpty .tileTitle,
 .tileEmpty .tileCount {
   color: var(--faint);
 }

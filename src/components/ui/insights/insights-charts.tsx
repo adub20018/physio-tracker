@@ -31,8 +31,11 @@ const RANGE_STORAGE_KEY = "physimate:insights-range";
 const PEARSON_R_HINT =
   "Pearson correlation coefficient: how tightly two things move together, from -1 (as one goes up the other reliably goes down) to +1 (both reliably rise together). 0 means no relationship. “Weak/moderate/strong” bucket |r| at 0.2, 0.4, and 0.7. With only a few dozen days, treat this as a hint worth watching, not a proven cause.";
 
-// Header line for one scatter: "r = −0.21 · weak · 41 days".
-function correlationLine(points: PairedPoint[]): string {
+// Header line for one scatter: "r = −0.21 · weak · 41 days". Returns null
+// for zero points — the chart's own EmptyState already explains that case
+// (with a link to /log), so this line would just repeat it.
+function correlationLine(points: PairedPoint[]): string | null {
+  if (points.length === 0) return null;
   const r = pearson(points);
   if (r == null) return `not enough paired days yet (${points.length})`;
   const sign = r < 0 ? "−" : "";
@@ -78,6 +81,12 @@ export function InsightsCharts({
     [fullSleepVsNight, today, rangeDays],
   );
 
+  const stepsLine = correlationLine(stepsPoints);
+  const volumeLine = correlationLine(volumePoints);
+  const sleepVsMorningLine = correlationLine(sleepVsMorning);
+  const sleepVsDaytimeLine = correlationLine(sleepVsDaytime);
+  const sleepVsNightLine = correlationLine(sleepVsNight);
+
   const sleepScatterSeries: ScatterSeries[] = [
     {
       key: "morning",
@@ -105,7 +114,7 @@ export function InsightsCharts({
           Steps vs next-morning pain
           <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
         </h2>
-        <p className={styles.cardSubtitle}>{correlationLine(stepsPoints)}</p>
+        {stepsLine && <p className={styles.cardSubtitle}>{stepsLine}</p>}
         <LagScatter
           points={stepsPoints}
           xLabel="Steps"
@@ -118,7 +127,7 @@ export function InsightsCharts({
           Physio load vs next-morning pain
           <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
         </h2>
-        <p className={styles.cardSubtitle}>{correlationLine(volumePoints)}</p>
+        {volumeLine && <p className={styles.cardSubtitle}>{volumeLine}</p>}
         <LagScatter
           points={volumePoints}
           xLabel="Physio load"
@@ -136,17 +145,19 @@ export function InsightsCharts({
           slept the night before waking up that day, so they precede all three
           of that day&apos;s readings, not just the morning one.
         </p>
-        <ul className={styles.rList}>
-          <li style={{ color: SERIES.morning }}>
-            Morning: {correlationLine(sleepVsMorning)}
-          </li>
-          <li style={{ color: SERIES.daytime }}>
-            Daytime: {correlationLine(sleepVsDaytime)}
-          </li>
-          <li style={{ color: SERIES.night }}>
-            Night: {correlationLine(sleepVsNight)}
-          </li>
-        </ul>
+        {(sleepVsMorningLine || sleepVsDaytimeLine || sleepVsNightLine) && (
+          <ul className={styles.rList}>
+            {sleepVsMorningLine && (
+              <li style={{ color: SERIES.morning }}>Morning: {sleepVsMorningLine}</li>
+            )}
+            {sleepVsDaytimeLine && (
+              <li style={{ color: SERIES.daytime }}>Daytime: {sleepVsDaytimeLine}</li>
+            )}
+            {sleepVsNightLine && (
+              <li style={{ color: SERIES.night }}>Night: {sleepVsNightLine}</li>
+            )}
+          </ul>
+        )}
         <MultiScatter
           series={sleepScatterSeries}
           xLabel="Sleep (hours)"

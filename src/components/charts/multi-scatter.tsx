@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { CHART_CHROME, TOOLTIP_STYLE } from "./chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 export type ScatterSeries = {
@@ -34,6 +35,10 @@ export function MultiScatter({
   xLabel: string;
   yLabel: string;
 }) {
+  if (series.every((s) => s.points.length === 0)) {
+    return <EmptyState message="No data yet." height={280} />;
+  }
+
   return (
     <div>
       <div className={styles.legend}>

@@ -7,6 +7,7 @@
 
 import { DataTable } from "@primereact/ui/datatable";
 import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./history-table.module.css";
 
@@ -129,6 +130,10 @@ export function HistoryTable({
   rows: HistoryRow[];
   flareThreshold: number;
 }) {
+  if (rows.length === 0) {
+    return <EmptyState message="No days logged yet." />;
+  }
+
   return (
     <div className={styles.wrapper}>
       <DataTable.Root

@@ -8,6 +8,7 @@ import { DataTable } from "@primereact/ui/datatable";
 import { Tag } from "@primereact/ui/tag";
 import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
 import styles from "./weekly-report-table.module.css";
 
@@ -37,6 +38,10 @@ export function WeeklyReportTable({
   rows: WeeklyRow[];
   flareThreshold: number;
 }) {
+  if (rows.length === 0) {
+    return <EmptyState message="No weeks logged yet." />;
+  }
+
   return (
     <div className={styles.wrapper}>
       <DataTable.Root

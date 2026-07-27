@@ -8,6 +8,7 @@
 // cells, distinct from "logged, zero pain". Pure CSS grid, no chart library.
 "use client";
 
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 export type HeatmapDay = {
@@ -53,6 +54,10 @@ function toWeeks(days: HeatmapDay[]): (HeatmapDay | null)[][] {
 }
 
 export function CalendarHeatmap({ data }: { data: HeatmapDay[] }) {
+  if (data.length === 0) {
+    return <EmptyState message="No days logged yet." height={140} />;
+  }
+
   const weeks = toWeeks(data);
 
   return (

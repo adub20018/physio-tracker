@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 // One day of load paired with the following day's pain, all three readings.
@@ -68,6 +69,10 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
 }
 
 export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
+  if (data.length === 0) {
+    return <EmptyState message="No data yet." height={370} />;
+  }
+
   return (
     <div>
       <div className={styles.legend}>

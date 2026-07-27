@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE } from "./chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 
 export function LagScatter({
   points,
@@ -28,6 +29,10 @@ export function LagScatter({
   xLabel: string;
   yLabel: string;
 }) {
+  if (points.length === 0) {
+    return <EmptyState message="No data yet." height={240} />;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={240}>
       <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>

@@ -17,6 +17,7 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 // One day's sleep paired with that SAME day's pain readings.
@@ -31,6 +32,10 @@ export type SleepPainPoint = {
 const SYNC_ID = "sleep-pain-timeline";
 
 export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
+  if (data.length === 0) {
+    return <EmptyState message="No data yet." height={250} />;
+  }
+
   return (
     <div>
       <div className={styles.legend}>

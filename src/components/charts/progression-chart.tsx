@@ -21,6 +21,7 @@ import {
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 // One physio day on the progression chart (rest days are omitted by the
@@ -45,6 +46,10 @@ type RangePoint = ProgressionPoint & {
 const SYNC_ID = "progression";
 
 export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
+  if (data.length === 0) {
+    return <EmptyState message="No physio sessions logged yet." height={410} />;
+  }
+
   const withRange: RangePoint[] = data.map((d) => ({
     ...d,
     intensityRange:

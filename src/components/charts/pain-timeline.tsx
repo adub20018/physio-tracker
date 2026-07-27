@@ -21,6 +21,7 @@ import {
   TOOLTIP_STYLE,
   shortDate,
 } from "./chart-theme";
+import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
 // One day on the timeline, precomputed by the caller (domain functions).
@@ -77,6 +78,10 @@ function PainTooltipContent({
 }
 
 export function PainTimeline({ data }: { data: PainTimelinePoint[] }) {
+  if (data.length === 0) {
+    return <EmptyState message="No pain data yet." height={280} />;
+  }
+
   return (
     <div>
       <div className={styles.legend}>

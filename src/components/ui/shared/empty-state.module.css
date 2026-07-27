@@ -1,0 +1,27 @@
+/* Calm "nothing here yet" placeholder — a dashed box rather than an alert,
+   since having no data yet is the normal state for a brand-new account, not
+   an error. Used in place of a chart or table body. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 8rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+
+.message {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.link {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

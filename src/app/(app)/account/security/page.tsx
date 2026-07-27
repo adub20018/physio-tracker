@@ -27,7 +27,7 @@ export default function AccountSecurityPage() {
           <ChangePasswordForm />
         </section>
 
-        <section className={styles.dangerCard}>
+        {/* <section className={styles.dangerCard}>
           <h2 className={styles.dangerTitle}>Danger zone</h2>
           <div className={styles.row}>
             <div className={styles.rowText}>
@@ -41,7 +41,7 @@ export default function AccountSecurityPage() {
               Delete account
             </Button>
           </div>
-        </section>
+        </section> */}
       </div>
     </main>
   );

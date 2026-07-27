@@ -8,8 +8,21 @@
 // bare, the browser's native button appearance (grey background, border)
 // would show through around the circular avatar, so it's reset via
 // .trigger below.
+//
+// Menu.Root is controlled (open/onOpenChange), and every Link-composed item
+// closes it explicitly on click. Necessary because AppNav (and this menu
+// inside it) lives in the shared (app) layout, which doesn't remount across
+// a client-side navigation — as={Link} composition means Link owns click
+// handling, so the item's own onSelect never fires (same finding as the
+// mobile drawer in app-nav.tsx) and the menu's default close-on-select never
+// kicks in. Left uncontrolled, the popup stayed open (just off in a corner)
+// after navigating, and its outside-click dismiss layer swallowed the very
+// next click anywhere on the newly-loaded page instead of passing it
+// through — the reported "first click after visiting an account page does
+// nothing" bug.
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Menu } from "@primereact/ui/menu";
@@ -44,15 +57,20 @@ function UserAvatar({ name }: { name: string }) {
 
 export function AccountMenu({ user }: { user: AccountUser }) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   async function logout() {
+    setIsOpen(false);
     await auth.signOut();
     router.push("/login");
     router.refresh();
   }
 
   return (
-    <Menu.Root>
+    <Menu.Root
+      open={isOpen}
+      onOpenChange={(e: { value?: boolean }) => setIsOpen(e.value ?? false)}
+    >
       <Menu.Trigger className={styles.trigger} aria-label="Account menu">
         <UserAvatar name={user.name} />
       </Menu.Trigger>
@@ -68,25 +86,45 @@ export function AccountMenu({ user }: { user: AccountUser }) {
               </Menu.Group>
               <Menu.Separator />
               <Menu.Group>
-                <Menu.Item as={Link} href="/account/profile">
+                {/* Not onSelect: Link owns click handling once composed in,
+                    so the item's own onSelect never fires — this needs to
+                    close the menu itself. */}
+                <Menu.Item
+                  as={Link}
+                  href="/account/profile"
+                  onClick={() => setIsOpen(false)}
+                >
                   <UserEdit />
                   Profile
                 </Menu.Item>
-                <Menu.Item as={Link} href="/account/preferences">
+                <Menu.Item
+                  as={Link}
+                  href="/account/preferences"
+                  onClick={() => setIsOpen(false)}
+                >
                   <SlidersH />
                   Preferences
                 </Menu.Item>
-                <Menu.Item as={Link} href="/account/data">
+                <Menu.Item
+                  as={Link}
+                  href="/account/data"
+                  onClick={() => setIsOpen(false)}
+                >
                   <Database />
                   Data
                 </Menu.Item>
-                <Menu.Item as={Link} href="/account/security">
+                <Menu.Item
+                  as={Link}
+                  href="/account/security"
+                  onClick={() => setIsOpen(false)}
+                >
                   <Shield />
                   Account
                 </Menu.Item>
               </Menu.Group>
               <Menu.Separator />
               <Menu.Group>
+                {/* Not a Link, so its own onSelect fires normally. */}
                 <Menu.Item onSelect={logout}>
                   <SignOut />
                   Logout

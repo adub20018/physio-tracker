@@ -141,6 +141,7 @@ export function TagMultiSelect({
   return (
     <div className={styles.tagSelect}>
       <ToggleButtonGroup
+        className={styles.tagGroup}
         multiple
         allowEmpty
         value={value}

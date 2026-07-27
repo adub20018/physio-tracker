@@ -147,6 +147,20 @@
   gap: 0.6rem;
 }
 
+/* !important on the radius/border: needed to beat the library's own
+   .p-selectbutton .p-togglebutton:first-child/:last-child rules, which are
+   more specific than a plain two-class selector — same situation as
+   app-nav.module.css's .popup override. */
+.tagGroup {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tagGroup :global(.p-togglebutton) {
+  border-radius: 8px !important;
+  border-width: 1px !important;
+}
+
 .tagCustomRow {
   display: flex;
   gap: 0.5rem;

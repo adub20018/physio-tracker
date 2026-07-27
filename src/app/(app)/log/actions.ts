@@ -54,7 +54,7 @@ async function mergeAndSave(
   await dailyLogRepository.upsert(userId, { ...base, ...patch });
 
   // Every page that renders log data must reflect the change immediately.
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/history");
   revalidatePath("/log");
 }

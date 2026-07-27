@@ -65,7 +65,7 @@ export default function Login() {
         return;
       }
       console.log("Successfully logged in");
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (error) {
       console.error("Login failed: ", error);
       setIsLoading(false);

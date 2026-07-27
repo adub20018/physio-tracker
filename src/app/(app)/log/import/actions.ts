@@ -80,7 +80,7 @@ export async function confirmXlsxImport(
     await dailyLogRepository.upsert(user.id, input);
   }
 
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/history");
   revalidatePath("/log");
   return { ok: true, imported: toImport.length };

@@ -99,7 +99,7 @@ export default function Signup() {
         return;
       }
 
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (error) {
       console.error("Signup failed: ", error);
       setIsLoading(false);

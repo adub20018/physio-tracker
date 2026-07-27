@@ -34,7 +34,7 @@ import { Shield } from "@primeicons/react/shield";
 import styles from "./app-nav.module.css";
 
 const LINKS = [
-  { href: "/", label: "Dashboard", icon: <ObjectsColumn /> },
+  { href: "/dashboard", label: "Dashboard", icon: <ObjectsColumn /> },
   { href: "/log", label: "Log", icon: <PenToSquare /> },
   { href: "/insights", label: "Insights", icon: <ChartBar /> },
   { href: "/history", label: "History", icon: <History /> },
@@ -54,7 +54,7 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
 
   return (
     <nav className={styles.nav}>
-      <Link href="/" className={styles.wordmark}>
+      <Link href="/dashboard" className={styles.wordmark}>
         {/* Natural size is 65x89 (SVG in /public); fixed height keeps the
             aspect ratio without needing a static import (public/ assets
             aren't processed by the bundler, so they're referenced by URL,

@@ -1,0 +1,26 @@
+/* Matches the visual shape of the real "page card" (see dashboard.module.css
+   .card) closely enough that swapping the skeleton for real content doesn't
+   jump the layout — duplicated here rather than importing across category
+   folders, same reasoning as the other small per-concern CSS modules. */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Matches stat-tile.module.css .tile. */
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}

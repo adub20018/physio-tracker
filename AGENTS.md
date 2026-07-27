@@ -37,6 +37,21 @@ This version has breaking changes — APIs, conventions, and file structure may 
   https://primereact.dev/llms.txt. The primereact README's provider snippet
   (`primereact/core`, `value` prop) is outdated; the provider is
   `@primereact/core`'s `PrimeReactProvider` with config as direct props.
+- **`Menu.Item` composed `as={Link}`, when the item lives inside `Menu.Portal`, can silently
+  eat the click and never navigate — intermittently.** Root cause (traced through
+  `@primereact/headless/menu`): `Menu.Item`'s select/close logic runs on `mousedown`, not
+  `click`. For items rendered inside `Menu.Portal` specifically (`inPortal: true` internally),
+  that mousedown handler calls the popover's `setOpen(false)` synchronously — unmounting the
+  portal, including the `<a>` mid-click — before the browser's `click` event fires. `Link`'s
+  `router.push()` lives in its `onClick`, so if React's unmount wins the race, navigation
+  never happens. Race outcome depends on timing, so it reproduces intermittently and isn't
+  reliably triggerable on demand. Fix: pass `closeOnSelect={false}` on every `Menu.Item
+  as={Link}` inside a `Menu.Portal` — this skips the mousedown-triggered close, leaving an
+  explicit `onClick={() => setOpen(false)}` (fired safely on `click`, after `Link`'s own
+  navigation) as the only thing that closes the menu. See `src/components/ui/nav/account-menu.tsx`.
+  Not an issue for `Menu.Item`s rendered *without* a `Menu.Portal` (e.g. an inline menu inside
+  an already-controlled `Drawer`, as in `app-nav.tsx`'s mobile nav) — they never hit this
+  mousedown branch, so no fix needed there.
 
 # Project ground rules
 

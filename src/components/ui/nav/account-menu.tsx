@@ -20,6 +20,21 @@
 // next click anywhere on the newly-loaded page instead of passing it
 // through — the reported "first click after visiting an account page does
 // nothing" bug.
+//
+// closeOnSelect={false} on the same items fixes a second, separate bug:
+// PrimeReact's Menu.Item runs its select/close logic on mousedown, not
+// click, and — only for items rendered inside Menu.Portal, which these are —
+// that mousedown handler calls the popover's setOpen(false) synchronously,
+// unmounting the portal (the very <a> mid-click) before the browser's click
+// event fires. Link's own router.push() lives in its click handler, so if
+// React finishes the unmount first, navigation never happens — an
+// intermittent "clicked a menu item, nothing happened" race, since it
+// depends on whether the unmount wins the race against the click event.
+// closeOnSelect={false} skips that mousedown-triggered close entirely,
+// leaving the onClick handlers below (which fire safely after Link's own
+// navigation, on the same click event) as the only thing that closes the
+// menu. Not needed in app-nav.tsx's mobile drawer: those items aren't
+// inside a Menu.Portal, so they never hit this code path.
 "use client";
 
 import { useState } from "react";
@@ -92,6 +107,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                 <Menu.Item
                   as={Link}
                   href="/account/profile"
+                  closeOnSelect={false}
                   onClick={() => setIsOpen(false)}
                 >
                   <UserEdit />
@@ -100,6 +116,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                 <Menu.Item
                   as={Link}
                   href="/account/preferences"
+                  closeOnSelect={false}
                   onClick={() => setIsOpen(false)}
                 >
                   <SlidersH />
@@ -108,6 +125,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                 <Menu.Item
                   as={Link}
                   href="/account/data"
+                  closeOnSelect={false}
                   onClick={() => setIsOpen(false)}
                 >
                   <Database />
@@ -116,6 +134,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                 <Menu.Item
                   as={Link}
                   href="/account/security"
+                  closeOnSelect={false}
                   onClick={() => setIsOpen(false)}
                 >
                   <Shield />

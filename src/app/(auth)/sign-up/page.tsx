@@ -12,6 +12,7 @@ import { Label } from "@primereact/ui/label";
 import { Button } from "@primereact/ui/button";
 import { auth } from "@/auth/client";
 import { PasswordField } from "@/components/ui/shared/password-field";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "@/components/ui/auth/auth-form.module.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,7 +100,7 @@ export default function Signup() {
         return;
       }
 
-      router.replace("/");
+      router.replace("/dashboard");
     } catch (error) {
       console.error("Signup failed: ", error);
       setIsLoading(false);
@@ -215,7 +216,14 @@ export default function Signup() {
             size="large"
             severity="contrast"
           >
-            {isLoading ? "Creating account…" : "Sign up"}
+            {isLoading ? (
+              <>
+                <ButtonSpinner />
+                Creating account…
+              </>
+            ) : (
+              "Sign up"
+            )}
           </Button>
           <p className={styles.switchLink}>
             Already have an account? <Link href="/login">Log in</Link>

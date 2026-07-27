@@ -7,6 +7,7 @@ import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { Times } from "@primeicons/react/times";
+import { ButtonSpinner } from "./button-spinner";
 import styles from "./confirm-dialog.module.css";
 
 export function ConfirmDialog({
@@ -80,7 +81,14 @@ export function ConfirmDialog({
                 onClick={onConfirm}
                 disabled={isPending}
               >
-                {isPending ? "Deleting…" : confirmLabel}
+                {isPending ? (
+                  <>
+                    <ButtonSpinner />
+                    Deleting…
+                  </>
+                ) : (
+                  confirmLabel
+                )}
               </Button>
             </Dialog.Footer>
           </Dialog.Popup>

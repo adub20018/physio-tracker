@@ -28,7 +28,7 @@ export async function saveFlareThreshold(flareThreshold: number): Promise<SaveRe
 
   // Every page that derives flare detection from the threshold must reflect
   // the change immediately.
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/insights");
   revalidatePath("/history");
   return { ok: true };

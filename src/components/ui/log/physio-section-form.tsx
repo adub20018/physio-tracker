@@ -131,6 +131,7 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
               </div>
             </div>
             <ToggleButtonGroup
+              fluid
               value={ex.unit}
               allowEmpty={false}
               onValueChange={(e: { value?: unknown }) =>
@@ -170,7 +171,13 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
       </section>
 
       <div className={styles.actions}>
-        <Button onClick={submit} disabled={isPending} fluid size="large" severity="contrast">
+        <Button
+          onClick={submit}
+          disabled={isPending}
+          fluid
+          size="large"
+          severity="contrast"
+        >
           {isPending ? (
             <>
               <ButtonSpinner />

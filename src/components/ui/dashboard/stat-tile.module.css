@@ -93,6 +93,13 @@
   letter-spacing: 0.09em;
 }
 
+/* margin-top: auto (not a fixed value) pins this to the tile's bottom edge
+   when a row's height is stretched by a taller neighbor (CSS Grid's default
+   align-items: stretch) — the flex column's default packing otherwise
+   leaves any extra height as blank space below the sparkline instead of
+   above it. .tile's own `gap` still guarantees a minimum gap above this
+   even when there's no extra height to absorb; auto only ever adds to
+   that, never below it. */
 .sparkline {
-  margin-top: 0.2rem;
+  margin-top: auto;
 }

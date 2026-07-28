@@ -159,7 +159,9 @@
   height: 1.6rem;
   border-radius: 6px;
   color: var(--faint);
-  transition: color 0.12s ease, background 0.12s ease;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
 }
 
 .toggle:hover {

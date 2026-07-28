@@ -11,15 +11,15 @@
   --background: var(--p-surface-950, #09090b);
   --surface: var(--p-surface-900, #18181b);
   --surface-raised: var(--p-surface-800, #27272a);
+  /* One notch darker than --surface, for a card nested inside another card */
+  --surface-sunken: #151518;
+
   --border: var(--p-surface-700, #3f3f46);
   --border-muted: var(--p-surface-900, #151516);
   --border-strong: var(--p-surface-600, #52525b);
-  /* One notch darker than --surface, for a card nested inside another card
-     (e.g. an exercise entry inside the Physio exercises section) — there's
-     no matching step in the preset's own scale, so this sits between
-     --surface and --background rather than jumping straight to it, which
-     would leave nothing to distinguish the card from its own inputs. */
-  --surface-sunken: color-mix(in srgb, var(--surface) 65%, var(--background));
+  --border-subtle: 1px solid var(--surface-raised);
+  --border-sunken: 1px solid #232327;
+  --shadow-subtle: -1px -1px 1px var(--surface-raised);
 
   /* Text */
   --foreground: var(--p-text-color, #fafafa);
@@ -36,7 +36,7 @@
   );
 
   /* Pain severity — from the preset's primitive palettes */
-  --pain-none: var(--p-surface-500, #71717a);
+  --pain-none: var(--p-primary-color, #34d399);
   --pain-mild: var(--p-lime-400, #a3e635);
   --pain-elevated: var(--p-amber-400, #fbbf24);
   --pain-flare: var(--p-red-400, #f87171);

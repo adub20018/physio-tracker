@@ -8,7 +8,7 @@
 .progressCard {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
+  box-shadow: var(--shadow-subtle);
   border-radius: 12px;
   background: var(--surface);
   overflow: hidden;

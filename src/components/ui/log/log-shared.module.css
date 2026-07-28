@@ -15,11 +15,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
+  gap: 0.75rem;
   border-radius: 14px;
-  padding: 0.5rem 0.75rem;
 }
 
 /* One section = one visually distinct card, so the form reads as a set of

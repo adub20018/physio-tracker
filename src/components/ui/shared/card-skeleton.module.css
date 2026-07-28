@@ -4,7 +4,7 @@
    folders, same reasoning as the other small per-concern CSS modules. */
 
 .card {
-  border: 1px solid var(--border);
+  box-shadow: var(--shadow-subtle);
   border-radius: 12px;
   background: var(--surface);
   padding: 1.1rem 1.25rem 1.25rem;
@@ -20,7 +20,7 @@
   flex-direction: column;
   gap: 0.3rem;
   padding: 1rem 1.15rem;
-  border: 1px solid var(--border);
+  box-shadow: var(--shadow-subtle);
   border-radius: 12px;
   background: var(--surface);
 }

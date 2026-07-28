@@ -26,7 +26,7 @@
    inputs inside it with almost no contrast against each other. --surface
    sits clearly between the outer frame and the inputs. */
 .card {
-  box-shadow: var(--shadow-subtle);
+  border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
   padding: 1rem 1.25rem 1.25rem;

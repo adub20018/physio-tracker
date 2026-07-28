@@ -4,7 +4,7 @@
    distinct concern (account settings, not auth or daily logging). */
 
 .card {
-  border: var(--border-subtle);
+  border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
   padding: 1.25rem 1.25rem 1.5rem;

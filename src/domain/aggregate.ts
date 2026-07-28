@@ -4,6 +4,7 @@
 import { average } from "./rolling";
 import { dailyPhysioVolume } from "./volume";
 import { daysBetween } from "./flare";
+import { addDays } from "./lag";
 import type { DomainDay } from "./types";
 
 // Mean of the day's recorded pain readings; null when none were recorded.
@@ -59,4 +60,31 @@ export function windowComparison(
   const previousEndExclusive = filterWindow(days, end, nDays * 2);
   const previous = previousEndExclusive.filter((d) => !current.includes(d));
   return { current: windowStats(current), previous: windowStats(previous) };
+}
+
+// One slot in a lastNDaysSeries result — paired with its calendar date so
+// callers (e.g. a sparkline tooltip) can label a value without having to
+// re-derive which date it came from.
+export type DatedValue<T> = { date: string; value: T | null };
+
+// A fixed-length, calendar-anchored series for the last nDays ending at
+// `end` (inclusive), oldest first. Unlike filterWindow (which only returns
+// days that HAVE a log entry, so a window with gaps comes back shorter),
+// every slot is present — null for days that weren't logged. Built for
+// stat-tile sparklines, where a consistent day-by-day cadence matters more
+// than compacting past gaps.
+export function lastNDaysSeries<T>(
+  days: DomainDay[],
+  end: string,
+  nDays: number,
+  pick: (day: DomainDay) => T
+): DatedValue<T>[] {
+  const byDate = new Map(days.map((d) => [d.date, d]));
+  const series: DatedValue<T>[] = [];
+  for (let i = nDays - 1; i >= 0; i--) {
+    const date = addDays(end, -i);
+    const day = byDate.get(date);
+    series.push({ date, value: day ? pick(day) : null });
+  }
+  return series;
 }

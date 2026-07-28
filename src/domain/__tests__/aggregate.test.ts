@@ -1,6 +1,12 @@
 // Tests for daily/window aggregation stats.
 import { describe, expect, it } from "vitest";
-import { dailyPainAverage, filterWindow, windowComparison, windowStats } from "../aggregate";
+import {
+  dailyPainAverage,
+  filterWindow,
+  lastNDaysSeries,
+  windowComparison,
+  windowStats,
+} from "../aggregate";
 import type { DomainDay } from "../types";
 
 // Day builder with overridable fields.
@@ -35,6 +41,31 @@ describe("filterWindow", () => {
   it("excludes days after the end date", () => {
     const win = filterWindow(days, "2026-07-09", 7);
     expect(win.map((d) => d.date)).toEqual(["2026-07-05", "2026-07-08"]);
+  });
+});
+
+describe("lastNDaysSeries", () => {
+  const days = [
+    day("2026-07-05", { steps: 1000 }),
+    day("2026-07-07", { steps: 3000 }),
+  ];
+
+  it("fills every calendar slot, oldest first, null for unlogged days", () => {
+    const series = lastNDaysSeries(days, "2026-07-07", 3, (d) => d.steps);
+    expect(series).toEqual([
+      { date: "2026-07-05", value: 1000 },
+      { date: "2026-07-06", value: null },
+      { date: "2026-07-07", value: 3000 },
+    ]);
+  });
+
+  it("is entirely null when nothing was logged in the window", () => {
+    const series = lastNDaysSeries([], "2026-07-07", 3, (d) => d.steps);
+    expect(series).toEqual([
+      { date: "2026-07-05", value: null },
+      { date: "2026-07-06", value: null },
+      { date: "2026-07-07", value: null },
+    ]);
   });
 });
 

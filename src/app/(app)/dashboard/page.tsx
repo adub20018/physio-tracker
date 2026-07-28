@@ -14,7 +14,11 @@ import {
   TIME_RANGE_COMPARISON_LABELS,
   TIME_RANGE_HINT_PHRASES,
 } from "@/lib/time-range";
-import { dailyPainAverage, windowComparison } from "@/domain/aggregate";
+import {
+  dailyPainAverage,
+  lastNDaysSeries,
+  windowComparison,
+} from "@/domain/aggregate";
 import { rollingAverage } from "@/domain/rolling";
 import { dailyPhysioVolume } from "@/domain/volume";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
@@ -26,6 +30,7 @@ import {
 } from "@/domain/lag";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
 import { DashboardCharts } from "@/components/ui/dashboard/dashboard-charts";
+import { SERIES } from "@/components/charts/chart-theme";
 import type { PainTimelinePoint } from "@/components/charts/pain-timeline";
 import type { LoadVsSymptomsPoint } from "@/components/charts/load-vs-symptoms";
 import type { ProgressionPoint } from "@/components/charts/progression-chart";
@@ -34,21 +39,27 @@ import {
   CalendarHeatmap,
   type HeatmapDay,
 } from "@/components/charts/calendar-heatmap";
+import { Heart } from "@primeicons/react/heart";
+import { WavePulse } from "@primeicons/react/wave-pulse";
+import { Moon } from "@primeicons/react/moon";
+import { Stopwatch } from "@primeicons/react/stopwatch";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
 export const dynamic = "force-dynamic";
 
-// Formats a numeric delta as "+0.4" / "−0.4"; null when either side is missing.
+// Formats a numeric delta as "0.4" (no sign — direction is conveyed by the
+// tile's caret icon instead) plus its raw arithmetic direction; null when
+// either side is missing.
 function fmtDelta(
   current: number | null,
   previous: number | null,
   decimals: number,
-): string | null {
+): { text: string; direction: "up" | "down" } | null {
   if (current == null || previous == null) return null;
   const diff = current - previous;
   const text = Math.abs(diff).toFixed(decimals);
-  return diff >= 0 ? `+${text}` : `−${text}`;
+  return { text, direction: diff >= 0 ? "up" : "down" };
 }
 
 export default async function DashboardPage() {
@@ -72,11 +83,12 @@ export default async function DashboardPage() {
   // bias the averages. Days-since-flare still counts from today — a flare
   // logged this morning must show immediately.
   const statWindowDays = daysForRange("7d");
+  const statWindowEnd = addDays(today, -1);
   const statDeltaLabel = TIME_RANGE_COMPARISON_LABELS["7d"];
   const statRangePhrase = TIME_RANGE_HINT_PHRASES["7d"];
   const { current, previous } = windowComparison(
     days,
-    addDays(today, -1),
+    statWindowEnd,
     statWindowDays,
   );
   const flareGap = daysSinceLastFlare(days, today, flareThreshold);
@@ -93,6 +105,54 @@ export default async function DashboardPage() {
     previous.loggedDays > 0
       ? previous.physioVolume / previous.loggedDays
       : null;
+
+  // ── Stat tile sparklines: each tile's own raw per-day values across the
+  // same 7-day window, not a rolling average — the point is to show the
+  // shape the headline number was averaged FROM. `display` is the
+  // tooltip's already-formatted text: a function can't be passed from this
+  // server component down into StatSparkline (a client component) as a
+  // prop, so formatting happens here, same as StatTile's own value/delta
+  // props. ─────────────────────────────────────────────────────────────────
+  const painSparkline = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    statWindowDays,
+    dailyPainAverage,
+  ).map((d) => ({
+    ...d,
+    display: d.value != null ? `${d.value.toFixed(1)}/10 pain` : "Not logged",
+  }));
+  const stepsSparkline = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    statWindowDays,
+    (d) => d.steps,
+  ).map((d) => ({
+    ...d,
+    display:
+      d.value != null ? `${Math.round(d.value).toLocaleString()} steps` : "Not logged",
+  }));
+  const sleepSparkline = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    statWindowDays,
+    (d) => d.sleepHours,
+  ).map((d) => ({
+    ...d,
+    display: d.value != null ? `${d.value.toFixed(1)} hrs sleep` : "Not logged",
+  }));
+  const physioLoadSparkline = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    statWindowDays,
+    (d) => dailyPhysioVolume(d),
+  ).map((d) => ({
+    ...d,
+    display:
+      d.value != null
+        ? `${Math.round(d.value).toLocaleString()} physio load`
+        : "Not logged",
+  }));
 
   // ── Pain timeline (full history — <DashboardCharts> slices to range) ──
   const painAvgs = days.map(dailyPainAverage);
@@ -176,6 +236,19 @@ export default async function DashboardPage() {
     }
   }
 
+  const painDelta = fmtDelta(current.painAvg, previous.painAvg, 1);
+  const stepsDelta = fmtDelta(
+    current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
+    previous.stepsAvg != null ? Math.round(previous.stepsAvg) : null,
+    0,
+  );
+  const sleepDelta = fmtDelta(current.sleepAvg, previous.sleepAvg, 1);
+  const physioLoadDelta = fmtDelta(
+    currentPhysioLoadAvg != null ? Math.round(currentPhysioLoadAvg) : null,
+    previousPhysioLoadAvg != null ? Math.round(previousPhysioLoadAvg) : null,
+    0,
+  );
+
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
       <header className="page-header">
@@ -207,7 +280,8 @@ export default async function DashboardPage() {
             label="Avg pain (7D)"
             value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
             unit="/10"
-            delta={fmtDelta(current.painAvg, previous.painAvg, 1)}
+            delta={painDelta?.text}
+            deltaDirection={painDelta?.direction}
             deltaIsGood={
               current.painAvg != null && previous.painAvg != null
                 ? current.painAvg <= previous.painAvg
@@ -215,6 +289,9 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
+            icon={<Heart size={16} />}
+            accentColor={SERIES.rollingAvg}
+            sparklineValues={painSparkline}
           />
           <StatTile
             label="Avg daily steps (7D)"
@@ -223,11 +300,8 @@ export default async function DashboardPage() {
                 ? Math.round(current.stepsAvg).toLocaleString()
                 : "—"
             }
-            delta={fmtDelta(
-              current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
-              previous.stepsAvg != null ? Math.round(previous.stepsAvg) : null,
-              0,
-            )}
+            delta={stepsDelta?.text}
+            deltaDirection={stepsDelta?.direction}
             deltaIsGood={
               current.stepsAvg != null && previous.stepsAvg != null
                 ? current.stepsAvg >= previous.stepsAvg
@@ -235,12 +309,16 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's daily steps, ${statRangePhrase}.`}
+            icon={<WavePulse size={16} />}
+            accentColor={SERIES.steps}
+            sparklineValues={stepsSparkline}
           />
           <StatTile
             label="Avg sleep (7D)"
             value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
             unit="hrs"
-            delta={fmtDelta(current.sleepAvg, previous.sleepAvg, 1)}
+            delta={sleepDelta?.text}
+            deltaDirection={sleepDelta?.direction}
             deltaIsGood={
               current.sleepAvg != null && previous.sleepAvg != null
                 ? current.sleepAvg >= previous.sleepAvg
@@ -248,6 +326,9 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each night's sleep, ${statRangePhrase}.`}
+            icon={<Moon size={16} />}
+            accentColor={SERIES.sleep}
+            sparklineValues={sleepSparkline}
           />
           <StatTile
             label="Physio load (7D)"
@@ -256,11 +337,8 @@ export default async function DashboardPage() {
                 ? Math.round(currentPhysioLoadAvg).toLocaleString()
                 : "—"
             }
-            delta={fmtDelta(
-              currentPhysioLoadAvg != null ? Math.round(currentPhysioLoadAvg) : null,
-              previousPhysioLoadAvg != null ? Math.round(previousPhysioLoadAvg) : null,
-              0,
-            )}
+            delta={physioLoadDelta?.text}
+            deltaDirection={physioLoadDelta?.direction}
             deltaIsGood={
               currentPhysioLoadAvg != null && previousPhysioLoadAvg != null
                 ? currentPhysioLoadAvg >= previousPhysioLoadAvg
@@ -268,6 +346,9 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
+            icon={<Stopwatch size={16} />}
+            accentColor={SERIES.volume}
+            sparklineValues={physioLoadSparkline}
           />
         </div>
       </DashboardCharts>

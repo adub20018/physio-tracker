@@ -60,7 +60,7 @@ function weekLabel(startIso: string, endIso: string): string {
 
 export default async function InsightsPage() {
   const user = await getCurrentUser();
-  const [logs, { flareThreshold }] = await Promise.all([
+  const [logs, { flareThreshold, chartAutoScaleYAxis }] = await Promise.all([
     dailyLogRepository.listAll(user.id),
     userSettingsRepository.get(user.id),
   ]);
@@ -188,6 +188,7 @@ export default async function InsightsPage() {
         fullSleepVsDaytime={fullSleepVsDaytime}
         fullSleepVsNight={fullSleepVsNight}
         today={today}
+        autoScaleYAxis={chartAutoScaleYAxis}
       />
 
       <section className={styles.card}>

@@ -49,6 +49,7 @@ export function InsightsCharts({
   fullSleepVsDaytime,
   fullSleepVsNight,
   today,
+  autoScaleYAxis,
 }: {
   fullStepsPoints: PairedPoint[];
   fullVolumePoints: PairedPoint[];
@@ -56,6 +57,9 @@ export function InsightsCharts({
   fullSleepVsDaytime: PairedPoint[];
   fullSleepVsNight: PairedPoint[];
   today: string;
+  // Account → Preferences: fit each chart's Y-axis to the visible data
+  // instead of a fixed range.
+  autoScaleYAxis: boolean;
 }) {
   const [range, setRange] = usePersistedTimeRange(RANGE_STORAGE_KEY);
   const rangeDays = daysForRange(range);
@@ -119,6 +123,7 @@ export function InsightsCharts({
           points={stepsPoints}
           xLabel="Steps"
           yLabel="Next-morning pain"
+          autoScaleYAxis={autoScaleYAxis}
         />
       </section>
 
@@ -132,6 +137,7 @@ export function InsightsCharts({
           points={volumePoints}
           xLabel="Physio load"
           yLabel="Next-morning pain"
+          autoScaleYAxis={autoScaleYAxis}
         />
       </section>
 
@@ -162,6 +168,7 @@ export function InsightsCharts({
           series={sleepScatterSeries}
           xLabel="Sleep (hours)"
           yLabel="Pain"
+          autoScaleYAxis={autoScaleYAxis}
         />
       </section>
     </>

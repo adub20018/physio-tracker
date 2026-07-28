@@ -30,10 +30,14 @@ export function MultiScatter({
   series,
   xLabel,
   yLabel,
+  autoScaleYAxis = false,
 }: {
   series: ScatterSeries[];
   xLabel: string;
   yLabel: string;
+  // When true, the Y-axis scales to fit the visible data's own max instead
+  // of the fixed 0–10 pain scale (Account → Preferences).
+  autoScaleYAxis?: boolean;
 }) {
   if (series.every((s) => s.points.length === 0)) {
     return <EmptyState message="No data yet." height={280} />;
@@ -75,8 +79,8 @@ export function MultiScatter({
             dataKey="y"
             name={yLabel}
             type="number"
-            domain={[0, 10]}
-            ticks={[0, 2.5, 5, 7.5, 10]}
+            domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
+            ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
             tick={CHART_CHROME.tick}
             axisLine={false}
             tickLine={false}

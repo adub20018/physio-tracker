@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "chart_auto_scale_y_axis" boolean DEFAULT false NOT NULL;

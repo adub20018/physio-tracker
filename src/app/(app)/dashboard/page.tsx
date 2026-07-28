@@ -53,7 +53,7 @@ function fmtDelta(
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const [logs, { flareThreshold }] = await Promise.all([
+  const [logs, { flareThreshold, chartAutoScaleYAxis }] = await Promise.all([
     dailyLogRepository.listAll(user.id),
     userSettingsRepository.get(user.id),
   ]);
@@ -200,6 +200,7 @@ export default async function DashboardPage() {
         fullProgression={fullProgression}
         fullSleepTimelineData={fullSleepTimelineData}
         today={today}
+        autoScaleYAxis={chartAutoScaleYAxis}
       >
         <div className={styles.tiles}>
           <StatTile

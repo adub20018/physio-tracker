@@ -45,7 +45,17 @@ type RangePoint = ProgressionPoint & {
 
 const SYNC_ID = "progression";
 
-export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
+export function ProgressionChart({
+  data,
+  autoScaleYAxis = false,
+}: {
+  data: ProgressionPoint[];
+  // When true, the intensity panel's Y-axis scales to fit the visible
+  // data's own max instead of the fixed 0–50% range (Account →
+  // Preferences). The hold-volume/physio-load panels below already
+  // auto-scale unconditionally.
+  autoScaleYAxis?: boolean;
+}) {
   if (data.length === 0) {
     return <EmptyState message="No physio sessions logged yet." height={410} />;
   }
@@ -117,8 +127,8 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
                 panel to band keeps them all identical. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
-              domain={[0, 50]}
-              ticks={[0, 25, 50]}
+              domain={autoScaleYAxis ? [0, "auto"] : [0, 50]}
+              ticks={autoScaleYAxis ? undefined : [0, 25, 50]}
               interval={0}
               tickFormatter={(v: number) => `${v}%`}
               tick={CHART_CHROME.tick}

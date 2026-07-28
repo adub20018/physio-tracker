@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
 import { LogSectionHeader } from "@/components/ui/log/log-section-header";
+import { EnsureDateParam } from "@/components/ui/log/ensure-date-param";
 import { NotesSectionForm } from "@/components/ui/log/notes-section-form";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function LogNotesPage({
 
   return (
     <main className="page" style={{ maxWidth: "36rem" }}>
+      <EnsureDateParam />
       <LogSectionHeader title="Notes" date={date} />
       <NotesSectionForm
         key={date}

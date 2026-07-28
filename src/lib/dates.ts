@@ -2,9 +2,14 @@
 // which stays pure). Shared by pages so "today" is defined in exactly one
 // place.
 
-// Today's date in the server's local timezone. Fine for local use; when
-// deployed (Phase 5), set the TZ env var on Vercel to the user's timezone so
-// "today" doesn't flip over at UTC midnight.
+// Today's date in the SERVER's local timezone (UTC on Vercel) — only ever
+// used as resolveDateParam's fallback for the very first render of a /log
+// page with no ?date= yet, before EnsureDateParam (see
+// components/ui/log/ensure-date-param.tsx) corrects the URL to the
+// visitor's own local date. Deliberately not "fixed" to a fixed timezone
+// here: a single hardcoded TZ would still be wrong the moment this user
+// logs from a different one, which the client-side correction handles
+// automatically regardless of where the server or the visitor are.
 export function todayIso(): string {
   const now = new Date();
   const y = now.getFullYear();

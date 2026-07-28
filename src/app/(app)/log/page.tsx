@@ -19,6 +19,7 @@ import {
   notesProgress,
 } from "@/lib/log-summaries";
 import { LogDateBar } from "@/components/ui/log/log-date-bar";
+import { EnsureDateParam } from "@/components/ui/log/ensure-date-param";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
 import { Heart } from "@primeicons/react/heart";
 import { WavePulse } from "@primeicons/react/wave-pulse";
@@ -82,6 +83,7 @@ export default async function LogOverviewPage({
 
   return (
     <main className="page" style={{ maxWidth: "36rem" }}>
+      <EnsureDateParam />
       <header className="page-header">
         <h1>Daily log</h1>
         <p className="subtitle">Pick what you&apos;re logging right now.</p>

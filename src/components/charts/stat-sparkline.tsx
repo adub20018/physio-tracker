@@ -5,37 +5,12 @@
 // a faded tint of the tile's own color; hovering one brings just that bar
 // to full color (via activeBar) and shows its value/date — no separate grey
 // cursor overlay, since the bar recoloring is already the hover feedback.
+// See StatSparklineArea for the line/area-fill variant used where a
+// continuous trend reads better than discrete daily bars.
 "use client";
 
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { TOOLTIP_STYLE } from "./chart-theme";
-
-// "Jul 22" — compact enough for a tooltip over a ~28px-tall sparkline.
-function formatTooltipDate(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function SparklineTooltipContent({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: { payload?: { date: string; display: string } }[];
-}) {
-  if (!active || !payload || payload.length === 0) return null;
-  const point = payload[0]?.payload;
-  if (!point) return null;
-  return (
-    <div style={TOOLTIP_STYLE}>
-      <div>{point.display}</div>
-      <div style={{ color: "var(--muted)" }}>{formatTooltipDate(point.date)}</div>
-    </div>
-  );
-}
+import { SparklineTooltipContent } from "./sparkline-tooltip";
 
 export function StatSparkline({
   values,

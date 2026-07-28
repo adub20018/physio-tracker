@@ -161,6 +161,7 @@ export function PainTimeline({
           {/* The trend: bold rolling average */}
           <Line
             dataKey="rollingAvg"
+
             name="7-day avg"
             stroke={SERIES.rollingAvg}
             strokeWidth={2.5}

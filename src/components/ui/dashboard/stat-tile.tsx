@@ -11,6 +11,7 @@ import { TrendingUp } from "lucide-react";
 
 import { TrendingDown } from "lucide-react";
 import { StatSparkline } from "@/components/charts/stat-sparkline";
+import { StatSparklineArea } from "@/components/charts/stat-sparkline-area";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "./stat-tile.module.css";
 
@@ -49,6 +50,11 @@ export type StatTileProps = {
   // page down into StatSparkline (a client component) as a prop. Omit to
   // render without a sparkline (e.g. a tile with no meaningful daily series).
   sparklineValues?: { date: string; value: number | null; display: string }[];
+  // "bar" (default): discrete daily bars, most recent one highlighted —
+  // reads well for counted quantities (steps, sleep hours). "area": a line
+  // with the space beneath it filled, for metrics where a continuous trend
+  // reads better than discrete days (average pain, physio load).
+  sparklineVariant?: "bar" | "area";
 };
 
 export function StatTile({
@@ -63,6 +69,7 @@ export function StatTile({
   icon,
   accentColor,
   sparklineValues,
+  sparklineVariant = "bar",
 }: StatTileProps) {
   const badgeStyle = {
     background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
@@ -117,11 +124,16 @@ export function StatTile({
         {label}
       </span>
 
-      {sparklineValues && (
-        <div className={styles.sparkline}>
-          <StatSparkline values={sparklineValues} color={accentColor} />
-        </div>
-      )}
+      {sparklineValues &&
+        (sparklineVariant === "area" ? (
+          <div className={styles.sparkline}>
+            <StatSparklineArea values={sparklineValues} color={accentColor} />
+          </div>
+        ) : (
+          <div className={styles.sparkline}>
+            <StatSparkline values={sparklineValues} color={accentColor} />
+          </div>
+        ))}
     </div>
   );
 }

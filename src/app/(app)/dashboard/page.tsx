@@ -294,6 +294,7 @@ export default async function DashboardPage() {
             icon={<BoneFracture size={16} />}
             accentColor={SERIES.pain}
             sparklineValues={painSparkline}
+            sparklineVariant="area"
           />
           <StatTile
             label="Avg daily steps (7D)"
@@ -351,6 +352,7 @@ export default async function DashboardPage() {
             icon={<WeightTilde size={16} />}
             accentColor={SERIES.load}
             sparklineValues={physioLoadSparkline}
+            sparklineVariant="area"
           />
         </div>
       </DashboardCharts>

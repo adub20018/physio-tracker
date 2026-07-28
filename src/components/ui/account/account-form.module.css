@@ -51,3 +51,13 @@
   gap: 0.75rem;
   margin-top: 0.25rem;
 }
+
+/* Label + hint on the left, the switch itself on the right — for settings
+   that apply immediately on change, unlike .field's stacked layout above
+   (used for inputs that need an explicit Save). */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}

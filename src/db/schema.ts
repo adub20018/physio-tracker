@@ -7,6 +7,7 @@ import {
   integer,
   real,
   jsonb,
+  boolean,
   uniqueIndex,
   timestamp,
   uuid,
@@ -97,6 +98,10 @@ export const userSettings = pgTable("user_settings", {
   // hand-written in migrations/0002_mature_imperial_guard.sql.
   userId: uuid("user_id").primaryKey(),
   flareThreshold: real("flare_threshold").notNull().default(3),
+  // When true, chart Y-axes scale to fit the visible data's own range
+  // instead of a fixed domain. Off by default so existing charts don't
+  // change appearance for anyone until they opt in.
+  chartAutoScaleYAxis: boolean("chart_auto_scale_y_axis").notNull().default(false),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

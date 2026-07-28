@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@primereact/ui/button";
 import { Label } from "@primereact/ui/label";
 import { Message } from "@primereact/ui/message";
-import { WavePulse } from "@primeicons/react/wave-pulse";
-import { Moon } from "@primeicons/react/moon";
+import { Footprints } from "lucide-react";
+import { BedDouble } from "lucide-react";
 import { ACTIVITY_TAGS } from "@/db/schema";
 import { NumberField, TagMultiSelect } from "./log-fields";
 import { saveActivitySection } from "@/app/(app)/log/actions";
@@ -58,7 +58,7 @@ export function ActivitySectionForm({ init }: { init: ActivitySectionInit }) {
         <div className={styles.fieldGrid}>
           <div className={styles.field}>
             <Label htmlFor="log-steps" className={styles.fieldLabel}>
-              <WavePulse size={14} /> Steps
+              <Footprints size={14} /> Steps
             </Label>
             <NumberField
               id="log-steps"
@@ -71,7 +71,7 @@ export function ActivitySectionForm({ init }: { init: ActivitySectionInit }) {
           </div>
           <div className={styles.field}>
             <Label htmlFor="log-sleep" className={styles.fieldLabel}>
-              <Moon size={14} /> Sleep (hours)
+              <BedDouble size={14} /> Sleep (hours)
             </Label>
             <NumberField
               id="log-sleep"
@@ -97,7 +97,13 @@ export function ActivitySectionForm({ init }: { init: ActivitySectionInit }) {
       </section>
 
       <div className={styles.actions}>
-        <Button onClick={submit} disabled={isPending} fluid size="large" severity="contrast">
+        <Button
+          onClick={submit}
+          disabled={isPending}
+          fluid
+          size="large"
+          severity="contrast"
+        >
           {isPending ? (
             <>
               <ButtonSpinner />

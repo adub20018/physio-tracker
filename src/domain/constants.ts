@@ -9,6 +9,11 @@
 // rather than importing this constant directly.
 export const DEFAULT_FLARE_PAIN_THRESHOLD = 3;
 
+// Charts default to a fixed Y-axis domain; this is the fallback/seed value
+// for the per-user "auto-scale Y-axis to fit data" preference (Account →
+// Preferences, see repositories/types.ts UserSettings).
+export const DEFAULT_CHART_AUTO_SCALE_Y_AXIS = false;
+
 // Pain scale bounds and step size used by inputs and displays.
 export const PAIN_SCALE_MIN = 0;
 export const PAIN_SCALE_MAX = 10;

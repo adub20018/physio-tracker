@@ -31,7 +31,16 @@ export type SleepPainPoint = {
 
 const SYNC_ID = "sleep-pain-timeline";
 
-export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
+export function SleepPainTimeline({
+  data,
+  autoScaleYAxis = false,
+}: {
+  data: SleepPainPoint[];
+  // When true, the pain panel's Y-axis scales to fit the visible data's own
+  // max instead of the fixed 0–10 pain scale (Account → Preferences). The
+  // sleep panel above already auto-scales unconditionally.
+  autoScaleYAxis?: boolean;
+}) {
   if (data.length === 0) {
     return <EmptyState message="No data yet." height={250} />;
   }
@@ -139,8 +148,8 @@ export function SleepPainTimeline({ data }: { data: SleepPainPoint[] }) {
               minTickGap={28}
             />
             <YAxis
-              domain={[0, 10]}
-              ticks={[0, 5, 10]}
+              domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
+              ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
               tick={CHART_CHROME.tick}
               axisLine={false}
               tickLine={false}

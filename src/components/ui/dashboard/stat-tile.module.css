@@ -1,9 +1,9 @@
-/* Stat tile: label / big mono number / quiet delta line. */
+/* Stat tile: value+delta / icon badge row, colored label, sparkline. */
 
 .tile {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
   padding: 1rem 1.15rem;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -11,17 +11,19 @@
   cursor: default;
 }
 
-.label {
-  display: inline-flex;
-  /* flex-start, not center: when the label text wraps to two lines on a
-     narrow tile, the info icon should sit with the first line, not float
-     at the vertical midpoint of the whole wrapped block. */
+.headerRow {
+  display: flex;
   align-items: flex-start;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--faint);
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.valueLine {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .value {
@@ -37,8 +39,16 @@
   color: var(--muted);
 }
 
+/* Compact delta: caret + value only, no comparison-window text — the full
+   phrase is still available on hover via the title attribute. */
 .delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
   font-size: 0.78rem;
+  font-weight: 600;
   color: var(--muted);
 }
 
@@ -47,5 +57,42 @@
 }
 
 .deltaBad {
-  color: var(--pain-elevated);
+  color: var(--pain-flare);
+}
+
+/* Circular badge naming the metric — background is a 14% tint of the
+   tile's own accentColor (same ratio as globals.css's --accent-soft),
+   applied inline since the color varies per tile. flex-shrink: 0 keeps it
+   a true circle even when the value/delta above it wraps to two lines on a
+   narrow tile. When a hint is present this renders as InfoTooltip's
+   trigger button — all: unset first strips the browser's default button
+   chrome (border/background/font/padding) before the layout properties
+   below reapply, same pattern as info-tooltip.module.css's own .trigger;
+   harmless when it instead renders as a plain, non-interactive span. */
+.iconBadge {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+.label {
+  display: inline-flex;
+  /* flex-start, not center: when the label text wraps to two lines on a
+     narrow tile, the info icon should sit with the first line, not float
+     at the vertical midpoint of the whole wrapped block. */
+  align-items: flex-start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.sparkline {
+  margin-top: 0.2rem;
 }

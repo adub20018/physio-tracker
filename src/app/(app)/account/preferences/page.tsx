@@ -3,6 +3,7 @@
 import { getCurrentUser } from "@/auth/get-current-user";
 import { userSettingsRepository } from "@/repositories";
 import { AppConfigForm } from "@/components/ui/account/app-config-form";
+import { ChartAutoScaleToggle } from "@/components/ui/account/chart-auto-scale-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,9 @@ export default async function PreferencesPage() {
         <p className="subtitle">Adjust configurable app settings.</p>
       </header>
       <AppConfigForm initialFlareThreshold={settings.flareThreshold} />
+      <div style={{ marginTop: "1rem" }}>
+        <ChartAutoScaleToggle initialValue={settings.chartAutoScaleYAxis} />
+      </div>
       <p
         style={{
           color: "var(--muted)",

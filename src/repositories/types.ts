@@ -37,6 +37,9 @@ export interface DailyLogRepository {
 // is backed by a database row at all.
 export type UserSettings = {
   flareThreshold: number;
+  // When true, chart Y-axes scale to fit the visible data's own range
+  // instead of a fixed domain.
+  chartAutoScaleYAxis: boolean;
 };
 
 export interface UserSettingsRepository {

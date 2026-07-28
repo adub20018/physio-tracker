@@ -41,6 +41,7 @@ export function DashboardCharts({
   fullProgression,
   fullSleepTimelineData,
   today,
+  autoScaleYAxis,
   children,
 }: {
   fullTimeline: PainTimelinePoint[];
@@ -48,6 +49,9 @@ export function DashboardCharts({
   fullProgression: ProgressionPoint[];
   fullSleepTimelineData: SleepPainPoint[];
   today: string;
+  // Account → Preferences: fit each chart's Y-axis to the visible data
+  // instead of a fixed range.
+  autoScaleYAxis: boolean;
   // The stat tiles — rendered server-side (they're a fixed 7-day window,
   // independent of the range picked here) but need to sit visually between
   // the picker and the charts. Passed as children rather than duplicated
@@ -89,7 +93,7 @@ export function DashboardCharts({
           Raw readings with the 7-day trend — the line that answers &ldquo;am I
           actually progressing?&rdquo;
         </p>
-        <PainTimeline data={timeline} />
+        <PainTimeline data={timeline} autoScaleYAxis={autoScaleYAxis} />
       </section>
 
       <section className={styles.card}>
@@ -101,7 +105,7 @@ export function DashboardCharts({
           Physio load here is the same intensity-weighted metric as the
           dashboard tile, shown per day instead of summed over the week.
         </p>
-        <LoadVsSymptoms data={load} />
+        <LoadVsSymptoms data={load} autoScaleYAxis={autoScaleYAxis} />
       </section>
 
       <section className={styles.card}>
@@ -111,7 +115,7 @@ export function DashboardCharts({
           hours logged on a date are the hours slept the night before waking
           up that day, so they precede all three of that day&apos;s readings.
         </p>
-        <SleepPainTimeline data={sleepTimelineData} />
+        <SleepPainTimeline data={sleepTimelineData} autoScaleYAxis={autoScaleYAxis} />
       </section>
 
       <section className={styles.card}>
@@ -123,7 +127,7 @@ export function DashboardCharts({
           raise one and lower the other), so both are shown rather than just
           one.
         </p>
-        <ProgressionChart data={progression} />
+        <ProgressionChart data={progression} autoScaleYAxis={autoScaleYAxis} />
       </section>
     </>
   );

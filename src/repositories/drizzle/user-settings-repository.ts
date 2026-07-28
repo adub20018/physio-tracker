@@ -4,7 +4,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { userSettings } from "@/db/schema";
-import { DEFAULT_FLARE_PAIN_THRESHOLD } from "@/domain/constants";
+import {
+  DEFAULT_FLARE_PAIN_THRESHOLD,
+  DEFAULT_CHART_AUTO_SCALE_Y_AXIS,
+} from "@/domain/constants";
 import type { UserSettings, UserSettingsRepository } from "@/repositories/types";
 
 export class DrizzleUserSettingsRepository implements UserSettingsRepository {
@@ -16,8 +19,16 @@ export class DrizzleUserSettingsRepository implements UserSettingsRepository {
       .from(userSettings)
       .where(eq(userSettings.userId, userId))
       .limit(1);
-    if (!row) return { flareThreshold: DEFAULT_FLARE_PAIN_THRESHOLD };
-    return { flareThreshold: row.flareThreshold };
+    if (!row) {
+      return {
+        flareThreshold: DEFAULT_FLARE_PAIN_THRESHOLD,
+        chartAutoScaleYAxis: DEFAULT_CHART_AUTO_SCALE_Y_AXIS,
+      };
+    }
+    return {
+      flareThreshold: row.flareThreshold,
+      chartAutoScaleYAxis: row.chartAutoScaleYAxis,
+    };
   }
 
   // Insert-or-update in one statement. Falls back to the schema's column
@@ -32,7 +43,10 @@ export class DrizzleUserSettingsRepository implements UserSettingsRepository {
         set: { ...input, updatedAt: new Date() },
       })
       .returning();
-    return { flareThreshold: row.flareThreshold };
+    return {
+      flareThreshold: row.flareThreshold,
+      chartAutoScaleYAxis: row.chartAutoScaleYAxis,
+    };
   }
 
   async delete(userId: string): Promise<void> {

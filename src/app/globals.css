@@ -46,7 +46,7 @@
      serif voice; h1/h2/h3's own weight/letter-spacing carry the hierarchy. */
   --font-display: var(--font-instrument), system-ui, sans-serif;
   --font-body: var(--font-instrument), system-ui, sans-serif;
-  --font-data: var(--font-plex-mono), ui-monospace, monospace;
+  --font-data: var(--font-instrument), system-ui, sans-serif;
 }
 
 html {

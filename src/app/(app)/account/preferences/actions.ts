@@ -33,3 +33,13 @@ export async function saveFlareThreshold(flareThreshold: number): Promise<SaveRe
   revalidatePath("/history");
   return { ok: true };
 }
+
+export async function saveChartAutoScaleYAxis(chartAutoScaleYAxis: boolean): Promise<SaveResult> {
+  const user = await getCurrentUser();
+  await userSettingsRepository.upsert(user.id, { chartAutoScaleYAxis });
+
+  // Every chart-bearing page must reflect the change immediately.
+  revalidatePath("/dashboard");
+  revalidatePath("/insights");
+  return { ok: true };
+}

@@ -9,23 +9,15 @@
 
 // Categorical series colors, in fixed order (never cycled).
 export const SERIES = {
-  morning: "#0284c7", // sky
+  morning: "#2997c8", // sky
   daytime: "#db2777", // pink
   night: "#8b5cf6", // violet
-  rollingAvg: "#059669", // emerald — the hero trend line
-  steps: "#0284c7", // reuses slot 1 in a chart where it is the only series
-  volume: "#8b5cf6", // reuses slot 3 likewise
-  // Distinct from morning/daytime/night (sky/pink/violet): sleep appears
-  // ALONGSIDE those three in the sleep timeline chart, so it needs its own
-  // hue rather than reusing one of theirs the way steps/volume safely do
-  // in charts where they're the only series.
-  sleep: "#d97706", // amber
-  // "Physio load" (intensity-weighted) keeps `volume`'s violet everywhere
-  // it appears — dashboard tile, Load vs symptoms, Physio progression — so
-  // the color always means the same metric at a glance. Hold volume (raw,
-  // unweighted) needs a genuinely different hue since Physio progression
-  // shows both side by side; validated against the rest of this palette.
-  holdVolume: "#0d9488", // teal
+  rollingAvg: "#059669", // emerald
+  holdVolume: "#64748b", // slate
+  pain: "#f87171", // red
+  steps: "#0284c7", // blue
+  sleep: "#8b5cf6", // purple
+  load: "#0d9488", // teal
 } as const;
 
 // Status color for flare markers (means "flare", never "series 4").

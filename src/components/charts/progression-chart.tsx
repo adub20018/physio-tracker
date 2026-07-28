@@ -45,7 +45,17 @@ type RangePoint = ProgressionPoint & {
 
 const SYNC_ID = "progression";
 
-export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
+export function ProgressionChart({
+  data,
+  autoScaleYAxis = false,
+}: {
+  data: ProgressionPoint[];
+  // When true, the intensity panel's Y-axis scales to fit the visible
+  // data's own max instead of the fixed 0–50% range (Account →
+  // Preferences). The hold-volume/physio-load panels below already
+  // auto-scale unconditionally.
+  autoScaleYAxis?: boolean;
+}) {
   if (data.length === 0) {
     return <EmptyState message="No physio sessions logged yet." height={410} />;
   }
@@ -87,7 +97,7 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
         <span className={styles.legendItem}>
           <span
             className={styles.legendSwatch}
-            style={{ background: SERIES.volume }}
+            style={{ background: SERIES.load }}
           />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %. The same metric as the dashboard tile and Load vs symptoms. Weighted by intensity — can move opposite to Hold volume, e.g. longer holds at lower intensity raise Hold volume while Physio load falls." />
@@ -117,8 +127,8 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
                 panel to band keeps them all identical. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
-              domain={[0, 50]}
-              ticks={[0, 25, 50]}
+              domain={autoScaleYAxis ? [0, "auto"] : [0, 50]}
+              ticks={autoScaleYAxis ? undefined : [0, 25, 50]}
               interval={0}
               tickFormatter={(v: number) => `${v}%`}
               tick={CHART_CHROME.tick}
@@ -238,7 +248,7 @@ export function ProgressionChart({ data }: { data: ProgressionPoint[] }) {
             <Bar
               dataKey="physioVolume"
               name="Physio load"
-              fill={SERIES.volume}
+              fill={SERIES.load}
               radius={[3, 3, 0, 0]}
               isAnimationActive={true}
               animationBegin={150}

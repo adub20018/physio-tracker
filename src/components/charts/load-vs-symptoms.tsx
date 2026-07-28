@@ -68,7 +68,17 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
   );
 }
 
-export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
+export function LoadVsSymptoms({
+  data,
+  autoScaleYAxis = false,
+}: {
+  data: LoadVsSymptomsPoint[];
+  // When true, the next-day-pain panel's Y-axis scales to fit the visible
+  // data's own max instead of the fixed 0–10 pain scale (Account →
+  // Preferences). The steps/physio load panels above already auto-scale
+  // unconditionally.
+  autoScaleYAxis?: boolean;
+}) {
   if (data.length === 0) {
     return <EmptyState message="No data yet." height={370} />;
   }
@@ -86,7 +96,7 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
         <span className={styles.legendItem}>
           <span
             className={styles.legendSwatch}
-            style={{ background: SERIES.volume }}
+            style={{ background: SERIES.load }}
           />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %, for that day. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds with no intensity factored in." />
@@ -188,7 +198,7 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             <Bar
               dataKey="physioVolume"
               name="Physio load"
-              fill={SERIES.volume}
+              fill={SERIES.load}
               radius={[3, 3, 0, 0]}
               isAnimationActive={true}
               animationBegin={75}
@@ -212,8 +222,8 @@ export function LoadVsSymptoms({ data }: { data: LoadVsSymptomsPoint[] }) {
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden={false} />
             <YAxis
-              domain={[0, 10]}
-              ticks={[0, 5, 10]}
+              domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
+              ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
               tick={CHART_CHROME.tick}
               axisLine={false}
               tickLine={false}

@@ -39,10 +39,10 @@ import {
   CalendarHeatmap,
   type HeatmapDay,
 } from "@/components/charts/calendar-heatmap";
-import { Heart } from "@primeicons/react/heart";
-import { WavePulse } from "@primeicons/react/wave-pulse";
-import { Moon } from "@primeicons/react/moon";
-import { Stopwatch } from "@primeicons/react/stopwatch";
+import { BoneFracture } from "lucide-react";
+import { Footprints } from "lucide-react";
+import { BedDouble } from "lucide-react";
+import { WeightTilde } from "lucide-react";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
@@ -130,7 +130,9 @@ export default async function DashboardPage() {
   ).map((d) => ({
     ...d,
     display:
-      d.value != null ? `${Math.round(d.value).toLocaleString()} steps` : "Not logged",
+      d.value != null
+        ? `${Math.round(d.value).toLocaleString()} steps`
+        : "Not logged",
   }));
   const sleepSparkline = lastNDaysSeries(
     days,
@@ -289,8 +291,8 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
-            icon={<Heart size={16} />}
-            accentColor={SERIES.rollingAvg}
+            icon={<BoneFracture size={16} />}
+            accentColor={SERIES.pain}
             sparklineValues={painSparkline}
           />
           <StatTile
@@ -309,7 +311,7 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's daily steps, ${statRangePhrase}.`}
-            icon={<WavePulse size={16} />}
+            icon={<Footprints size={16} />}
             accentColor={SERIES.steps}
             sparklineValues={stepsSparkline}
           />
@@ -326,7 +328,7 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each night's sleep, ${statRangePhrase}.`}
-            icon={<Moon size={16} />}
+            icon={<BedDouble size={16} />}
             accentColor={SERIES.sleep}
             sparklineValues={sleepSparkline}
           />
@@ -346,8 +348,8 @@ export default async function DashboardPage() {
             }
             deltaLabel={statDeltaLabel}
             hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
-            icon={<Stopwatch size={16} />}
-            accentColor={SERIES.volume}
+            icon={<WeightTilde size={16} />}
+            accentColor={SERIES.load}
             sparklineValues={physioLoadSparkline}
           />
         </div>

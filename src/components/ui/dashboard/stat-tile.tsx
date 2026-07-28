@@ -7,8 +7,9 @@
 // own full chart elsewhere). Direction-aware coloring: for pain, going DOWN
 // is good; for steps and volume, going UP is good — the tile is told which
 // via `deltaIsGood`.
-import { CaretUp } from "@primeicons/react/caret-up";
-import { CaretDown } from "@primeicons/react/caret-down";
+import { TrendingUp } from "lucide-react";
+
+import { TrendingDown } from "lucide-react";
 import { StatSparkline } from "@/components/charts/stat-sparkline";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "./stat-tile.module.css";
@@ -79,14 +80,18 @@ export function StatTile({
           {delta != null && deltaDirection && (
             <span
               className={`${styles.delta} ${
-                deltaIsGood == null ? "" : deltaIsGood ? styles.deltaGood : styles.deltaBad
+                deltaIsGood == null
+                  ? ""
+                  : deltaIsGood
+                    ? styles.deltaGood
+                    : styles.deltaBad
               }`}
               title={`${delta} ${deltaLabel}`}
             >
               {deltaDirection === "up" ? (
-                <CaretUp size={11} />
+                <TrendingUp size={14} />
               ) : (
-                <CaretDown size={11} />
+                <TrendingDown size={14} />
               )}
               {delta}
             </span>

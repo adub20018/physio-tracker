@@ -97,7 +97,7 @@ export function ProgressionChart({
         <span className={styles.legendItem}>
           <span
             className={styles.legendSwatch}
-            style={{ background: SERIES.volume }}
+            style={{ background: SERIES.load }}
           />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %. The same metric as the dashboard tile and Load vs symptoms. Weighted by intensity — can move opposite to Hold volume, e.g. longer holds at lower intensity raise Hold volume while Physio load falls." />
@@ -248,7 +248,7 @@ export function ProgressionChart({
             <Bar
               dataKey="physioVolume"
               name="Physio load"
-              fill={SERIES.volume}
+              fill={SERIES.load}
               radius={[3, 3, 0, 0]}
               isAnimationActive={true}
               animationBegin={150}

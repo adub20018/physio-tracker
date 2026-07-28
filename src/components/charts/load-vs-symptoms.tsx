@@ -96,7 +96,7 @@ export function LoadVsSymptoms({
         <span className={styles.legendItem}>
           <span
             className={styles.legendSwatch}
-            style={{ background: SERIES.volume }}
+            style={{ background: SERIES.load }}
           />
           Physio load
           <InfoTooltip text="Sets × hold time × average intensity %, for that day. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds with no intensity factored in." />
@@ -198,7 +198,7 @@ export function LoadVsSymptoms({
             <Bar
               dataKey="physioVolume"
               name="Physio load"
-              fill={SERIES.volume}
+              fill={SERIES.load}
               radius={[3, 3, 0, 0]}
               isAnimationActive={true}
               animationBegin={75}

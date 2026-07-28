@@ -21,11 +21,11 @@ import {
 import { LogDateBar } from "@/components/ui/log/log-date-bar";
 import { EnsureDateParam } from "@/components/ui/log/ensure-date-param";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
-import { Heart } from "@primeicons/react/heart";
-import { WavePulse } from "@primeicons/react/wave-pulse";
-import { Moon } from "@primeicons/react/moon";
-import { Stopwatch } from "@primeicons/react/stopwatch";
-import { NoteSticky } from "@primeicons/react/note-sticky";
+import { BoneFracture } from "lucide-react";
+import { Footprints } from "lucide-react";
+import { BedDouble } from "lucide-react";
+import { Dumbbell } from "lucide-react";
+import { StickyNote } from "lucide-react";
 import styles from "./log-overview.module.css";
 
 // Always render at request time — the active date's log must be fresh.
@@ -48,7 +48,7 @@ export default async function LogOverviewPage({
       title: "Pain",
       // Single icon: pain readings are all one kind of input (a 0–10 scale,
       // three times a day), unlike Activity's two distinct fields below.
-      icons: [<Heart key="heart" size={14} />],
+      icons: [<BoneFracture key="pain" size={16} />],
       summary: painSummary(existing),
       progress: painProgress(existing),
     },
@@ -59,8 +59,8 @@ export default async function LogOverviewPage({
       // same icons used on the Steps/Sleep inputs inside the section form
       // itself, so the tile previews exactly what's behind it.
       icons: [
-        <WavePulse key="steps" size={14} />,
-        <Moon key="sleep" size={14} />,
+        <Footprints key="steps" size={16} />,
+        <BedDouble key="sleep" size={16} />,
       ],
       summary: activitySummary(existing),
       progress: activityProgress(existing),
@@ -68,14 +68,14 @@ export default async function LogOverviewPage({
     {
       href: `/log/physio?date=${date}`,
       title: "Physio exercises",
-      icons: [<Stopwatch key="stopwatch" size={14} />],
+      icons: [<Dumbbell key="exercise" size={16} />],
       summary: physioSummary(existing),
       progress: physioProgress(existing),
     },
     {
       href: `/log/notes?date=${date}`,
       title: "Notes",
-      icons: [<NoteSticky key="notes" size={14} />],
+      icons: [<StickyNote key="notes" size={16} />],
       summary: notesSummary(existing),
       progress: notesProgress(existing),
     },

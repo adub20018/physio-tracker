@@ -57,19 +57,25 @@
 }
 
 .deltaBad {
-  color: var(--pain-elevated);
+  color: var(--pain-flare);
 }
 
 /* Circular badge naming the metric — background is a 14% tint of the
    tile's own accentColor (same ratio as globals.css's --accent-soft),
    applied inline since the color varies per tile. flex-shrink: 0 keeps it
    a true circle even when the value/delta above it wraps to two lines on a
-   narrow tile. */
+   narrow tile. When a hint is present this renders as InfoTooltip's
+   trigger button — all: unset first strips the browser's default button
+   chrome (border/background/font/padding) before the layout properties
+   below reapply, same pattern as info-tooltip.module.css's own .trigger;
+   harmless when it instead renders as a plain, non-interactive span. */
 .iconBadge {
+  all: unset;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-sizing: border-box;
   width: 2rem;
   height: 2rem;
   border-radius: 50%;

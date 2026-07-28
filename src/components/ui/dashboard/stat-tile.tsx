@@ -30,8 +30,8 @@ export type StatTileProps = {
   // What the delta is compared against ("vs previous month") — the caller
   // knows the comparison window, since it depends on the selected time range.
   deltaLabel?: string;
-  // Optional formula/definition shown in a "?" tooltip — for numbers whose
-  // meaning isn't obvious from the label alone.
+  // Optional formula/definition shown when the icon badge is hovered — for
+  // numbers whose meaning isn't obvious from the label alone.
   hint?: string;
   // Badge icon naming which metric this is.
   icon: React.ReactNode;
@@ -63,6 +63,11 @@ export function StatTile({
   accentColor,
   sparklineValues,
 }: StatTileProps) {
+  const badgeStyle = {
+    background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
+    color: accentColor,
+  };
+
   return (
     <div className={styles.tile}>
       <div className={styles.headerRow}>
@@ -87,20 +92,24 @@ export function StatTile({
             </span>
           )}
         </div>
-        <span
-          className={styles.iconBadge}
-          style={{
-            background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
-            color: accentColor,
-          }}
-        >
-          {icon}
-        </span>
+        {hint ? (
+          <InfoTooltip
+            text={hint}
+            label={`What is ${label}?`}
+            triggerClassName={styles.iconBadge}
+            triggerStyle={badgeStyle}
+          >
+            {icon}
+          </InfoTooltip>
+        ) : (
+          <span className={styles.iconBadge} style={badgeStyle}>
+            {icon}
+          </span>
+        )}
       </div>
 
       <span className={styles.label} style={{ color: accentColor }}>
         {label}
-        {hint && <InfoTooltip text={hint} label={`What is ${label}?`} />}
       </span>
 
       {sparklineValues && (

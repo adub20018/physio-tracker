@@ -3,7 +3,7 @@
    auth-form.module.css). */
 
 .card {
-  border: 1px solid var(--border);
+  box-shadow: var(--shadow-subtle);
   border-radius: 12px;
   background: var(--surface);
   padding: 1.25rem 1.25rem 1.5rem;

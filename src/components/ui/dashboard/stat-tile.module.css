@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: 0.35rem;
   padding: 1rem 1.15rem;
-  border: 1px solid var(--border);
+  box-shadow: var(--shadow-subtle);
   border-radius: 12px;
   background: var(--surface);
   cursor: default;

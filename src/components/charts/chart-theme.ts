@@ -9,15 +9,15 @@
 
 // Categorical series colors, in fixed order (never cycled).
 export const SERIES = {
-  morning: "#0284c7", // sky
+  morning: "#2997c8", // sky
   daytime: "#db2777", // pink
   night: "#8b5cf6", // violet
-  rollingAvg: "#059669", // emerald — the hero trend line
-  holdVolume: "#0d9488", // teal
-  pain: "#f87171",
-  steps: "#0284c7",
-  sleep: "#8b5cf6",
-  load: "#d97706",
+  rollingAvg: "#059669", // emerald
+  holdVolume: "#64748b", // slate
+  pain: "#f87171", // red
+  steps: "#0284c7", // blue
+  sleep: "#8b5cf6", // purple
+  load: "#0d9488", // teal
 } as const;
 
 // Status color for flare markers (means "flare", never "series 4").

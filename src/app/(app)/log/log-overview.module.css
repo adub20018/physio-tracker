@@ -132,3 +132,28 @@
   color: var(--muted);
   font-size: 0.85rem;
 }
+.summaryContainer {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.summaryText {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+#exerciseSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.exerciseContainer {
+  display: flex;
+  flex-direction: column;
+}
+#exerciseTitle {
+}
+.exerciseStats {
+  display: flex;
+  gap: 1rem;
+}

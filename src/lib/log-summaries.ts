@@ -16,26 +16,40 @@ export const NOT_LOGGED = "Not logged yet";
 // single yes/no slot: logged something today, or not.
 export type SectionProgress = { filled: number; total: number };
 
-export function painProgress(log: DailyLogWithExercises | null): SectionProgress {
+export function painProgress(
+  log: DailyLogWithExercises | null,
+): SectionProgress {
   const filled = log
-    ? [log.painMorning, log.painDaytime, log.painNight].filter((v) => v != null).length
+    ? [log.painMorning, log.painDaytime, log.painNight].filter((v) => v != null)
+        .length
     : 0;
   return { filled, total: 3 };
 }
 
-export function painSummary(log: DailyLogWithExercises | null): string {
+export function getPainData(log: DailyLogWithExercises | null) {
   if (!log) return NOT_LOGGED;
-  const { painMorning: m, painDaytime: d, painNight: n } = log;
-  const painTypes = log.painTypes ?? [];
-  if (m == null && d == null && n == null && painTypes.length === 0) return NOT_LOGGED;
 
-  const readings = [`M ${m ?? "—"}`, `D ${d ?? "—"}`, `N ${n ?? "—"}`];
-  const parts = painTypes.length > 0 ? [...readings, painTypes.join(", ")] : readings;
-  return parts.join(" · ");
+  const { painMorning: m, painDaytime: d, painNight: n } = log;
+
+  const painTypes = log.painTypes ?? [];
+
+  if (m == null && d == null && n == null && painTypes.length === 0)
+    return NOT_LOGGED;
+
+  return {
+    morning: log.painMorning,
+    day: log.painDaytime,
+    night: log.painNight,
+    types: painTypes,
+  };
 }
 
-export function activityProgress(log: DailyLogWithExercises | null): SectionProgress {
-  const filled = log ? [log.steps, log.sleepHours].filter((v) => v != null).length : 0;
+export function activityProgress(
+  log: DailyLogWithExercises | null,
+): SectionProgress {
+  const filled = log
+    ? [log.steps, log.sleepHours].filter((v) => v != null).length
+    : 0;
   return { filled, total: 2 };
 }
 
@@ -43,7 +57,8 @@ export function activitySummary(log: DailyLogWithExercises | null): string {
   if (!log) return NOT_LOGGED;
   const { steps, sleepHours } = log;
   const activityTags = log.activityTags ?? [];
-  if (steps == null && sleepHours == null && activityTags.length === 0) return NOT_LOGGED;
+  if (steps == null && sleepHours == null && activityTags.length === 0)
+    return NOT_LOGGED;
 
   const parts = [
     steps != null ? `${steps.toLocaleString()} steps` : "Steps —",
@@ -53,7 +68,9 @@ export function activitySummary(log: DailyLogWithExercises | null): string {
   return parts.join(" · ");
 }
 
-export function physioProgress(log: DailyLogWithExercises | null): SectionProgress {
+export function physioProgress(
+  log: DailyLogWithExercises | null,
+): SectionProgress {
   return { filled: log && log.exercises.length > 0 ? 1 : 0, total: 1 };
 }
 
@@ -62,9 +79,12 @@ export function physioSummary(log: DailyLogWithExercises | null): string {
   return summarizeExercises(log);
 }
 
-export function notesProgress(log: DailyLogWithExercises | null): SectionProgress {
+export function notesProgress(
+  log: DailyLogWithExercises | null,
+): SectionProgress {
   const filled = log
-    ? [log.activityNotes, log.generalNotes].filter((v) => v != null && v !== "").length
+    ? [log.activityNotes, log.generalNotes].filter((v) => v != null && v !== "")
+        .length
     : 0;
   return { filled, total: 2 };
 }

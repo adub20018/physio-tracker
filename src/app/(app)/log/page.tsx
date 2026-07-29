@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
 import {
-  painSummary,
+  getPainData,
   painProgress,
   activitySummary,
   activityProgress,
@@ -18,13 +18,23 @@ import {
   notesSummary,
   notesProgress,
 } from "@/lib/log-summaries";
+
 import { LogDateBar } from "@/components/ui/log/log-date-bar";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
 import { BoneFracture } from "lucide-react";
-import { Footprints } from "lucide-react";
-import { BedDouble } from "lucide-react";
 import { Dumbbell } from "lucide-react";
 import { StickyNote } from "lucide-react";
+import {
+  Sunrise,
+  Sun,
+  Moon,
+  Footprints,
+  BedDouble,
+  StickyNoteCheck,
+  SportShoe,
+  Repeat2,
+  Activity,
+} from "lucide-react";
 import styles from "./log-overview.module.css";
 
 // Always render at request time — the active date's log must be fresh.
@@ -48,7 +58,21 @@ export default async function LogOverviewPage({
       // Single icon: pain readings are all one kind of input (a 0–10 scale,
       // three times a day), unlike Activity's two distinct fields below.
       icons: [<BoneFracture key="pain" size={16} />],
-      summary: painSummary(existing),
+      summary: (
+        <div className={styles.summaryContainer}>
+          <span className={styles.summaryText}>
+            <Sunrise size={14} /> {existing?.painMorning ?? "—"}
+          </span>
+
+          <span className={styles.summaryText}>
+            <Sun size={14} /> {existing?.painDaytime ?? "—"}
+          </span>
+
+          <span className={styles.summaryText}>
+            <Moon size={14} /> {existing?.painNight ?? "—"}
+          </span>
+        </div>
+      ),
       progress: painProgress(existing),
     },
     {
@@ -61,21 +85,97 @@ export default async function LogOverviewPage({
         <Footprints key="steps" size={16} />,
         <BedDouble key="sleep" size={16} />,
       ],
-      summary: activitySummary(existing),
+      summary: (
+        <div className={styles.summaryContainer}>
+          <span className={styles.summaryText}>
+            <Footprints size={14} /> {existing?.steps ?? "—"}
+          </span>
+
+          <span className={styles.summaryText}>
+            <BedDouble size={14} />{" "}
+            {existing?.sleepHours != null ? `${existing.sleepHours} hrs` : "—"}
+          </span>
+        </div>
+      ),
       progress: activityProgress(existing),
     },
     {
       href: `/log/physio?date=${date}`,
       title: "Physio exercises",
       icons: [<Dumbbell key="exercise" size={16} />],
-      summary: physioSummary(existing),
+      // summary: physioSummary(existing),
+      summary: (
+        <div className={styles.summaryContainer} id={styles.exerciseSummary}>
+          {existing?.exercises.map((exercise) => {
+            // Displays exercise intensity correctly for all cases (if intensityMin is empty, if intensityMax is empty, both empty, or both full)
+            let exerciseIntensity = ``;
+
+            // Only display intensityMin (if intensityMax does not exist or is not larger than intensityMin)
+            if (
+              exercise.intensityMin != null &&
+              (exercise.intensityMax == null ||
+                exercise.intensityMax <= exercise.intensityMin)
+            ) {
+              exerciseIntensity = `${exercise.intensityMin}`;
+            }
+            // Display intensityMin - intensityMax (if both are valid, and intensityMax is larger than intensityMin)
+            else if (
+              exercise.intensityMin != null &&
+              exercise.intensityMax != null &&
+              exercise.intensityMax > exercise.intensityMin
+            ) {
+              exerciseIntensity = `${exercise.intensityMin}–${exercise.intensityMax}`;
+            }
+            // Display only intensityMax if intensityMin is missing
+            else if (
+              exercise.intensityMin == null &&
+              exercise.intensityMax != null
+            ) {
+              exerciseIntensity = `${exercise.intensityMax}`;
+            }
+            return (
+              <div key={exercise.id} className={styles.exerciseContainer}>
+                <span className={styles.summaryText} id={styles.exerciseTitle}>
+                  <SportShoe size={14} />
+                  {exercise.exerciseName}
+                </span>
+                <div className={styles.exerciseStats}>
+                  <span className={styles.summaryText}>
+                    <Repeat2 size={14} />
+                    {exercise.sets}×{exercise.durationOrReps}
+                  </span>
+
+                  {exerciseIntensity ? (
+                    <span className={styles.summaryText}>
+                      <Activity size={14} />
+                      {exerciseIntensity}%
+                    </span>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ),
       progress: physioProgress(existing),
     },
     {
       href: `/log/notes?date=${date}`,
       title: "Notes",
       icons: [<StickyNote key="notes" size={16} />],
-      summary: notesSummary(existing),
+      summary: (
+        <div className={styles.summaryContainer}>
+          <span className={styles.summaryText}>
+            <StickyNoteCheck size={14} /> {existing?.activityNotes ?? "—"}
+          </span>
+
+          <span className={styles.summaryText}>
+            <StickyNoteCheck size={14} /> {existing?.generalNotes ?? "—"}
+          </span>
+        </div>
+      ),
       progress: notesProgress(existing),
     },
   ];

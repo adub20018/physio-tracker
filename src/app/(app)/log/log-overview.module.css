@@ -72,9 +72,6 @@
 }
 
 .tileTitle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
   font-size: 1.05rem;
   font-family: var(--font-display);
 }
@@ -88,6 +85,18 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+}
+
+.iconBadge {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
 }
 
 .tileCount {

@@ -30,8 +30,10 @@ import {
   SportShoe,
   Repeat2,
   Activity,
+  Zap,
 } from "lucide-react";
 import styles from "./log-overview.module.css";
+import { SERIES } from "@/components/charts/chart-theme";
 
 // Always render at request time — the active date's log must be fresh.
 export const dynamic = "force-dynamic";
@@ -54,6 +56,10 @@ export default async function LogOverviewPage({
       // Single icon: pain readings are all one kind of input (a 0–10 scale,
       // three times a day), unlike Activity's two distinct fields below.
       icons: [<BoneFracture key="pain" size={16} />],
+      badgeStyle: {
+        background: `color-mix(in srgb, ${SERIES.pain} 14%, transparent)`,
+        color: SERIES.pain,
+      },
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
@@ -77,10 +83,11 @@ export default async function LogOverviewPage({
       // Two icons, one per distinct field this section actually logs —
       // same icons used on the Steps/Sleep inputs inside the section form
       // itself, so the tile previews exactly what's behind it.
-      icons: [
-        <Footprints key="steps" size={16} />,
-        <BedDouble key="sleep" size={16} />,
-      ],
+      icons: [<Zap key="activity" size={16} />],
+      badgeStyle: {
+        background: `color-mix(in srgb, ${SERIES.steps} 14%, transparent)`,
+        color: SERIES.steps,
+      },
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
@@ -99,6 +106,10 @@ export default async function LogOverviewPage({
       href: `/log/physio?date=${date}`,
       title: "Physio exercises",
       icons: [<Dumbbell key="exercise" size={16} />],
+      badgeStyle: {
+        background: `color-mix(in srgb, ${SERIES.load} 14%, transparent)`,
+        color: SERIES.load,
+      },
       // summary: physioSummary(existing),
       summary: (
         <div className={styles.summaryContainer} id={styles.exerciseSummary}>
@@ -161,6 +172,10 @@ export default async function LogOverviewPage({
       href: `/log/notes?date=${date}`,
       title: "Notes",
       icons: [<StickyNote key="notes" size={16} />],
+      badgeStyle: {
+        background: `color-mix(in srgb, ${SERIES.holdVolume} 14%, transparent)`,
+        color: SERIES.holdVolume,
+      },
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
@@ -198,12 +213,9 @@ export default async function LogOverviewPage({
             />
             <div className={styles.tileBody}>
               <div className={styles.tileHeader}>
-                <span className={styles.tileTitle}>
-                  {t.title}
-                  <span className={styles.tileIcons}>{t.icons}</span>
-                </span>
-                <span className={styles.tileCount}>
-                  {t.progress.filled}/{t.progress.total}
+                <span className={styles.tileTitle}>{t.title}</span>
+                <span className={styles.iconBadge} style={t.badgeStyle}>
+                  {t.icons}
                 </span>
               </div>
               <span className={styles.tileSummary}>{t.summary}</span>

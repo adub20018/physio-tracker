@@ -39,8 +39,11 @@ export function StatSparkline({
         <Bar
           dataKey="v"
           radius={[4, 4, 1, 1]}
-          isAnimationActive={false}
           activeBar={{ fillOpacity: 1 }}
+          isAnimationActive={true}
+          animationDuration={200}
+          animationBegin={0}
+          animationEasing="linear"
         >
           {data.map((d) => (
             <Cell key={d.i} fill={color} fillOpacity={0.3} />

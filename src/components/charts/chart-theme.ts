@@ -13,11 +13,12 @@ export const SERIES = {
   daytime: "#db2777", // pink
   night: "#8b5cf6", // violet
   rollingAvg: "#059669", // emerald
-  holdVolume: "#64748b", // slate
+  holdVolume: "#f38c38", // orange
   pain: "#f87171", // red
   steps: "#0284c7", // blue
   sleep: "#8b5cf6", // purple
   load: "#0d9488", // teal
+  intensity: "#facc15", // yellow
 } as const;
 
 // Status color for flare markers (means "flare", never "series 4").

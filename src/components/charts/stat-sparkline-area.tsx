@@ -53,7 +53,6 @@ export function StatSparklineArea({
           stroke={color}
           strokeWidth={1.75}
           fill={`url(#${gradientId})`}
-          isAnimationActive={false}
           dot={false}
           activeDot={{
             r: 3,
@@ -61,6 +60,10 @@ export function StatSparklineArea({
             stroke: "var(--surface)",
             strokeWidth: 1,
           }}
+          isAnimationActive={true}
+          animationDuration={200}
+          animationBegin={0}
+          animationEasing="linear"
         />
       </AreaChart>
     </ResponsiveContainer>

@@ -11,6 +11,7 @@ import { Textarea } from "@primereact/ui/textarea";
 import { ToggleButton } from "@primereact/ui/togglebutton";
 import { ToggleButtonGroup } from "@primereact/ui/togglebuttongroup";
 import { Message } from "@primereact/ui/message";
+import { Trash2 } from "lucide-react";
 import {
   ExerciseNameInput,
   NumberField,
@@ -87,7 +88,7 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
                   setExercises((list) => list.filter((_, j) => j !== i))
                 }
               >
-                Remove
+                <Trash2 size={24} />
               </Button>
             </div>
             <div className={styles.exerciseGrid}>

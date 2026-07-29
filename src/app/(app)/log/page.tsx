@@ -9,13 +9,9 @@ import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
 import {
-  getPainData,
   painProgress,
-  activitySummary,
   activityProgress,
-  physioSummary,
   physioProgress,
-  notesSummary,
   notesProgress,
 } from "@/lib/log-summaries";
 

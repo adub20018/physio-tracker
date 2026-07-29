@@ -26,24 +26,6 @@ export function painProgress(
   return { filled, total: 3 };
 }
 
-export function getPainData(log: DailyLogWithExercises | null) {
-  if (!log) return NOT_LOGGED;
-
-  const { painMorning: m, painDaytime: d, painNight: n } = log;
-
-  const painTypes = log.painTypes ?? [];
-
-  if (m == null && d == null && n == null && painTypes.length === 0)
-    return NOT_LOGGED;
-
-  return {
-    morning: log.painMorning,
-    day: log.painDaytime,
-    night: log.painNight,
-    types: painTypes,
-  };
-}
-
 export function activityProgress(
   log: DailyLogWithExercises | null,
 ): SectionProgress {
@@ -53,30 +35,10 @@ export function activityProgress(
   return { filled, total: 2 };
 }
 
-export function activitySummary(log: DailyLogWithExercises | null): string {
-  if (!log) return NOT_LOGGED;
-  const { steps, sleepHours } = log;
-  const activityTags = log.activityTags ?? [];
-  if (steps == null && sleepHours == null && activityTags.length === 0)
-    return NOT_LOGGED;
-
-  const parts = [
-    steps != null ? `${steps.toLocaleString()} steps` : "Steps —",
-    sleepHours != null ? `${sleepHours}h sleep` : "Sleep —",
-  ];
-  if (activityTags.length > 0) parts.push(activityTags.join(", "));
-  return parts.join(" · ");
-}
-
 export function physioProgress(
   log: DailyLogWithExercises | null,
 ): SectionProgress {
   return { filled: log && log.exercises.length > 0 ? 1 : 0, total: 1 };
-}
-
-export function physioSummary(log: DailyLogWithExercises | null): string {
-  if (!log || log.exercises.length === 0) return NOT_LOGGED;
-  return summarizeExercises(log);
 }
 
 export function notesProgress(
@@ -96,15 +58,4 @@ export function notesProgress(
 export function notesFullText(log: DailyLogWithExercises | null): string {
   if (!log || (!log.activityNotes && !log.generalNotes)) return NOT_LOGGED;
   return `Activity: ${log.activityNotes ?? "—"} · General: ${log.generalNotes ?? "—"}`;
-}
-
-// Truncated so a long note can't blow out the overview tile's height.
-const NOTE_PREVIEW_LENGTH = 80;
-
-export function notesSummary(log: DailyLogWithExercises | null): string {
-  const combined = notesFullText(log);
-  if (combined === NOT_LOGGED) return combined;
-  return combined.length > NOTE_PREVIEW_LENGTH
-    ? `${combined.slice(0, NOTE_PREVIEW_LENGTH - 1)}…`
-    : combined;
 }

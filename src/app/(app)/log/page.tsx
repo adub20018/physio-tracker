@@ -19,7 +19,6 @@ import {
   notesProgress,
 } from "@/lib/log-summaries";
 import { LogDateBar } from "@/components/ui/log/log-date-bar";
-import { EnsureDateParam } from "@/components/ui/log/ensure-date-param";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
 import { BoneFracture } from "lucide-react";
 import { Footprints } from "lucide-react";
@@ -37,7 +36,7 @@ export default async function LogOverviewPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date: dateParam } = await searchParams;
-  const date = resolveDateParam(dateParam);
+  const date = await resolveDateParam(dateParam);
 
   const user = await getCurrentUser();
   const existing = await dailyLogRepository.findByDate(user.id, date);
@@ -83,7 +82,6 @@ export default async function LogOverviewPage({
 
   return (
     <main className="page" style={{ maxWidth: "36rem" }}>
-      <EnsureDateParam />
       <header className="page-header">
         <h1>Daily log</h1>
         <p className="subtitle">Pick what you&apos;re logging right now.</p>

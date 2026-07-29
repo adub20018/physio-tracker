@@ -66,7 +66,7 @@ export default async function InsightsPage() {
   ]);
   const days = toDomainDays(logs);
   const logByDate = new Map(logs.map((l) => [l.date, l]));
-  const today = todayIso();
+  const today = await todayIso();
 
   // ── Lag scatters, full history (<InsightsCharts> slices to range) ─────
   const nextPain = nextMorningPain(days);

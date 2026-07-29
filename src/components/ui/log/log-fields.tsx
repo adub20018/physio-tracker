@@ -212,12 +212,15 @@ export function LogDatePicker({
   useEffect(() => {
     const id = setTimeout(() => setMountedValue(dateValue), 0);
     return () => clearTimeout(id);
-    // Intentionally re-runs only on mount (per `date`, since this component
-    // remounts via `key={date}` wherever it's used) — dateValue is excluded
-    // because re-triggering the null-flash on every parent re-render would
-    // be wrong, only a genuine new date should.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Re-runs whenever the resolved date actually changes, not just on
+    // mount: this component does NOT reliably remount when `date` changes
+    // (no `key={date}` anywhere it's used, and Next's router cache can
+    // reuse this exact client instance across a soft /log refresh — e.g.
+    // the date rolling over past midnight while the page is still open).
+    // Without this, `mountedValue` — what's actually shown in the input —
+    // would stay frozen on whatever date it first mounted with, even after
+    // the page's own content has moved on to the new day.
+  }, [dateValue]);
   return (
     <DatePicker.Root
       value={mountedValue}

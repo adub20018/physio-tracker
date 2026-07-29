@@ -46,7 +46,7 @@ export async function GET() {
   return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="PhysiMate-${todayIso()}.csv"`,
+      "Content-Disposition": `attachment; filename="PhysiMate-${await todayIso()}.csv"`,
     },
   });
 }

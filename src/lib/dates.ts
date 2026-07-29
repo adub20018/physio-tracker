@@ -1,17 +1,45 @@
 // Small date helpers that depend on the environment clock (unlike domain/,
 // which stays pure). Shared by pages so "today" is defined in exactly one
 // place.
+import { cookies } from "next/headers";
 
-// Today's date in the SERVER's local timezone (UTC on Vercel) — only ever
-// used as resolveDateParam's fallback for the very first render of a /log
-// page with no ?date= yet, before EnsureDateParam (see
-// components/ui/log/ensure-date-param.tsx) corrects the URL to the
-// visitor's own local date. Deliberately not "fixed" to a fixed timezone
-// here: a single hardcoded TZ would still be wrong the moment this user
-// logs from a different one, which the client-side correction handles
-// automatically regardless of where the server or the visitor are.
-export function todayIso(): string {
+// Kept in sync with the browser's own IANA timezone by
+// components/ui/shared/ensure-timezone-cookie.tsx, mounted once in
+// (app)/layout.tsx. Read here so "today" reflects wherever the visitor
+// actually is — see that component's own comment for why a per-visitor
+// cookie is used instead of a fixed TZ env var on the server.
+const TIMEZONE_COOKIE = "tz";
+
+// Today's date, in the visitor's own timezone when known (via the `tz`
+// cookie), falling back to the SERVER's local timezone (UTC on Vercel)
+// otherwise. That fallback only ever applies on a visitor's very first-ever
+// request, before EnsureTimezoneCookie has had a chance to set the cookie
+// and refresh — every request after that uses the real one.
+export async function todayIso(): Promise<string> {
+  const cookieStore = await cookies();
+  const tz = cookieStore.get(TIMEZONE_COOKIE)?.value;
   const now = new Date();
+
+  if (tz) {
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(now);
+      const y = parts.find((p) => p.type === "year")!.value;
+      const m = parts.find((p) => p.type === "month")!.value;
+      const d = parts.find((p) => p.type === "day")!.value;
+      return `${y}-${m}-${d}`;
+    } catch {
+      // Malformed/unrecognized zone name — Intl throws a RangeError.
+      // Shouldn't happen (the client always sends a real Intl-resolved
+      // zone), but fall through to the server-clock default rather than
+      // 500ing the page over a stray cookie value.
+    }
+  }
+
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
@@ -22,6 +50,6 @@ export function todayIso(): string {
 // ?date= query param, or today. Every /log page (overview, each section,
 // review) resolves it the same way so the active date is exactly what's
 // in the URL — no separate client-side date state to fall out of sync.
-export function resolveDateParam(dateParam: string | undefined): string {
-  return /^\d{4}-\d{2}-\d{2}$/.test(dateParam ?? "") ? dateParam! : todayIso();
+export async function resolveDateParam(dateParam: string | undefined): Promise<string> {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateParam ?? "") ? dateParam! : await todayIso();
 }

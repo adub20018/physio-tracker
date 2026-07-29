@@ -17,7 +17,6 @@ import {
   notesProgress,
 } from "@/lib/log-summaries";
 import { LogSectionHeader } from "@/components/ui/log/log-section-header";
-import { EnsureDateParam } from "@/components/ui/log/ensure-date-param";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
 import sharedStyles from "@/components/ui/log/log-shared.module.css";
 import styles from "./review.module.css";
@@ -30,7 +29,7 @@ export default async function LogReviewPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date: dateParam } = await searchParams;
-  const date = resolveDateParam(dateParam);
+  const date = await resolveDateParam(dateParam);
 
   const user = await getCurrentUser();
   const existing = await dailyLogRepository.findByDate(user.id, date);
@@ -64,7 +63,6 @@ export default async function LogReviewPage({
 
   return (
     <main className="page" style={{ maxWidth: "36rem" }}>
-      <EnsureDateParam />
       <LogSectionHeader title="Full day review" date={date} />
       <div className={sharedStyles.form}>
         {sections.map((s) => (

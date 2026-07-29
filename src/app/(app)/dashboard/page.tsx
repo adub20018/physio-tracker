@@ -69,7 +69,7 @@ export default async function DashboardPage() {
     userSettingsRepository.get(user.id),
   ]);
   const days = toDomainDays(logs);
-  const today = todayIso();
+  const today = await todayIso();
 
   // ── Stat tiles: always the last 7 days, independent of the chart range
   // picked in <DashboardCharts> below ─────────────────────────────────────

@@ -26,6 +26,8 @@ import {
   type WeeklyRow,
 } from "@/components/ui/insights/weekly-report-table";
 import { InsightsCharts } from "@/components/ui/insights/insights-charts";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { Info } from "lucide-react";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — insights must reflect the latest logs.
@@ -192,20 +194,28 @@ export default async function InsightsPage() {
       />
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Flare review</h2>
-        <p className={styles.cardSubtitle}>
-          Every day a reading hit {flareThreshold}/10, with the{" "}
-          {FLARE_LOOKBACK_DAYS} days leading up to it.
-        </p>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Flare review</h2>
+          <InfoTooltip
+            text={`Every day a reading hit ${flareThreshold}/10, with the ${FLARE_LOOKBACK_DAYS} days leading up to it.`}
+            label="What does this show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         <FlareReview episodes={episodes} />
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Weekly report card</h2>
-        <p className={styles.cardSubtitle}>
-          Averages per calendar week, newest first — click Week to flip the
-          order.
-        </p>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Weekly report card</h2>
+          <InfoTooltip
+            text="Averages per calendar week, newest first — click Week to flip the order."
+            label="What does this show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         <WeeklyReportTable rows={weeklyRows} flareThreshold={flareThreshold} />
       </section>
     </main>

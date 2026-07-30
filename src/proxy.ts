@@ -23,7 +23,7 @@ const middleware = auth.middleware({ loginUrl: "/login" });
 // source — so this is a heuristic, not a stable public API; re-check on
 // upgrade).
 const NEON_AUTH_COOKIE_PREFIX = "__Secure-neon-auth";
-const LOGIN_REDIRECT_RETRY_DELAY_MS = 300;
+const LOGIN_REDIRECT_RETRY_DELAY_MS = 0;
 
 function isRedirectToLogin(response: Response, request: NextRequest): boolean {
   if (response.status < 300 || response.status >= 400) return false;
@@ -48,7 +48,10 @@ export default async function proxy(request: NextRequest) {
   const authCheckRequest =
     request.method === "GET"
       ? request
-      : new NextRequest(request.url, { headers: request.headers, method: "GET" });
+      : new NextRequest(request.url, {
+          headers: request.headers,
+          method: "GET",
+        });
 
   const response = await middleware(authCheckRequest);
   const hasNeonAuthCookie = (request.headers.get("cookie") ?? "").includes(
@@ -61,7 +64,9 @@ export default async function proxy(request: NextRequest) {
   // One retry, after a short pause — enough for a transient blip or a
   // cold connection to clear without meaningfully slowing down the rare
   // case that does need it, and without ever showing the login page.
-  await new Promise((resolve) => setTimeout(resolve, LOGIN_REDIRECT_RETRY_DELAY_MS));
+  await new Promise((resolve) =>
+    setTimeout(resolve, LOGIN_REDIRECT_RETRY_DELAY_MS),
+  );
   return middleware(authCheckRequest);
 }
 

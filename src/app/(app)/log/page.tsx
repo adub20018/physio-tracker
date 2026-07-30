@@ -179,10 +179,6 @@ export default async function LogOverviewPage({
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
-            <StickyNoteCheck size={14} /> {existing?.activityNotes ?? "—"}
-          </span>
-
-          <span className={styles.summaryText}>
             <StickyNoteCheck size={14} /> {existing?.generalNotes ?? "—"}
           </span>
         </div>

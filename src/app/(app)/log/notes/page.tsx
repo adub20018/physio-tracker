@@ -1,5 +1,5 @@
-// /log/notes — the Notes section on its own: activity notes + general
-// notes for one date, reached from the overview's Notes tile.
+// /log/notes — the Notes section on its own: general notes for one date,
+// reached from the overview's Notes tile.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";
@@ -26,7 +26,6 @@ export default async function LogNotesPage({
         key={date}
         init={{
           date,
-          activityNotes: existing?.activityNotes ?? "",
           generalNotes: existing?.generalNotes ?? "",
         }}
       />

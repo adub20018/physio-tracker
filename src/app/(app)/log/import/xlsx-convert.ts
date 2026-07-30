@@ -106,7 +106,6 @@ export function convertRow(row: SheetRow, warnings: string[]): DailyLogInput | n
     painNight,
     activityTags: deriveActivityTags(row["Activity Notes"]),
     painTypes: null, // not tracked in the spreadsheet; starts with the app
-    activityNotes: parseText(row["Activity Notes"]),
     generalNotes: parseText(row["General Notes"]),
     sleepHours,
     exercises,

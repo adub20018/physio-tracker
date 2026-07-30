@@ -53,7 +53,6 @@ export const dailyLogs = pgTable(
     // JSON arrays of tag strings (ActivityTag / PainType values).
     activityTags: jsonb("activity_tags").$type<ActivityTag[]>(),
     painTypes: jsonb("pain_types").$type<PainType[]>(),
-    activityNotes: text("activity_notes"),
     generalNotes: text("general_notes"),
     sleepHours: real("sleep_hours"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

@@ -63,7 +63,6 @@ DailyLog
   pain_daytime     real 0–10 (0.5 steps), nullable
   pain_night       real 0–10 (0.5 steps), nullable
   activity_tags    e.g. ["gym","physio","rest","walking"]
-  activity_notes   text  (free-text remainder, e.g. "walking at cafe")
   general_notes    text
   sleep_hours      real, nullable
   pain_type        tags, nullable — optional multi-select: ache | sharp | stiffness | numbness-tingling

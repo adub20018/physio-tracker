@@ -24,7 +24,6 @@ export type HistoryRow = {
   exerciseSummary: string; // e.g. "Standing ankle raise 3×20s + 1×30s @25–35%"
   activityTags: string[];
   painTypes: string[];
-  activityNotes: string;
   generalNotes: string;
 };
 
@@ -105,12 +104,6 @@ function DayDetail({ row }: { row: HistoryRow }) {
               </span>
             ))}
           </div>
-        </div>
-      )}
-      {row.activityNotes && (
-        <div className={styles.detailBlock}>
-          <span className={styles.detailLabel}>Activity</span>
-          <span className={styles.detailText}>{row.activityNotes}</span>
         </div>
       )}
       {row.generalNotes && (

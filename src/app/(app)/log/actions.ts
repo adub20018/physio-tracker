@@ -38,7 +38,6 @@ async function mergeAndSave(
     sleepHours: existing?.sleepHours ?? null,
     activityTags: existing?.activityTags ?? [],
     painTypes: existing?.painTypes ?? [],
-    activityNotes: existing?.activityNotes ?? null,
     generalNotes: existing?.generalNotes ?? null,
     exercises:
       existing?.exercises.map((ex) => ({

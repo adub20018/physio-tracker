@@ -25,7 +25,6 @@ export async function GET() {
       "pain_types",
       "activity_tags",
       "exercises",
-      "activity_notes",
       "general_notes",
     ],
     logs.map((l) => [
@@ -38,7 +37,6 @@ export async function GET() {
       (l.painTypes ?? []).join("; "),
       (l.activityTags ?? []).join("; "),
       summarizeExercises(l),
-      l.activityNotes,
       l.generalNotes,
     ]),
   );

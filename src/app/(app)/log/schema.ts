@@ -68,7 +68,6 @@ export type PhysioSectionValues = z.infer<typeof physioSectionSchema>;
 
 export const notesSectionSchema = z.object({
   date: isoDate,
-  activityNotes: optionalText,
   generalNotes: optionalText,
 });
 export type NotesSectionValues = z.infer<typeof notesSectionSchema>;

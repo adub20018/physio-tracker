@@ -10,8 +10,8 @@
 import { TrendingUp } from "lucide-react";
 
 import { TrendingDown } from "lucide-react";
-import { StatSparkline } from "@/components/charts/stat-sparkline";
-import { StatSparklineArea } from "@/components/charts/stat-sparkline-area";
+import { StatSparkline } from "@/components/charts/sparklines/stat-sparkline";
+import { StatSparklineArea } from "@/components/charts/sparklines/stat-sparkline-area";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "./stat-tile.module.css";
 

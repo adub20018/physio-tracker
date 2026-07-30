@@ -16,11 +16,11 @@ import {
   pearson,
   type PairedPoint,
 } from "@/domain/correlation";
-import { LagScatter } from "@/components/charts/lag-scatter";
+import { LagScatter } from "@/components/charts/scatter/lag-scatter";
 import {
   MultiScatter,
   type ScatterSeries,
-} from "@/components/charts/multi-scatter";
+} from "@/components/charts/scatter/multi-scatter";
 import { SERIES } from "@/components/charts/chart-theme";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
@@ -154,10 +154,14 @@ export function InsightsCharts({
         {(sleepVsMorningLine || sleepVsDaytimeLine || sleepVsNightLine) && (
           <ul className={styles.rList}>
             {sleepVsMorningLine && (
-              <li style={{ color: SERIES.morning }}>Morning: {sleepVsMorningLine}</li>
+              <li style={{ color: SERIES.morning }}>
+                Morning: {sleepVsMorningLine}
+              </li>
             )}
             {sleepVsDaytimeLine && (
-              <li style={{ color: SERIES.daytime }}>Daytime: {sleepVsDaytimeLine}</li>
+              <li style={{ color: SERIES.daytime }}>
+                Daytime: {sleepVsDaytimeLine}
+              </li>
             )}
             {sleepVsNightLine && (
               <li style={{ color: SERIES.night }}>Night: {sleepVsNightLine}</li>

@@ -3,7 +3,7 @@
 // so the two chart shapes still read as one consistent hover experience.
 "use client";
 
-import { TOOLTIP_STYLE } from "./chart-theme";
+import { TOOLTIP_STYLE } from "@/components/charts/chart-theme";
 
 // "Jul 22" — compact enough for a tooltip over a ~28px-tall sparkline.
 export function formatTooltipDate(iso: string): string {
@@ -27,7 +27,9 @@ export function SparklineTooltipContent({
   return (
     <div style={TOOLTIP_STYLE}>
       <div>{point.display}</div>
-      <div style={{ color: "var(--muted)" }}>{formatTooltipDate(point.date)}</div>
+      <div style={{ color: "var(--muted)" }}>
+        {formatTooltipDate(point.date)}
+      </div>
     </div>
   );
 }

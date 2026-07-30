@@ -16,7 +16,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE } from "./chart-theme";
+import {
+  CHART_CHROME,
+  SERIES,
+  TOOLTIP_STYLE,
+} from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 

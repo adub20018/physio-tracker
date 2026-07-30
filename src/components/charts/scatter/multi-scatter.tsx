@@ -14,10 +14,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, TOOLTIP_STYLE } from "./chart-theme";
+import { CHART_CHROME, TOOLTIP_STYLE } from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
-import styles from "./charts.module.css";
+import styles from "@/components/charts/charts.module.css";
 
 export type ScatterSeries = {
   key: string;

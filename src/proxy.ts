@@ -23,7 +23,7 @@ const middleware = auth.middleware({ loginUrl: "/login" });
 // source — so this is a heuristic, not a stable public API; re-check on
 // upgrade).
 const NEON_AUTH_COOKIE_PREFIX = "__Secure-neon-auth";
-const LOGIN_REDIRECT_RETRY_DELAY_MS = 0;
+const LOGIN_REDIRECT_RETRY_DELAY_MS = 300;
 
 function isRedirectToLogin(response: Response, request: NextRequest): boolean {
   if (response.status < 300 || response.status >= 400) return false;

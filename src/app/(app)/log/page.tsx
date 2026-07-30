@@ -17,6 +17,7 @@ import {
 
 import { LogDateBar } from "@/components/ui/log/log-date-bar";
 import { SegmentProgress } from "@/components/ui/log/segment-progress";
+import { ClampedText } from "@/components/ui/log/clamped-text";
 import { BoneFracture } from "lucide-react";
 import { Dumbbell } from "lucide-react";
 import { StickyNote } from "lucide-react";
@@ -60,6 +61,7 @@ export default async function LogOverviewPage({
         background: `color-mix(in srgb, ${SERIES.pain} 14%, transparent)`,
         color: SERIES.pain,
       },
+      fillBody: false,
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
@@ -88,6 +90,7 @@ export default async function LogOverviewPage({
         background: `color-mix(in srgb, ${SERIES.steps} 14%, transparent)`,
         color: SERIES.steps,
       },
+      fillBody: false,
       summary: (
         <div className={styles.summaryContainer}>
           <span className={styles.summaryText}>
@@ -110,6 +113,7 @@ export default async function LogOverviewPage({
         background: `color-mix(in srgb, ${SERIES.load} 14%, transparent)`,
         color: SERIES.load,
       },
+      fillBody: false,
       // summary: physioSummary(existing),
       summary: (
         <div className={styles.summaryContainer} id={styles.exerciseSummary}>
@@ -176,11 +180,11 @@ export default async function LogOverviewPage({
         background: `color-mix(in srgb, ${SERIES.holdVolume} 14%, transparent)`,
         color: SERIES.holdVolume,
       },
+      fillBody: true,
       summary: (
-        <div className={styles.summaryContainer}>
-          <span className={styles.summaryText}>
-            <StickyNoteCheck size={14} /> {existing?.generalNotes ?? "—"}
-          </span>
+        <div className={styles.notesSummaryRow}>
+          <StickyNoteCheck size={14} className={styles.notesSummaryIcon} />
+          <ClampedText>{existing?.generalNotes ?? "—"}</ClampedText>
         </div>
       ),
       progress: notesProgress(existing),
@@ -207,14 +211,20 @@ export default async function LogOverviewPage({
               filled={t.progress.filled}
               total={t.progress.total}
             />
-            <div className={styles.tileBody}>
+            <div
+              className={`${styles.tileBody}${t.fillBody ? ` ${styles.tileBodyFill}` : ""}`}
+            >
               <div className={styles.tileHeader}>
                 <span className={styles.tileTitle}>{t.title}</span>
                 <span className={styles.iconBadge} style={t.badgeStyle}>
                   {t.icons}
                 </span>
               </div>
-              <span className={styles.tileSummary}>{t.summary}</span>
+              <span
+                className={`${styles.tileSummary}${t.fillBody ? ` ${styles.tileSummaryFill}` : ""}`}
+              >
+                {t.summary}
+              </span>
             </div>
           </Link>
         ))}

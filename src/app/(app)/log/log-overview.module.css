@@ -118,6 +118,34 @@
   overflow-wrap: break-word;
 }
 
+/* Notes tile only: lets .tileBody/.tileSummary fill whatever height the
+   grid row ends up being (usually driven by Physio when several exercises
+   are logged) instead of the note's own text pushing the row taller.
+   ClampedText measures the resulting box and clamps to however many lines
+   actually fit — see its own comment for the full mechanism. */
+.tileBodyFill {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.tileSummaryFill {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.notesSummaryRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+.notesSummaryIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
 .tileEmpty .tileSummary {
   color: var(--faint);
 }

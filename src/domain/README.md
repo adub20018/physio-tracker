@@ -9,7 +9,7 @@ of truth for derived metrics.
 - `types.ts` — the domain's own view of a logged day (`DomainDay`); the app
   layer maps DB rows into it
 - `rolling.ts` — `average`, `rollingAverage` (trailing window, gap-tolerant)
-- `volume.ts` — physio volume = sets × duration × mean intensity fraction
+- `load.ts` — physio load = sets × duration × mean intensity fraction
 - `flare.ts` — flare detection, `daysBetween`, `daysSinceLastFlare`
 - `aggregate.ts` — daily pain average, calendar-window filtering,
   week-vs-previous-week stats for the dashboard tiles

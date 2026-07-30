@@ -20,11 +20,14 @@ export type WeeklyRow = {
   painDelta: string | null; // "+0.4" / "−0.2" vs previous week
   painImproved: boolean | null;
   stepsAvg: number | null;
-  physioVolume: number;
+  physioLoad: number;
   flareDays: number;
 };
 
-const SEVERITY_COLOR: Record<PainSeverity, "secondary" | "success" | "warn" | "danger"> = {
+const SEVERITY_COLOR: Record<
+  PainSeverity,
+  "secondary" | "success" | "warn" | "danger"
+> = {
   none: "secondary",
   mild: "success",
   elevated: "warn",
@@ -75,19 +78,33 @@ export function WeeklyReportTable({
                 const w = rawItem as WeeklyRow;
                 return (
                   <DataTable.Row>
-                    <DataTable.Cell className={styles.week}>{w.weekLabel}</DataTable.Cell>
-                    <DataTable.Cell className={styles.num}>{w.loggedDays}</DataTable.Cell>
+                    <DataTable.Cell className={styles.week}>
+                      {w.weekLabel}
+                    </DataTable.Cell>
+                    <DataTable.Cell className={styles.num}>
+                      {w.loggedDays}
+                    </DataTable.Cell>
                     <DataTable.Cell>
                       {w.painAvg == null ? (
                         <span className={styles.dim}>–</span>
                       ) : (
                         <span className={styles.painCell}>
-                          <Tag severity={SEVERITY_COLOR[painSeverity(w.painAvg, flareThreshold)]}>
+                          <Tag
+                            severity={
+                              SEVERITY_COLOR[
+                                painSeverity(w.painAvg, flareThreshold)
+                              ]
+                            }
+                          >
                             {w.painAvg.toFixed(1)}
                           </Tag>
                           {w.painDelta && (
                             <span
-                              className={w.painImproved ? styles.deltaGood : styles.deltaBad}
+                              className={
+                                w.painImproved
+                                  ? styles.deltaGood
+                                  : styles.deltaBad
+                              }
                             >
                               {w.painDelta}
                             </span>
@@ -96,13 +113,19 @@ export function WeeklyReportTable({
                       )}
                     </DataTable.Cell>
                     <DataTable.Cell className={styles.num}>
-                      {w.stepsAvg != null ? Math.round(w.stepsAvg).toLocaleString() : "–"}
+                      {w.stepsAvg != null
+                        ? Math.round(w.stepsAvg).toLocaleString()
+                        : "–"}
                     </DataTable.Cell>
                     <DataTable.Cell className={styles.num}>
-                      {Math.round(w.physioVolume).toLocaleString()}
+                      {Math.round(w.physioLoad).toLocaleString()}
                     </DataTable.Cell>
                     <DataTable.Cell className={styles.num}>
-                      {w.flareDays > 0 ? w.flareDays : <span className={styles.dim}>0</span>}
+                      {w.flareDays > 0 ? (
+                        w.flareDays
+                      ) : (
+                        <span className={styles.dim}>0</span>
+                      )}
                     </DataTable.Cell>
                   </DataTable.Row>
                 );

@@ -13,7 +13,7 @@ import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
 import { nextMorningPain } from "@/domain/lag";
-import { dailyPhysioVolume } from "@/domain/volume";
+import { dailyPhysioLoad } from "@/domain/load";
 import { flareEpisodes } from "@/domain/flare";
 import { weeklyReport } from "@/domain/weekly";
 import { pairSeries } from "@/domain/correlation";
@@ -80,7 +80,7 @@ export default async function InsightsPage() {
   );
   const fullVolumePoints = pairSeries(
     // Rest days (volume 0) stay in: doing nothing is also a data point.
-    days.map((d) => dailyPhysioVolume(d)),
+    days.map((d) => dailyPhysioLoad(d)),
     nextPain,
     labels,
     dates,
@@ -169,7 +169,7 @@ export default async function InsightsPage() {
           : null,
       painImproved: delta != null ? delta <= 0 : null,
       stepsAvg: w.stepsAvg,
-      physioVolume: w.physioVolume,
+      physioLoad: w.physioLoad,
       flareDays: w.flareDays,
     };
   });

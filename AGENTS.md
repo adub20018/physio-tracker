@@ -1,4 +1,5 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
@@ -46,16 +47,16 @@ This version has breaking changes — APIs, conventions, and file structure may 
   `router.push()` lives in its `onClick`, so if React's unmount wins the race, navigation
   never happens. Race outcome depends on timing, so it reproduces intermittently and isn't
   reliably triggerable on demand. Fix: pass `closeOnSelect={false}` on every `Menu.Item
-  as={Link}` inside a `Menu.Portal` — this skips the mousedown-triggered close, leaving an
+as={Link}` inside a `Menu.Portal` — this skips the mousedown-triggered close, leaving an
   explicit `onClick={() => setOpen(false)}` (fired safely on `click`, after `Link`'s own
   navigation) as the only thing that closes the menu. See `src/components/ui/nav/account-menu.tsx`.
-  Not an issue for `Menu.Item`s rendered *without* a `Menu.Portal` (e.g. an inline menu inside
+  Not an issue for `Menu.Item`s rendered _without_ a `Menu.Portal` (e.g. an inline menu inside
   an already-controlled `Drawer`, as in `app-nav.tsx`'s mobile nav) — they never hit this
   mousedown branch, so no fix needed there.
 
 # Project ground rules
 
-See [PLAN.md](PLAN.md) for what is being built. The rules below govern *how* it is built.
+See [PLAN.md](PLAN.md) for what is being built. The rules below govern _how_ it is built.
 
 ## Git workflow
 
@@ -82,7 +83,7 @@ See [PLAN.md](PLAN.md) for what is being built. The rules below govern *how* it 
   gets a comment at the top explaining its purpose and what it does. Write for a reader
   approaching the codebase fresh.
 - **Domain functions are pure and unit-tested.** All derived metrics (rolling averages,
-  physio volume, flare detection, correlations) live in `domain/` with tests; no DB or
+  physio load, flare detection, correlations) live in `domain/` with tests; no DB or
   browser needed to test them.
 - **Keep dependencies minimal.** Do not add a new library without flagging it to the user
   first — prefer what is already installed.

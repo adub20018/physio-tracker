@@ -20,7 +20,7 @@ import {
   windowComparison,
 } from "@/domain/aggregate";
 import { rollingAverage } from "@/domain/rolling";
-import { dailyPhysioVolume } from "@/domain/volume";
+import { dailyPhysioLoad } from "@/domain/load";
 import { daysSinceLastFlare, isFlareDay } from "@/domain/flare";
 import {
   addDays,
@@ -93,18 +93,16 @@ export default async function DashboardPage() {
   );
   const flareGap = daysSinceLastFlare(days, today, flareThreshold);
 
-  // WindowStats.physioVolume is a raw SUM over the window — meaningful for
+  // WindowStats.physioLoad is a raw SUM over the window — meaningful for
   // the weekly report card (always a fixed 7-day week), but here the
   // window length varies with the selected range, so a sum mechanically
   // grows with a wider range regardless of whether load actually went up.
   // Divide by loggedDays for a range-stable daily rate, consistent with
   // painAvg/stepsAvg/sleepAvg, which are already per-day averages.
   const currentPhysioLoadAvg =
-    current.loggedDays > 0 ? current.physioVolume / current.loggedDays : null;
+    current.loggedDays > 0 ? current.physioLoad / current.loggedDays : null;
   const previousPhysioLoadAvg =
-    previous.loggedDays > 0
-      ? previous.physioVolume / previous.loggedDays
-      : null;
+    previous.loggedDays > 0 ? previous.physioLoad / previous.loggedDays : null;
 
   // ── Stat tile sparklines: each tile's own raw per-day values across the
   // same 7-day window, not a rolling average — the point is to show the
@@ -147,7 +145,7 @@ export default async function DashboardPage() {
     days,
     statWindowEnd,
     statWindowDays,
-    (d) => dailyPhysioVolume(d),
+    (d) => dailyPhysioLoad(d),
   ).map((d) => ({
     ...d,
     display:
@@ -182,7 +180,7 @@ export default async function DashboardPage() {
   const fullLoad: LoadVsSymptomsPoint[] = days.map((d, i) => ({
     date: d.date,
     steps: d.steps,
-    physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
+    physioLoad: Number(dailyPhysioLoad(d).toFixed(1)),
     nextMorningPain: nextMorning[i],
     nextDaytimePain: nextDaytime[i],
     nextNightPain: nextNight[i],
@@ -222,7 +220,7 @@ export default async function DashboardPage() {
           (sum, e) => sum + e.sets * e.durationOrReps,
           0,
         ),
-        physioVolume: Number(dailyPhysioVolume(d).toFixed(1)),
+        physioLoad: Number(dailyPhysioLoad(d).toFixed(1)),
       };
     });
 

@@ -1,6 +1,6 @@
 // Load vs symptoms — answers "what did I do before it flared?". Three small
 // panels stacked on a shared, hover-synchronized x-axis: daily steps, physio
-// load (intensity-weighted — see domain/volume.ts), and the NEXT day's
+// load (intensity-weighted — see domain/load.ts), and the NEXT day's
 // morning/daytime/night pain (load today, symptoms tomorrow — tendon
 // response lags ~24h, and can show up in any of the next day's readings,
 // not just the first one taken). Deliberately not one dual-axis chart: the
@@ -26,7 +26,7 @@ import styles from "./charts.module.css";
 export type LoadVsSymptomsPoint = {
   date: string;
   steps: number | null;
-  physioVolume: number; // 0 on rest days
+  physioLoad: number; // 0 on rest days
   nextMorningPain: number | null;
   nextDaytimePain: number | null;
   nextNightPain: number | null;
@@ -196,7 +196,7 @@ export function LoadVsSymptoms({
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
             />
             <Bar
-              dataKey="physioVolume"
+              dataKey="physioLoad"
               name="Physio load"
               fill={SERIES.load}
               radius={[3, 3, 0, 0]}

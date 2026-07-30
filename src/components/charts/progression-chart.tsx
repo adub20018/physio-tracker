@@ -35,7 +35,7 @@ export type ProgressionPoint = {
   holdVolume: number;
   // Intensity-weighted load — the same metric as the dashboard tile and
   // Load vs symptoms, shown here so it can be compared against hold volume.
-  physioVolume: number;
+  physioLoad: number;
 };
 
 // Recharts range areas take a [low, high] tuple per point.
@@ -60,13 +60,27 @@ export function ProgressionChart({
     return <EmptyState message="No physio sessions logged yet." height={410} />;
   }
 
-  const withRange: RangePoint[] = data.map((d) => ({
-    ...d,
-    intensityRange:
+  const withRange: RangePoint[] = data.map((d) => {
+    const intensityValue = d.intensityMin ?? d.intensityMax;
+
+    const intensityRange: [number, number] | null =
       d.intensityMin != null && d.intensityMax != null
         ? [d.intensityMin, d.intensityMax]
-        : null,
-  }));
+        : intensityValue != null
+          ? [intensityValue, intensityValue]
+          : null;
+
+    const intensityMid =
+      d.intensityMin != null && d.intensityMax != null
+        ? (d.intensityMin + d.intensityMax) / 2
+        : intensityValue;
+
+    return {
+      ...d,
+      intensityRange,
+      intensityMid,
+    };
+  });
 
   return (
     <div>
@@ -246,7 +260,7 @@ export function ProgressionChart({
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
             />
             <Bar
-              dataKey="physioVolume"
+              dataKey="physioLoad"
               name="Physio load"
               fill={SERIES.load}
               radius={[3, 3, 0, 0]}

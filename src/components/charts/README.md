@@ -9,7 +9,7 @@ and nothing else (PLAN.md §5).
   surface), recessive chrome, shared tooltip style
 - `pain-timeline.tsx` — raw M/D/N lines + bold 7-day rolling average + flare
   dots (status red)
-- `load-vs-symptoms.tsx` — steps / physio volume / next-morning pain as three
+- `load-vs-symptoms.tsx` — steps / physio load / next-morning pain as three
   hover-synced panels sharing an x-axis (never a dual-axis chart)
 - `progression-chart.tsx` — intensity min–max band with midpoint + hold
   volume panel

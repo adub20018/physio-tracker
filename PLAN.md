@@ -19,18 +19,19 @@ userId-scoped from day one specifically so this didn't require a rewrite (see §
 
 49 days logged (30 May → 17 July 2026). Columns and formats:
 
-| Column | Format | Notes |
-|---|---|---|
-| Date | date | daily rows |
-| Steps | integer | end-of-day phone step count |
-| Physio Exercise | free text | e.g. "Standing ankle raise" (inconsistent casing) |
-| Morning / Daytime / Night Pain | number 0–10, 0.5 steps | being converted from `"2/10"` strings to plain numbers (e.g. `2`, `1.5`); 0–10 scale is assumed |
-| Physio Notes | `"4x15"`, `"3x20, 1x30"` | **sets × hold duration in seconds** (e.g. `3x20` = three 20-second holds) |
-| Intensity | `"Light-Medium (20-25%)"` | label + % load range |
-| Activity Notes | free text | mostly patterns: "Gym + physio", "Rest + physio", "+ walking at X" |
-| General Notes | free text | rich qualitative detail (pain timing, quality, context) |
+| Column                         | Format                    | Notes                                                                                           |
+| ------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| Date                           | date                      | daily rows                                                                                      |
+| Steps                          | integer                   | end-of-day phone step count                                                                     |
+| Physio Exercise                | free text                 | e.g. "Standing ankle raise" (inconsistent casing)                                               |
+| Morning / Daytime / Night Pain | number 0–10, 0.5 steps    | being converted from `"2/10"` strings to plain numbers (e.g. `2`, `1.5`); 0–10 scale is assumed |
+| Physio Notes                   | `"4x15"`, `"3x20, 1x30"`  | **sets × hold duration in seconds** (e.g. `3x20` = three 20-second holds)                       |
+| Intensity                      | `"Light-Medium (20-25%)"` | label + % load range                                                                            |
+| Activity Notes                 | free text                 | mostly patterns: "Gym + physio", "Rest + physio", "+ walking at X"                              |
+| General Notes                  | free text                 | rich qualitative detail (pain timing, quality, context)                                         |
 
 Observations that shape the design:
+
 - Intensity ranges ("20–25%") stored as min/max numbers so they can be charted.
 - Activity notes are really **tags** (Gym, Rest, Walking, Physio) plus a free-text remainder.
 - Notes frequently mention **morning pain easing over the day** and **next-day responses to
@@ -87,6 +88,7 @@ from the signed-in Neon Auth session via `getCurrentUser()` (§3), so no query c
 change when real auth replaced the single seeded user.
 
 Derived (computed by pure functions, never stored):
+
 - **Daily pain average** and **7-day rolling averages** per pain slot
 - **Physio volume** = Σ sets × duration × mean intensity (a single "how hard was physio today" number)
 - **Flare flag** = any pain reading ≥ **3/10**, per physio guidance that pain under 3/10
@@ -94,6 +96,7 @@ Derived (computed by pure functions, never stored):
   can be adjusted if the guidance changes.
 
 Variable changes vs. the spreadsheet:
+
 - **Keep**: everything currently tracked.
 - **Restructure**: intensity → min/max %; sets/holds → structured; activity → tags + text.
 - **Add**: sleep hours and pain type (both optional fields, skippable on any day).
@@ -101,11 +104,12 @@ Variable changes vs. the spreadsheet:
 ## 3. Pages & features
 
 ### `/` — Dashboard (the main event)
+
 - **Headline stat tiles**: current 7-day avg pain vs. previous 7 days (with trend arrow),
-  avg daily steps this week vs. last, current physio volume vs. last week, days since last flare.
+  avg daily steps this week vs. last, current physio load vs. last week, days since last flare.
 - **Pain timeline** (primary chart): morning/daytime/night as light lines + bold 7-day
   rolling average; flare days marked; annotations from notes on hover.
-- **Load vs. symptoms**: steps (bars) and physio volume (bars) overlaid with **next-morning
+- **Load vs. symptoms**: steps (bars) and physio load (bars) overlaid with **next-morning
   pain** (line) — the chart that answers "what did I do before it flared?"
 - **Progression chart**: intensity % band (min–max) and sets×duration volume over time —
   shows the rehab program itself is advancing, which is progress even when pain plateaus.
@@ -113,6 +117,7 @@ Variable changes vs. the spreadsheet:
   "is the colour getting greener" view the spreadsheet colour-coding was trying to be.
 
 ### `/log` — Daily entry form
+
 - Optimised for a 30-second daily habit **on a phone**: date defaults to today, pain as
   tap-to-select 0–10 chips (0.5 steps), steps numeric, activity tag toggles, pain type
   toggles, exercise rows prefilled from the last entry (rehab rarely changes day-to-day),
@@ -120,17 +125,20 @@ Variable changes vs. the spreadsheet:
 - Editing past days supported (same form, pick a date).
 
 ### `/insights` — Correlation explorer
-- **Lag scatter plots**: today's steps vs. tomorrow-morning pain; physio volume vs.
+
+- **Lag scatter plots**: today's steps vs. tomorrow-morning pain; physio load vs.
   next-day pain — with simple correlation coefficient displayed.
 - **Flare-up review**: list of detected flare days; clicking one shows a 3-day "what
   happened before" panel (steps, physio, activities, notes from the prior 48–72h).
 - **Weekly report card**: per-week averages table with deltas.
 
 ### `/history` — Data table
+
 - The spreadsheet view, kept: sortable/filterable table of all entries, inline edit,
   CSV export (data safety — never locked in).
 
 ### Spreadsheet import
+
 - The parsing logic (pain → number, handling both `"2/10"` strings and plain numbers;
   intensity label → min/max %; `"3x20"` → sets + hold seconds; activity notes → tags via
   keyword matching) lives in `src/domain/xlsx-import.ts`, pure and DB-agnostic.
@@ -141,6 +149,7 @@ Variable changes vs. the spreadsheet:
   bring their own history in. Replaces the original single-user CLI script.
 
 ### Access control
+
 - Real per-account auth via **Neon Auth** (Better Auth, hosted by Neon) — email/password
   sign-up and sign-in, each account's data private to it. `src/proxy.ts` (Next 16's
   `middleware.ts`) gates every route except `/login`, `/sign-up`, and static assets.
@@ -151,17 +160,17 @@ Variable changes vs. the spreadsheet:
 
 ## 4. Tech stack
 
-| Concern | Choice | Why |
-|---|---|---|
-| Framework | Next.js 16 App Router (already scaffolded) | server components + server actions = no separate API needed |
-| Language | TypeScript (already set up) | |
-| DB | **Postgres (hosted on Neon) + Drizzle ORM** | works on Vercel (no ephemeral-filesystem problem); one DB for both app data and Neon Auth's own tables |
-| Auth | **Neon Auth** (Better Auth, hosted by Neon) | real per-account sign-up/sign-in without running our own auth infra |
-| UI components | **PrimeReact** + custom CSS where needed | user preference; rich component set (forms, table, chips) |
-| Charts | **Recharts**, wrapped behind our own chart components | composable enough for band charts/heatmaps; wrapper makes it swappable (see §5) |
-| Import | `xlsx` (SheetJS) — moving from a one-off script to an in-app upload (Phase 8) | |
-| Validation | zod on form submission | |
-| Hosting | Vercel | |
+| Concern       | Choice                                                                        | Why                                                                                                    |
+| ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Framework     | Next.js 16 App Router (already scaffolded)                                    | server components + server actions = no separate API needed                                            |
+| Language      | TypeScript (already set up)                                                   |                                                                                                        |
+| DB            | **Postgres (hosted on Neon) + Drizzle ORM**                                   | works on Vercel (no ephemeral-filesystem problem); one DB for both app data and Neon Auth's own tables |
+| Auth          | **Neon Auth** (Better Auth, hosted by Neon)                                   | real per-account sign-up/sign-in without running our own auth infra                                    |
+| UI components | **PrimeReact** + custom CSS where needed                                      | user preference; rich component set (forms, table, chips)                                              |
+| Charts        | **Recharts**, wrapped behind our own chart components                         | composable enough for band charts/heatmaps; wrapper makes it swappable (see §5)                        |
+| Import        | `xlsx` (SheetJS) — moving from a one-off script to an in-app upload (Phase 8) |                                                                                                        |
+| Validation    | zod on form submission                                                        |                                                                                                        |
+| Hosting       | Vercel                                                                        |                                                                                                        |
 
 ⚠️ Per AGENTS.md: this Next.js version has breaking changes — **read the relevant guides in
 `node_modules/next/dist/docs/` before writing any code** in each phase.
@@ -181,7 +190,7 @@ src/
   auth/          getCurrentUser(), plus the Neon Auth server/client instances. The only
                  place that knows how auth works — every page and action calls
                  getCurrentUser() and never touches sessions or cookies directly.
-  domain/        Pure functions, zero dependencies: rolling averages, physio volume,
+  domain/        Pure functions, zero dependencies: rolling averages, physio load,
                  flare detection, lag correlations, week aggregation. Unit-testable
                  without a DB or browser; usable by any UI.
   components/
@@ -274,7 +283,7 @@ scheduled to a phase — pull from here when there's room.
 
 - **Pain-vs-load trend** — not a stat tile: with the current amount of data, a single
   Pearson r isn't meaningful yet, and a static correlation number wouldn't show what's
-  actually wanted, which is whether the pain-per-unit-load relationship is *improving*
+  actually wanted, which is whether the pain-per-unit-load relationship is _improving_
   over time (handling more physio load for less pain). Needs either a rolling correlation
   recomputed over trailing multi-week windows, or a load-vs-pain scatter shaded by date so
   the cluster's drift over time is visible directly.

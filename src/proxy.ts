@@ -29,7 +29,15 @@ export default async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files
-    "/((?!api|_next/static|_next/image|favicon.ico|login|sign-up).*)",
+    // Match all paths except API routes, Next's own static/image output,
+    // the two unauthenticated pages, and anything in public/ — matched
+    // generically by file extension (favicon.ico, PhysiMate-logo.svg/png,
+    // …) rather than by name, so a newly added public/ asset is excluded
+    // automatically instead of needing its own matcher entry. Without
+    // this, a logged-out request for the logo itself hit this same
+    // middleware, got redirected to /login (an HTML page, not an image),
+    // and rendered as a broken image — exactly what happens once nothing
+    // has it cached from an already-authenticated visit.
+    "/((?!api|_next/static|_next/image|login|sign-up|.*\\.(?:ico|svg|png|jpg|jpeg|gif|webp|avif|css|js|mjs|txt|xml|json|woff2?|ttf|map)$).*)",
   ],
 };

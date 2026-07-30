@@ -150,7 +150,7 @@ export function ProgressionChart({
               dataKey="intensityRange"
               name="Intensity range"
               stroke="none"
-              fill={SERIES.rollingAvg}
+              fill={SERIES.intensity}
               fillOpacity={0.22}
               connectNulls
               isAnimationActive={true}
@@ -161,7 +161,7 @@ export function ProgressionChart({
             <Line
               dataKey="intensityMid"
               name="Midpoint"
-              stroke={SERIES.rollingAvg}
+              stroke={SERIES.intensity}
               strokeWidth={2}
               dot={false}
               connectNulls

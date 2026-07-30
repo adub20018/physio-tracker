@@ -52,6 +52,7 @@ export function StatSparklineArea({
           dataKey="v"
           stroke={color}
           strokeWidth={1.75}
+          strokeOpacity={0.6}
           fill={`url(#${gradientId})`}
           dot={false}
           activeDot={{

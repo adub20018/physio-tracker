@@ -46,7 +46,7 @@ export function StatSparkline({
           animationEasing="linear"
         >
           {data.map((d) => (
-            <Cell key={d.i} fill={color} fillOpacity={0.3} />
+            <Cell key={d.i} fill={color} fillOpacity={0.5} />
           ))}
         </Bar>
       </BarChart>

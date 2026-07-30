@@ -288,10 +288,12 @@ export function ExerciseNameInput({
   value,
   suggestions,
   onChange,
+  invalid,
 }: {
   value: string;
   suggestions: string[];
   onChange: (name: string) => void;
+  invalid?: boolean;
 }) {
   const filtered = suggestions.filter((n) =>
     n.toLowerCase().includes(value.toLowerCase()),
@@ -306,6 +308,7 @@ export function ExerciseNameInput({
       onValueChange={(e: AutoCompleteValueChangeEvent) => {
         if (typeof e.value === "string") onChange(e.value);
       }}
+      invalid={invalid}
       className={styles.input}
     >
       {/* as={InputText}: the AutoComplete input part renders unstyled
@@ -338,6 +341,7 @@ export function NumberField({
   placeholder,
   maxFractionDigits,
   useGrouping,
+  invalid,
 }: {
   id?: string;
   value: number | null;
@@ -348,6 +352,7 @@ export function NumberField({
   placeholder?: string;
   maxFractionDigits?: number;
   useGrouping?: boolean;
+  invalid?: boolean;
 }) {
   return (
     <InputNumber.Root
@@ -360,6 +365,7 @@ export function NumberField({
       step={step}
       maxFractionDigits={maxFractionDigits}
       useGrouping={useGrouping ?? false}
+      invalid={invalid}
       className={styles.input}
     >
       <InputNumber.Input id={id} placeholder={placeholder} />

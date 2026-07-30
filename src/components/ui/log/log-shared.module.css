@@ -136,6 +136,15 @@
   gap: 0.35rem;
 }
 
+/* Per-field validation message — sits right under its input, same red as
+   the input's own invalid-state border (PrimeReact's form.field.invalid.*
+   tokens resolve to red.300 in this app's always-dark theme). Matches
+   auth-form.module.css's identical rule for the login/sign-up forms. */
+.fieldError {
+  font-size: 0.78rem;
+  color: var(--p-red-300, #fca5a5);
+}
+
 /* Chip multi-select (pain type / activity): known chips + custom-add row,
    shared markup so both inputs behave identically. */
 .tagSelect {

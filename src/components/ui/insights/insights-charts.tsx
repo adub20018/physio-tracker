@@ -8,6 +8,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Info } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { daysForRange } from "@/lib/time-range";
 import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
@@ -142,15 +143,18 @@ export function InsightsCharts({
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>
-          Sleep vs pain, all day
-          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
-        </h2>
-        <p className={styles.cardSubtitle}>
-          Same day, not lagged — sleep hours logged on a date are the hours
-          slept the night before waking up that day, so they precede all three
-          of that day&apos;s readings, not just the morning one.
-        </p>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
+            Sleep vs pain, all day
+            <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
+          </h2>
+          <InfoTooltip
+            text="Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one."
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         {(sleepVsMorningLine || sleepVsDaytimeLine || sleepVsNightLine) && (
           <ul className={styles.rList}>
             {sleepVsMorningLine && (

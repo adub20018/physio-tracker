@@ -54,6 +54,22 @@
   margin-bottom: 0.15rem;
 }
 
+/* Title + description-tooltip trigger, title on the left and the info
+   icon pinned top-right — used instead of always-visible .cardSubtitle
+   prose where a chart/section's explanation is long enough to just take
+   up room once you already know what the card is. */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.cardHeader .cardTitle {
+  margin-bottom: 0;
+}
+
 .cardSubtitle {
   font-size: 0.8rem;
   color: var(--muted);

@@ -43,6 +43,8 @@ import { BoneFracture } from "lucide-react";
 import { Footprints } from "lucide-react";
 import { BedDouble } from "lucide-react";
 import { WeightTilde } from "lucide-react";
+import { Info } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Always render at request time — the dashboard must reflect today's log.
@@ -356,10 +358,15 @@ export default async function DashboardPage() {
       </DashboardCharts>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>Calendar</h2>
-        <p className={styles.cardSubtitle}>
-          Average pain per day, at a glance.
-        </p>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Calendar</h2>
+          <InfoTooltip
+            text="Average pain per day, at a glance."
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         <CalendarHeatmap data={heatmap} />
       </section>
     </main>

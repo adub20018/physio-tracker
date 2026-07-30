@@ -245,9 +245,7 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
                 </ToggleButton.Root>
               </ToggleButtonGroup>
               <div className={styles.field}>
-                <Label className={styles.fieldLabel}>
-                  Additional comments
-                </Label>
+                <Label className={styles.fieldLabel}>Additional comments</Label>
                 <Textarea
                   rows={2}
                   className={styles.input}

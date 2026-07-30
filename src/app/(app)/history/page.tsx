@@ -30,7 +30,6 @@ export default async function HistoryPage() {
     exerciseSummary: summarizeExercises(log),
     activityTags: log.activityTags ?? [],
     painTypes: log.painTypes ?? [],
-    activityNotes: log.activityNotes ?? "",
     generalNotes: log.generalNotes ?? "",
   }));
 

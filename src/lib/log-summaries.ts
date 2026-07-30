@@ -44,18 +44,13 @@ export function physioProgress(
 export function notesProgress(
   log: DailyLogWithExercises | null,
 ): SectionProgress {
-  const filled = log
-    ? [log.activityNotes, log.generalNotes].filter((v) => v != null && v !== "")
-        .length
-    : 0;
-  return { filled, total: 2 };
+  const filled = log && log.generalNotes != null && log.generalNotes !== "" ? 1 : 0;
+  return { filled, total: 1 };
 }
 
 // Untruncated, for the review page's "final look-over" — the whole point
-// there is reading the actual note back, not a preview of it. Labelled
-// (rather than just concatenated) so a missing half is visible as "—"
-// instead of the two notes blurring into one string.
+// there is reading the actual note back, not a preview of it.
 export function notesFullText(log: DailyLogWithExercises | null): string {
-  if (!log || (!log.activityNotes && !log.generalNotes)) return NOT_LOGGED;
-  return `Activity: ${log.activityNotes ?? "—"} · General: ${log.generalNotes ?? "—"}`;
+  if (!log || !log.generalNotes) return NOT_LOGGED;
+  return log.generalNotes;
 }

@@ -1,6 +1,15 @@
 // The Physio exercises section's own small form — the add/remove exercise
 // list for one date. Saves through its own action and returns to the /log
 // overview, leaving every other section's data untouched.
+//
+// Every row present in the list must be fully valid to save — there is no
+// silent "drop incomplete rows" fallback. That used to exist (rows with a
+// blank exercise name were filtered out of the payload before it ever
+// reached validation), which meant a forgotten name didn't show an error:
+// it just quietly vanished from what got saved, sometimes leaving an empty
+// exercises array that "saved" successfully and redirected as if nothing
+// were wrong. An unwanted row must now be removed with its own trash
+// button instead of just being left blank.
 "use client";
 
 import { useState, useTransition } from "react";
@@ -30,33 +39,96 @@ export type PhysioSectionInit = {
   knownExerciseNames: string[]; // autocomplete suggestions
 };
 
+// Per-row validation messages, indexed the same as the exercises array.
+// Intensity min/max are intentionally never required here — logging just
+// one side (e.g. a single 20% reading in either field) is a normal, valid
+// entry, not a partial one.
+type ExerciseFieldErrors = {
+  exerciseName?: string;
+  sets?: string;
+  durationOrReps?: string;
+  intensityMin?: string;
+};
+
+function validateExercises(exercises: ExerciseDraft[]): ExerciseFieldErrors[] {
+  return exercises.map((ex) => {
+    const errors: ExerciseFieldErrors = {};
+    if (ex.exerciseName.trim() === "") {
+      errors.exerciseName = "Exercise name is required.";
+    }
+    if (ex.sets == null) errors.sets = "Required.";
+    if (ex.durationOrReps == null) errors.durationOrReps = "Required.";
+    if (
+      ex.intensityMin != null &&
+      ex.intensityMax != null &&
+      ex.intensityMin > ex.intensityMax
+    ) {
+      errors.intensityMin = "Min must be ≤ max.";
+    }
+    return errors;
+  });
+}
+
 export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<SaveResult | null>(null);
   const [exercises, setExercises] = useState<ExerciseDraft[]>(init.exercises);
+  const [exerciseErrors, setExerciseErrors] = useState<ExerciseFieldErrors[]>(
+    [],
+  );
 
   function updateExercise(index: number, patch: Partial<ExerciseDraft>) {
     setExercises((list) =>
       list.map((ex, i) => (i === index ? { ...ex, ...patch } : ex)),
     );
+    // Clear only the fields just edited, same as the login/sign-up forms —
+    // an error the user hasn't addressed yet should keep showing.
+    setExerciseErrors((errs) =>
+      errs.map((err, i) => {
+        if (i !== index) return err;
+        const next = { ...err };
+        if ("exerciseName" in patch) delete next.exerciseName;
+        if ("sets" in patch) delete next.sets;
+        if ("durationOrReps" in patch) delete next.durationOrReps;
+        if ("intensityMin" in patch || "intensityMax" in patch) {
+          delete next.intensityMin;
+        }
+        return next;
+      }),
+    );
+  }
+
+  function addExercise() {
+    setExercises((list) => [...list, { ...BLANK_EXERCISE }]);
+    setExerciseErrors((errs) => [...errs, {}]);
+  }
+
+  function removeExercise(index: number) {
+    setExercises((list) => list.filter((_, j) => j !== index));
+    setExerciseErrors((errs) => errs.filter((_, j) => j !== index));
   }
 
   function submit() {
+    const fieldErrors = validateExercises(exercises);
+    if (fieldErrors.some((err) => Object.keys(err).length > 0)) {
+      setExerciseErrors(fieldErrors);
+      setResult(null);
+      return;
+    }
+
     const payload: PhysioSectionValues = {
       date: init.date,
-      exercises: exercises
-        // Rows left completely blank are dropped rather than rejected.
-        .filter((ex) => ex.exerciseName.trim() !== "")
-        .map((ex) => ({
-          exerciseName: ex.exerciseName,
-          sets: ex.sets ?? 0,
-          durationOrReps: ex.durationOrReps ?? 0,
-          unit: ex.unit,
-          intensityMin: ex.intensityMin,
-          intensityMax: ex.intensityMax,
-          notes: ex.notes.trim() === "" ? null : ex.notes,
-        })),
+      exercises: exercises.map((ex) => ({
+        exerciseName: ex.exerciseName,
+        // Validated above — non-null by this point.
+        sets: ex.sets!,
+        durationOrReps: ex.durationOrReps!,
+        unit: ex.unit,
+        intensityMin: ex.intensityMin,
+        intensityMax: ex.intensityMax,
+        notes: ex.notes.trim() === "" ? null : ex.notes,
+      })),
     };
     startTransition(async () => {
       const res = await savePhysioSection(payload);
@@ -72,101 +144,122 @@ export function PhysioSectionForm({ init }: { init: PhysioSectionInit }) {
     <div className={styles.form}>
       <section className={styles.card}>
         <h2 className={styles.cardTitle}>Physio exercises</h2>
-        {exercises.map((ex, i) => (
-          <div key={i} className={styles.exerciseCard}>
-            <div className={styles.exerciseHeader}>
-              <ExerciseNameInput
-                value={ex.exerciseName}
-                suggestions={init.knownExerciseNames}
-                onChange={(name) => updateExercise(i, { exerciseName: name })}
-              />
-              <Button
-                size="small"
-                severity="danger"
-                variant="text"
-                onClick={() =>
-                  setExercises((list) => list.filter((_, j) => j !== i))
+        {exercises.map((ex, i) => {
+          const err = exerciseErrors[i] ?? {};
+          return (
+            <div key={i} className={styles.exerciseCard}>
+              <div className={styles.exerciseHeader}>
+                <div className={styles.field}>
+                  <ExerciseNameInput
+                    value={ex.exerciseName}
+                    suggestions={init.knownExerciseNames}
+                    onChange={(name) =>
+                      updateExercise(i, { exerciseName: name })
+                    }
+                    invalid={!!err.exerciseName}
+                  />
+                  {err.exerciseName && (
+                    <span className={styles.fieldError}>
+                      {err.exerciseName}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  size="small"
+                  severity="danger"
+                  variant="text"
+                  onClick={() => removeExercise(i)}
+                >
+                  <Trash2 size={24} />
+                </Button>
+              </div>
+              <div className={styles.exerciseGrid}>
+                <div className={styles.field}>
+                  <Label className={styles.fieldLabel}>Sets</Label>
+                  <NumberField
+                    value={ex.sets}
+                    onChange={(v) => updateExercise(i, { sets: v })}
+                    min={1}
+                    max={99}
+                    invalid={!!err.sets}
+                  />
+                  {err.sets && (
+                    <span className={styles.fieldError}>{err.sets}</span>
+                  )}
+                </div>
+                <div className={styles.field}>
+                  <Label className={styles.fieldLabel}>
+                    {ex.unit === "seconds" ? "Hold (seconds)" : "Reps"}
+                  </Label>
+                  <NumberField
+                    value={ex.durationOrReps}
+                    onChange={(v) => updateExercise(i, { durationOrReps: v })}
+                    min={1}
+                    max={999}
+                    invalid={!!err.durationOrReps}
+                  />
+                  {err.durationOrReps && (
+                    <span className={styles.fieldError}>
+                      {err.durationOrReps}
+                    </span>
+                  )}
+                </div>
+                <div className={styles.field}>
+                  <Label className={styles.fieldLabel}>Intensity min %</Label>
+                  <NumberField
+                    value={ex.intensityMin}
+                    onChange={(v) => updateExercise(i, { intensityMin: v })}
+                    min={0}
+                    max={100}
+                    invalid={!!err.intensityMin}
+                  />
+                  {err.intensityMin && (
+                    <span className={styles.fieldError}>
+                      {err.intensityMin}
+                    </span>
+                  )}
+                </div>
+                <div className={styles.field}>
+                  <Label className={styles.fieldLabel}>Intensity max %</Label>
+                  <NumberField
+                    value={ex.intensityMax}
+                    onChange={(v) => updateExercise(i, { intensityMax: v })}
+                    min={0}
+                    max={100}
+                  />
+                </div>
+              </div>
+              <ToggleButtonGroup
+                fluid
+                value={ex.unit}
+                allowEmpty={false}
+                onValueChange={(e: { value?: unknown }) =>
+                  updateExercise(i, { unit: e.value as "seconds" | "reps" })
                 }
               >
-                <Trash2 size={24} />
-              </Button>
-            </div>
-            <div className={styles.exerciseGrid}>
+                <ToggleButton.Root value="seconds">
+                  <ToggleButton.Indicator>Timed hold</ToggleButton.Indicator>
+                </ToggleButton.Root>
+                <ToggleButton.Root value="reps">
+                  <ToggleButton.Indicator>Reps</ToggleButton.Indicator>
+                </ToggleButton.Root>
+              </ToggleButtonGroup>
               <div className={styles.field}>
-                <Label className={styles.fieldLabel}>Sets</Label>
-                <NumberField
-                  value={ex.sets}
-                  onChange={(v) => updateExercise(i, { sets: v })}
-                  min={1}
-                  max={99}
-                />
-              </div>
-              <div className={styles.field}>
-                <Label className={styles.fieldLabel}>
-                  {ex.unit === "seconds" ? "Hold (seconds)" : "Reps"}
-                </Label>
-                <NumberField
-                  value={ex.durationOrReps}
-                  onChange={(v) => updateExercise(i, { durationOrReps: v })}
-                  min={1}
-                  max={999}
-                />
-              </div>
-              <div className={styles.field}>
-                <Label className={styles.fieldLabel}>Intensity min %</Label>
-                <NumberField
-                  value={ex.intensityMin}
-                  onChange={(v) => updateExercise(i, { intensityMin: v })}
-                  min={0}
-                  max={100}
-                />
-              </div>
-              <div className={styles.field}>
-                <Label className={styles.fieldLabel}>Intensity max %</Label>
-                <NumberField
-                  value={ex.intensityMax}
-                  onChange={(v) => updateExercise(i, { intensityMax: v })}
-                  min={0}
-                  max={100}
+                <Label className={styles.fieldLabel}>Additional comments</Label>
+                <Textarea
+                  rows={2}
+                  className={styles.input}
+                  placeholder="e.g. Last set felt harder than usual"
+                  value={ex.notes}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    updateExercise(i, { notes: e.target.value })
+                  }
                 />
               </div>
             </div>
-            <ToggleButtonGroup
-              fluid
-              value={ex.unit}
-              allowEmpty={false}
-              onValueChange={(e: { value?: unknown }) =>
-                updateExercise(i, { unit: e.value as "seconds" | "reps" })
-              }
-            >
-              <ToggleButton.Root value="seconds">
-                <ToggleButton.Indicator>Timed hold</ToggleButton.Indicator>
-              </ToggleButton.Root>
-              <ToggleButton.Root value="reps">
-                <ToggleButton.Indicator>Reps</ToggleButton.Indicator>
-              </ToggleButton.Root>
-            </ToggleButtonGroup>
-            <div className={styles.field}>
-              <Label className={styles.fieldLabel}>Additional comments</Label>
-              <Textarea
-                rows={2}
-                className={styles.input}
-                placeholder="e.g. Last set felt harder than usual"
-                value={ex.notes}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  updateExercise(i, { notes: e.target.value })
-                }
-              />
-            </div>
-          </div>
-        ))}
-        <Button
-          size="small"
-          severity="secondary"
-          onClick={() =>
-            setExercises((list) => [...list, { ...BLANK_EXERCISE }])
-          }
-        >
+          );
+        })}
+        <Button size="small" severity="secondary" onClick={addExercise}>
           + Add exercise
         </Button>
       </section>

@@ -44,8 +44,8 @@ export type ExerciseDraft = {
 // Empty exercise row used by the "Add exercise" button.
 export const BLANK_EXERCISE: ExerciseDraft = {
   exerciseName: "",
-  sets: 3,
-  durationOrReps: 20,
+  sets: 4,
+  durationOrReps: 30,
   unit: "seconds",
   intensityMin: null,
   intensityMax: null,

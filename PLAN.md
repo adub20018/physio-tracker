@@ -299,3 +299,110 @@ scheduled to a phase — pull from here when there's room.
   consistency) unrelated to tendon recovery specifically.
 - **Logging streak** — a small badge/icon (e.g. near the account menu), not a stat tile.
   Nice-to-have habit nudge, not a rehab metric.
+
+## 10. Charts, tables & derived variables (reference)
+
+Every chart/table currently in the app, and every derived value they're built from. Kept
+here as a single reference so a chart's exact meaning (what's on each axis, what "load"
+means that day) doesn't have to be reverse-engineered from the component later.
+
+### Charts & tables
+
+#### `/dashboard`
+
+- **Avg pain (7D)** _(stat tile)_ — this week's daily-pain-average mean vs. the previous
+  week, trend arrow, 7-day sparkline of the raw daily averages underneath.
+- **Avg daily steps (7D)** _(stat tile)_ — same pattern, steps.
+- **Avg sleep (7D)** _(stat tile)_ — same pattern, sleep hours.
+- **Physio load (7D)** _(stat tile)_ — this week's avg daily physio load vs. the previous
+  week.
+- **Pain over time** _(chart)_ — thin morning/daytime/night lines (the raw readings), a
+  bold 7-day rolling-average line (the trend), and red dots on flare days.
+- **Load vs next-day pain** _(chart, 3 synced panels)_ — daily steps (bars), physio load
+  (bars), and the *following* day's morning/daytime/night pain (lines) — "what did I do
+  before it flared?"
+- **Sleep & pain over time** _(chart, 2 synced panels)_ — sleep hours (bars) and *that
+  same* day's morning/daytime/night pain (lines) — sleep precedes all three readings, so
+  this one isn't lagged like the chart above.
+- **Physio progression** _(chart, 3 synced panels)_ — intensity min–max % band with its
+  midpoint line, hold volume (bars), and physio load (bars) — shows the rehab program
+  itself advancing, which is progress even when pain plateaus.
+- **Calendar** _(heatmap)_ — one cell per day, colored by that day's average pain
+  (GitHub-contribution-style weeks-as-columns); unlogged days are a distinct empty outline.
+
+#### `/insights`
+
+- **Steps vs next-morning pain** _(scatter)_ — today's steps vs. the *following* day's
+  morning pain, with Pearson r.
+- **Steps vs peak next-day pain** _(scatter)_ — today's steps vs. the highest of the
+  following day's three readings — the worst moment reached, not just the first reading
+  taken. _(insights-new-charts branch, not yet merged to main.)_
+- **Steps vs average next-day pain** _(scatter)_ — today's steps vs. the mean of the
+  following day's three readings — the day's overall level. _(insights-new-charts
+  branch.)_
+- **Physio load vs next-morning pain** _(scatter)_ — today's physio load vs. the following
+  day's morning pain.
+- **Physio load vs peak next-day pain** _(scatter)_ — same lag, against the following
+  day's highest reading. _(insights-new-charts branch.)_
+- **Physio load vs average next-day pain** _(scatter)_ — same lag, against the following
+  day's mean reading. _(insights-new-charts branch.)_
+- **Morning-to-day pain** _(candlestick)_ — one candle per day in OHLC terms: open =
+  morning pain, high/low = that day's highest/lowest reading, close = night pain; green
+  body when pain improved by night (close < open), red when it worsened. _(insights-new-
+  charts branch.)_
+- **Sleep vs pain, all day** _(multi-series scatter)_ — that same day's sleep hours vs.
+  morning/daytime/night pain (three series, each with its own Pearson r) — not lagged,
+  since sleep precedes all three readings.
+- **Flare review** _(expandable list)_ — every day that crossed the flare threshold;
+  expanding one shows the preceding 3 days' steps, physio, activity tags, and notes — the
+  "what happened before" view.
+- **Weekly report card** _(table)_ — one row per calendar week: days logged, avg pain
+  (with delta vs. the previous week), avg steps, physio load, flare count.
+
+#### `/history`
+
+- **History table** _(table)_ — one row per logged day: date, pain (morning/daytime/night
+  dots), steps (with a volume bar), physio summary; expanding a row reveals sleep,
+  activity/pain tags, and notes. CSV export button — data is never locked in.
+
+### Derived variables
+
+Computed by pure functions in `domain/`, never stored — see §5 for why.
+
+- **Daily pain average** — mean of a day's recorded morning/daytime/night readings
+  (missing ones ignored); null if nothing was recorded that day.
+- **Daily pain peak** — the highest of a day's three readings — the worst moment reached.
+- **Daily pain low** — the lowest of a day's three readings — the best moment reached
+  (feeds the candlestick's "low").
+- **7-day rolling average** — trailing mean of the daily pain average over the last 7
+  logged positions; turns noisy day-to-day readings into the Pain-over-time trend line.
+- **Physio load** (a.k.a. physio volume) — Σ (sets × hold-duration-or-reps × mean
+  intensity fraction) across a day's exercises; intensity defaults to 100% when not
+  recorded. The one "how hard was physio today" number, used for stat tiles and most
+  load-vs-pain charts.
+- **Hold volume** — Σ (sets × hold-duration-or-reps), same as physio load but *without*
+  the intensity weighting — total time-under-tension/reps regardless of how heavy it was.
+  Shown next to physio load on the Progression chart specifically because the two can move
+  in opposite directions (e.g. longer holds at lower intensity raise one, lower the
+  other).
+- **Intensity range** — the min–max % load band recorded for a day's exercises (a single
+  value if only one bound was entered).
+- **Next-morning / next-daytime / next-night pain** — a day's pain reading looked up for
+  the *following* calendar date — tendon symptoms lag load by roughly 24h.
+- **Next-day peak pain** / **next-day average pain** — the peak/average (above) of the
+  *following* day, paired against today's steps/physio load in the wider lag scatters.
+- **Pain candle (OHLC)** — a day's pain as open (morning) / high (peak) / low (low) /
+  close (night), plus a derived trend: improved (close < open), worsened (close > open),
+  or unchanged.
+- **Flare day** — true when any single reading that day is ≥ the flare threshold (default
+  3/10, adjustable per account in Account → Preferences).
+- **Days since last flare** — calendar days between today and the most recent flare day;
+  null if none has ever been logged.
+- **Pearson correlation coefficient (r)** — how tightly two paired series move together,
+  −1..+1; null with fewer than 3 pairs or a constant series. Bucketed into
+  negligible/weak/moderate/strong by |r| at 0.2, 0.4, 0.7.
+- **Window stats** — days logged, avg pain, avg steps, total physio load, avg sleep over
+  an arbitrary span of days — the basis for both the stat tiles (7-day window) and the
+  Weekly report card (one calendar week per row).
+- **Week-over-week pain delta** — this week's avg pain minus last week's, shown on the
+  Weekly report card.

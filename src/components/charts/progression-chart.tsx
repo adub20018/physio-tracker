@@ -20,7 +20,6 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
-import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -91,7 +90,6 @@ export function ProgressionChart({
             style={{ background: SERIES.rollingAvg, opacity: 0.35 }}
           />
           Intensity range (% load)
-          <InfoTooltip text="The lightest and heaviest load used that day, as a % of bodyweight/resistance — e.g. a session at 20–25% shows as a band from 20 to 25." />
         </span>
         <span className={styles.legendItem}>
           <span
@@ -106,7 +104,6 @@ export function ProgressionChart({
             style={{ background: SERIES.holdVolume }}
           />
           Hold volume (sets×sec)
-          <InfoTooltip text="Raw work performed: sets × hold time (or reps), summed across exercises. Unlike Physio load, this ignores intensity % — a heavier set and a lighter set of the same length count the same." />
         </span>
         <span className={styles.legendItem}>
           <span
@@ -114,7 +111,6 @@ export function ProgressionChart({
             style={{ background: SERIES.load }}
           />
           Physio load
-          <InfoTooltip text="Sets × hold time × average intensity %. The same metric as the dashboard tile and Load vs symptoms. Weighted by intensity — can move opposite to Hold volume, e.g. longer holds at lower intensity raise Hold volume while Physio load falls." />
         </span>
       </div>
 

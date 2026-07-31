@@ -115,10 +115,15 @@ export function InsightsCharts({
       </div>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>
-          Steps vs next-morning pain
-          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
-        </h2>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Steps vs next-morning pain</h2>
+          <InfoTooltip
+            text="Data is lagged (day-over-day) so the steps are compared to the next morning's pain"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         {stepsLine && <p className={styles.cardSubtitle}>{stepsLine}</p>}
         <LagScatter
           points={stepsPoints}
@@ -129,10 +134,15 @@ export function InsightsCharts({
       </section>
 
       <section className={styles.card}>
-        <h2 className={styles.cardTitle}>
-          Physio load vs next-morning pain
-          <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
-        </h2>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Physio load vs next-morning pain</h2>
+          <InfoTooltip
+            text="Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
         {volumeLine && <p className={styles.cardSubtitle}>{volumeLine}</p>}
         <LagScatter
           points={volumePoints}
@@ -144,12 +154,9 @@ export function InsightsCharts({
 
       <section className={styles.card}>
         <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>
-            Sleep vs pain, all day
-            <InfoTooltip text={PEARSON_R_HINT} label="What does r mean?" />
-          </h2>
+          <h2 className={styles.cardTitle}>Sleep vs pain, all day</h2>
           <InfoTooltip
-            text="Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one."
+            text="Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one"
             label="What does this chart show?"
           >
             <Info size={14} />

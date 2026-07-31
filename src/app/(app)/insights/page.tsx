@@ -197,7 +197,7 @@ export default async function InsightsPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Flare review</h2>
           <InfoTooltip
-            text={`Every day a reading hit ${flareThreshold}/10, with the ${FLARE_LOOKBACK_DAYS} days leading up to it.`}
+            text={`Every day a reading hit ${flareThreshold}/10, with the ${FLARE_LOOKBACK_DAYS} days leading up to it`}
             label="What does this show?"
           >
             <Info size={14} />
@@ -210,7 +210,7 @@ export default async function InsightsPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Weekly report card</h2>
           <InfoTooltip
-            text="Averages per calendar week, newest first — click Week to flip the order."
+            text="Averages per calendar week, newest first — click Week to flip the order"
             label="What does this show?"
           >
             <Info size={14} />

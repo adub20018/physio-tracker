@@ -93,9 +93,7 @@ export function DashboardCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Pain over time</h2>
           <InfoTooltip
-            text={
-              'Raw readings with the 7-day trend — the line that answers "am I actually progressing?"'
-            }
+            text='Raw readings with the 7-day trend — the line that answers "am I actually progressing?"'
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -108,7 +106,7 @@ export function DashboardCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Load vs next-day pain</h2>
           <InfoTooltip
-            text="What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week."
+            text="What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week"
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -121,20 +119,23 @@ export function DashboardCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Sleep &amp; pain over time</h2>
           <InfoTooltip
-            text="Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings."
+            text="Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings"
             label="What does this chart show?"
           >
             <Info size={14} />
           </InfoTooltip>
         </div>
-        <SleepPainTimeline data={sleepTimelineData} autoScaleYAxis={autoScaleYAxis} />
+        <SleepPainTimeline
+          data={sleepTimelineData}
+          autoScaleYAxis={autoScaleYAxis}
+        />
       </section>
 
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Physio progression</h2>
           <InfoTooltip
-            text="Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one."
+            text="Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one"
             label="What does this chart show?"
           >
             <Info size={14} />

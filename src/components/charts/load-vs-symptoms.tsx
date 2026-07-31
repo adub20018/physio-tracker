@@ -18,7 +18,6 @@ import {
   YAxis,
 } from "recharts";
 import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
-import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -99,7 +98,6 @@ export function LoadVsSymptoms({
             style={{ background: SERIES.load }}
           />
           Physio load
-          <InfoTooltip text="Sets × hold time × average intensity %, for that day. Weighted by intensity — different from Hold volume in Physio progression, which is raw sets × seconds with no intensity factored in." />
         </span>
         <span className={styles.legendItem}>
           <span

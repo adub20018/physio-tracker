@@ -67,7 +67,7 @@ export function WeeklyReportTable({
                 <DataTable.THeadCell>Avg steps</DataTable.THeadCell>
                 <DataTable.THeadCell>
                   Physio load
-                  <InfoTooltip text="Sum of sets × hold time × average intensity %, added up over the week. Weighted by intensity — unlike Hold volume in Physio progression, which is raw sets × seconds." />
+                  <InfoTooltip text="Sum of sets × hold time × average intensity %, added up over the week. Weighted by intensity — unlike Hold volume in Physio progression, which is raw sets × seconds" />
                 </DataTable.THeadCell>
                 <DataTable.THeadCell>Flares</DataTable.THeadCell>
               </DataTable.THeadRow>

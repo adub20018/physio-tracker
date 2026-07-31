@@ -290,7 +290,7 @@ export default async function DashboardPage() {
                 : null
             }
             deltaLabel={statDeltaLabel}
-            hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}.`}
+            hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}`}
             icon={<BoneFracture size={16} />}
             accentColor={SERIES.pain}
             sparklineValues={painSparkline}
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
                 : null
             }
             deltaLabel={statDeltaLabel}
-            hint={`Average of each day's daily steps, ${statRangePhrase}.`}
+            hint={`Average of each day's daily steps, ${statRangePhrase}`}
             icon={<Footprints size={16} />}
             accentColor={SERIES.steps}
             sparklineValues={stepsSparkline}
@@ -328,7 +328,7 @@ export default async function DashboardPage() {
                 : null
             }
             deltaLabel={statDeltaLabel}
-            hint={`Average of each night's sleep, ${statRangePhrase}.`}
+            hint={`Average of each night's sleep, ${statRangePhrase}`}
             icon={<BedDouble size={16} />}
             accentColor={SERIES.sleep}
             sparklineValues={sleepSparkline}
@@ -361,7 +361,7 @@ export default async function DashboardPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Calendar</h2>
           <InfoTooltip
-            text="Average pain per day, at a glance."
+            text="Average pain per day, at a glance"
             label="What does this chart show?"
           >
             <Info size={14} />

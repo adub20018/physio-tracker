@@ -117,57 +117,66 @@ export default async function LogOverviewPage({
       // summary: physioSummary(existing),
       summary: (
         <div className={styles.summaryContainer} id={styles.exerciseSummary}>
-          {existing?.exercises.map((exercise) => {
-            // Displays exercise intensity correctly for all cases (if intensityMin is empty, if intensityMax is empty, both empty, or both full)
-            let exerciseIntensity = ``;
+          {existing?.exercises.length ? (
+            existing?.exercises.map((exercise) => {
+              // Displays exercise intensity correctly for all cases (if intensityMin is empty, if intensityMax is empty, both empty, or both full)
+              let exerciseIntensity = ``;
 
-            // Only display intensityMin (if intensityMax does not exist or is not larger than intensityMin)
-            if (
-              exercise.intensityMin != null &&
-              (exercise.intensityMax == null ||
-                exercise.intensityMax <= exercise.intensityMin)
-            ) {
-              exerciseIntensity = `${exercise.intensityMin}`;
-            }
-            // Display intensityMin - intensityMax (if both are valid, and intensityMax is larger than intensityMin)
-            else if (
-              exercise.intensityMin != null &&
-              exercise.intensityMax != null &&
-              exercise.intensityMax > exercise.intensityMin
-            ) {
-              exerciseIntensity = `${exercise.intensityMin}–${exercise.intensityMax}`;
-            }
-            // Display only intensityMax if intensityMin is missing
-            else if (
-              exercise.intensityMin == null &&
-              exercise.intensityMax != null
-            ) {
-              exerciseIntensity = `${exercise.intensityMax}`;
-            }
-            return (
-              <div key={exercise.id} className={styles.exerciseContainer}>
-                <span className={styles.summaryText} id={styles.exerciseTitle}>
-                  <SportShoe size={14} />
-                  {exercise.exerciseName}
-                </span>
-                <div className={styles.exerciseStats}>
-                  <span className={styles.summaryText}>
-                    <Repeat2 size={14} />
-                    {exercise.sets}×{exercise.durationOrReps}
+              // Only display intensityMin (if intensityMax does not exist or is not larger than intensityMin)
+              if (
+                exercise.intensityMin != null &&
+                (exercise.intensityMax == null ||
+                  exercise.intensityMax <= exercise.intensityMin)
+              ) {
+                exerciseIntensity = `${exercise.intensityMin}`;
+              }
+              // Display intensityMin - intensityMax (if both are valid, and intensityMax is larger than intensityMin)
+              else if (
+                exercise.intensityMin != null &&
+                exercise.intensityMax != null &&
+                exercise.intensityMax > exercise.intensityMin
+              ) {
+                exerciseIntensity = `${exercise.intensityMin}–${exercise.intensityMax}`;
+              }
+              // Display only intensityMax if intensityMin is missing
+              else if (
+                exercise.intensityMin == null &&
+                exercise.intensityMax != null
+              ) {
+                exerciseIntensity = `${exercise.intensityMax}`;
+              }
+              return (
+                <div key={exercise.id} className={styles.exerciseContainer}>
+                  <span
+                    className={styles.summaryText}
+                    id={styles.exerciseTitle}
+                  >
+                    <SportShoe size={14} />
+                    {exercise.exerciseName}
                   </span>
-
-                  {exerciseIntensity ? (
+                  <div className={styles.exerciseStats}>
                     <span className={styles.summaryText}>
-                      <Activity size={14} />
-                      {exerciseIntensity}%
+                      <Repeat2 size={14} />
+                      {exercise.sets}×{exercise.durationOrReps}
                     </span>
-                  ) : (
-                    ""
-                  )}
+
+                    {exerciseIntensity ? (
+                      <span className={styles.summaryText}>
+                        <Activity size={14} />
+                        {exerciseIntensity}%
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <span className={styles.summaryText}>
+              <SportShoe size={14} /> —
+            </span>
+          )}
         </div>
       ),
       progress: physioProgress(existing),

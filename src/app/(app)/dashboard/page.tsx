@@ -359,7 +359,7 @@ export default async function DashboardPage() {
 
       <section className={styles.card}>
         <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Calendar</h2>
+          <h2 className={styles.cardTitle}>Calendar / Pain Heatmap</h2>
           <InfoTooltip
             text="Average pain per day, at a glance"
             label="What does this chart show?"

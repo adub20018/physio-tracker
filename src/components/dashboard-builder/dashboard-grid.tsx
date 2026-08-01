@@ -258,9 +258,24 @@ export function DashboardGrid({
         </Message.Root>
       )}
 
-      {!isDesktop ? (
-        <div className={styles.mobileStack}>
-          {sorted.map((widget, index) => (
+      {/* The measured container is rendered unconditionally, even on
+          mobile where there's no grid inside it. useContainerWidth's effect
+          bails out if its ref isn't attached yet and only re-runs when
+          `measureWidth` changes identity — so if this div first appeared
+          later (when isDesktop flipped true), nothing would ever measure it
+          and `mounted` would stay false forever, leaving the grid branch
+          rendering nothing at all. */}
+      <div
+        ref={containerRef}
+        className={
+          isDesktop && isEditing
+            ? `${styles.gridContainer} ${styles.editing}`
+            : styles.gridContainer
+        }
+      >
+        {!isDesktop ? (
+          <div className={styles.mobileStack}>
+            {sorted.map((widget, index) => (
             <div key={widget.id} className={styles.mobileItem}>
               {isEditing && (
                 <div className={styles.mobileMoveControls}>
@@ -302,16 +317,8 @@ export function DashboardGrid({
             </div>
           ))}
         </div>
-      ) : (
-        <div
-          ref={containerRef}
-          className={
-            isEditing
-              ? `${styles.gridContainer} ${styles.editing}`
-              : styles.gridContainer
-          }
-        >
-          {mounted && (
+        ) : (
+          mounted && (
             <ReactGridLayout
               layout={layout}
               width={width}
@@ -338,9 +345,9 @@ export function DashboardGrid({
                 </div>
               ))}
             </ReactGridLayout>
-          )}
-        </div>
-      )}
+          )
+        )}
+      </div>
 
       <AddWidgetDialog
         open={addOpen}

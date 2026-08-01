@@ -242,7 +242,6 @@ export function LogDatePicker({
             className={styles.dateStepButton}
             iconOnly
             variant="outlined"
-            rounded
             severity="secondary"
             size="small"
             aria-label="Previous day"
@@ -250,12 +249,17 @@ export function LogDatePicker({
           >
             <ChevronLeft size={16} />
           </Button>
-          <DatePicker.Input as={InputText} id="log-date" readOnly />
+          <DatePicker.Input
+            as={InputText}
+            className={styles.datePickerInput}
+            variant="outlined"
+            id="log-date"
+            readOnly
+          />
           <Button
             className={styles.dateStepButton}
             iconOnly
             variant="outlined"
-            rounded
             severity="secondary"
             size="small"
             aria-label="Next day"
@@ -265,13 +269,11 @@ export function LogDatePicker({
           </Button>
         </div>
         <DatePicker.Trigger
-          className={styles.dateStepButton}
+          className={styles.datePickerButton}
           as={Button}
           iconOnly
           variant="outlined"
-          rounded
           severity="secondary"
-          size="small"
           aria-label="Open calendar"
         >
           <Calendar size={16} />

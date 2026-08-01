@@ -12,8 +12,10 @@ import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
-import { nextMorningPain } from "@/domain/lag";
+import { nextMorningPain, nextDayValue } from "@/domain/lag";
 import { dailyPhysioLoad } from "@/domain/load";
+import { dailyPainAverage, dailyPainPeak } from "@/domain/aggregate";
+import { dailyPainCandles } from "@/domain/candle";
 import { flareEpisodes } from "@/domain/flare";
 import { weeklyReport } from "@/domain/weekly";
 import { pairSeries } from "@/domain/correlation";
@@ -87,6 +89,40 @@ export default async function InsightsPage() {
     labels,
     dates,
   );
+
+  // ── Steps/physio load vs the next day's PEAK and AVERAGE pain, not just
+  // its morning reading — the worst moment reached that day, and its
+  // overall level, each a different lens on the same lagged relationship.
+  const nextDayLabels = days.map((d) => `${d.date} → next day`);
+  const nextPeakPain = nextDayValue(days, dailyPainPeak);
+  const nextAveragePain = nextDayValue(days, dailyPainAverage);
+  const fullStepsVsPeakPoints = pairSeries(
+    days.map((d) => d.steps),
+    nextPeakPain,
+    nextDayLabels,
+    dates,
+  );
+  const fullStepsVsAveragePoints = pairSeries(
+    days.map((d) => d.steps),
+    nextAveragePain,
+    nextDayLabels,
+    dates,
+  );
+  const fullVolumeVsPeakPoints = pairSeries(
+    days.map((d) => dailyPhysioLoad(d)),
+    nextPeakPain,
+    nextDayLabels,
+    dates,
+  );
+  const fullVolumeVsAveragePoints = pairSeries(
+    days.map((d) => dailyPhysioLoad(d)),
+    nextAveragePain,
+    nextDayLabels,
+    dates,
+  );
+
+  // ── Morning-to-day pain candlestick, full history ──────────────────────
+  const fullPainCandles = dailyPainCandles(days);
 
   // ── Sleep vs pain, all three readings: SAME day, not lagged ────────────
   // Sleep hours logged on a date are the hours slept the night before
@@ -186,6 +222,11 @@ export default async function InsightsPage() {
       <InsightsCharts
         fullStepsPoints={fullStepsPoints}
         fullVolumePoints={fullVolumePoints}
+        fullStepsVsPeakPoints={fullStepsVsPeakPoints}
+        fullStepsVsAveragePoints={fullStepsVsAveragePoints}
+        fullVolumeVsPeakPoints={fullVolumeVsPeakPoints}
+        fullVolumeVsAveragePoints={fullVolumeVsAveragePoints}
+        fullPainCandles={fullPainCandles}
         fullSleepVsMorning={fullSleepVsMorning}
         fullSleepVsDaytime={fullSleepVsDaytime}
         fullSleepVsNight={fullSleepVsNight}

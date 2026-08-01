@@ -87,14 +87,14 @@ export function ProgressionChart({
         <span className={styles.legendItem}>
           <span
             className={styles.legendSwatch}
-            style={{ background: SERIES.rollingAvg, opacity: 0.35 }}
+            style={{ background: SERIES.intensity, opacity: 0.35 }}
           />
           Intensity range (% load)
         </span>
         <span className={styles.legendItem}>
           <span
             className={styles.legendLine}
-            style={{ background: SERIES.rollingAvg }}
+            style={{ background: SERIES.intensity }}
           />
           Midpoint
         </span>

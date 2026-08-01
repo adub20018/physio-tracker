@@ -21,7 +21,7 @@ export const DEFAULT_DASHBOARD_WIDGETS: NewDashboardWidgetInput[] = [
   { widgetType: "stat-sleep", x: 6, y: 0, w: 3, h: TILE_H },
   { widgetType: "stat-physio-load", x: 9, y: 0, w: 3, h: TILE_H },
   { widgetType: "chart-pain-timeline", x: 0, y: 7, w: 12, h: CHART_H },
-  { widgetType: "chart-load-vs-symptoms", x: 0, y: 25, w: 12, h: CHART_H },
-  { widgetType: "chart-progression", x: 0, y: 43, w: 12, h: CHART_H },
-  { widgetType: "chart-heatmap", x: 0, y: 61, w: 12, h: CHART_H },
+  { widgetType: "chart-load-vs-symptoms", x: 0, y: 25, w: 12, h: 28 },
+  { widgetType: "chart-progression", x: 0, y: 43, w: 12, h: 28 },
+  { widgetType: "chart-heatmap", x: 0, y: 61, w: 12, h: 12 },
 ];

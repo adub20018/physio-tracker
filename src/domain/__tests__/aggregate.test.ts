@@ -2,6 +2,8 @@
 import { describe, expect, it } from "vitest";
 import {
   dailyPainAverage,
+  dailyPainMin,
+  dailyPainPeak,
   filterWindow,
   lastNDaysSeries,
   windowComparison,
@@ -36,6 +38,42 @@ describe("dailyPainAverage", () => {
         painDaytime: null,
         painNight: null,
       }),
+    ).toBeNull();
+  });
+});
+
+describe("dailyPainPeak", () => {
+  it("takes the highest recorded reading", () => {
+    expect(
+      dailyPainPeak({ painMorning: 2, painDaytime: 6, painNight: 4 }),
+    ).toBe(6);
+  });
+  it("ignores missing readings rather than treating them as 0", () => {
+    expect(
+      dailyPainPeak({ painMorning: null, painDaytime: 3, painNight: null }),
+    ).toBe(3);
+  });
+  it("is null when nothing was recorded", () => {
+    expect(
+      dailyPainPeak({ painMorning: null, painDaytime: null, painNight: null }),
+    ).toBeNull();
+  });
+});
+
+describe("dailyPainMin", () => {
+  it("takes the lowest recorded reading", () => {
+    expect(
+      dailyPainMin({ painMorning: 2, painDaytime: 6, painNight: 4 }),
+    ).toBe(2);
+  });
+  it("ignores missing readings rather than treating them as 0", () => {
+    expect(
+      dailyPainMin({ painMorning: null, painDaytime: 3, painNight: null }),
+    ).toBe(3);
+  });
+  it("is null when nothing was recorded", () => {
+    expect(
+      dailyPainMin({ painMorning: null, painDaytime: null, painNight: null }),
     ).toBeNull();
   });
 });

@@ -1,6 +1,12 @@
 // Tests for lagged series helpers.
 import { describe, expect, it } from "vitest";
-import { addDays, nextDaytimePain, nextMorningPain, nextNightPain } from "../lag";
+import {
+  addDays,
+  nextDaytimePain,
+  nextDayValue,
+  nextMorningPain,
+  nextNightPain,
+} from "../lag";
 import type { DomainDay } from "../types";
 
 function day(
@@ -58,5 +64,26 @@ describe("nextNightPain", () => {
       day("2026-07-03", 7, 8, 9),
     ];
     expect(nextNightPain(days)).toEqual([6, 9, null]);
+  });
+});
+
+describe("nextDayValue", () => {
+  it("applies an arbitrary picker to the following day", () => {
+    const days = [
+      day("2026-07-01", 1, 2, 3),
+      day("2026-07-02", 4, 5, 6),
+      day("2026-07-03", 7, 8, 9),
+    ];
+    // Picker derives a value rather than reading a raw field, matching how
+    // callers pair with e.g. aggregate.ts's dailyPainPeak/dailyPainAverage.
+    const nextMaxReading = nextDayValue(days, (d) =>
+      Math.max(d.painMorning ?? -Infinity, d.painDaytime ?? -Infinity, d.painNight ?? -Infinity),
+    );
+    expect(nextMaxReading).toEqual([6, 9, null]);
+  });
+
+  it("is null when the picker itself returns null for the next day", () => {
+    const days = [day("2026-07-01", 1), day("2026-07-02", null)];
+    expect(nextDayValue(days, (d) => d.painMorning)).toEqual([null, null]);
   });
 });

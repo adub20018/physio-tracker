@@ -22,15 +22,14 @@ import {
   MultiScatter,
   type ScatterSeries,
 } from "@/components/charts/scatter/multi-scatter";
+import { PainCandleChart } from "@/components/charts/pain-candle-chart";
+import type { PainCandle } from "@/domain/candle";
 import { SERIES } from "@/components/charts/chart-theme";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 const RANGE_STORAGE_KEY = "physimate:insights-range";
-
-const PEARSON_R_HINT =
-  "Pearson correlation coefficient: how tightly two things move together, from -1 (as one goes up the other reliably goes down) to +1 (both reliably rise together). 0 means no relationship. “Weak/moderate/strong” bucket |r| at 0.2, 0.4, and 0.7. With only a few dozen days, treat this as a hint worth watching, not a proven cause.";
 
 // Header line for one scatter: "r = −0.21 · weak · 41 days". Returns null
 // for zero points — the chart's own EmptyState already explains that case
@@ -46,6 +45,11 @@ function correlationLine(points: PairedPoint[]): string | null {
 export function InsightsCharts({
   fullStepsPoints,
   fullVolumePoints,
+  fullStepsVsPeakPoints,
+  fullStepsVsAveragePoints,
+  fullVolumeVsPeakPoints,
+  fullVolumeVsAveragePoints,
+  fullPainCandles,
   fullSleepVsMorning,
   fullSleepVsDaytime,
   fullSleepVsNight,
@@ -54,6 +58,11 @@ export function InsightsCharts({
 }: {
   fullStepsPoints: PairedPoint[];
   fullVolumePoints: PairedPoint[];
+  fullStepsVsPeakPoints: PairedPoint[];
+  fullStepsVsAveragePoints: PairedPoint[];
+  fullVolumeVsPeakPoints: PairedPoint[];
+  fullVolumeVsAveragePoints: PairedPoint[];
+  fullPainCandles: PainCandle[];
   fullSleepVsMorning: PairedPoint[];
   fullSleepVsDaytime: PairedPoint[];
   fullSleepVsNight: PairedPoint[];
@@ -73,6 +82,26 @@ export function InsightsCharts({
     () => filterWindow(fullVolumePoints, today, rangeDays),
     [fullVolumePoints, today, rangeDays],
   );
+  const stepsVsPeakPoints = useMemo(
+    () => filterWindow(fullStepsVsPeakPoints, today, rangeDays),
+    [fullStepsVsPeakPoints, today, rangeDays],
+  );
+  const stepsVsAveragePoints = useMemo(
+    () => filterWindow(fullStepsVsAveragePoints, today, rangeDays),
+    [fullStepsVsAveragePoints, today, rangeDays],
+  );
+  const volumeVsPeakPoints = useMemo(
+    () => filterWindow(fullVolumeVsPeakPoints, today, rangeDays),
+    [fullVolumeVsPeakPoints, today, rangeDays],
+  );
+  const volumeVsAveragePoints = useMemo(
+    () => filterWindow(fullVolumeVsAveragePoints, today, rangeDays),
+    [fullVolumeVsAveragePoints, today, rangeDays],
+  );
+  const painCandles = useMemo(
+    () => filterWindow(fullPainCandles, today, rangeDays),
+    [fullPainCandles, today, rangeDays],
+  );
   const sleepVsMorning = useMemo(
     () => filterWindow(fullSleepVsMorning, today, rangeDays),
     [fullSleepVsMorning, today, rangeDays],
@@ -88,6 +117,10 @@ export function InsightsCharts({
 
   const stepsLine = correlationLine(stepsPoints);
   const volumeLine = correlationLine(volumePoints);
+  const stepsVsPeakLine = correlationLine(stepsVsPeakPoints);
+  const stepsVsAverageLine = correlationLine(stepsVsAveragePoints);
+  const volumeVsPeakLine = correlationLine(volumeVsPeakPoints);
+  const volumeVsAverageLine = correlationLine(volumeVsAveragePoints);
   const sleepVsMorningLine = correlationLine(sleepVsMorning);
   const sleepVsDaytimeLine = correlationLine(sleepVsDaytime);
   const sleepVsNightLine = correlationLine(sleepVsNight);
@@ -135,6 +168,48 @@ export function InsightsCharts({
 
       <section className={styles.card}>
         <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Steps vs peak next-day pain</h2>
+          <InfoTooltip
+            text="Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
+        {stepsVsPeakLine && (
+          <p className={styles.cardSubtitle}>{stepsVsPeakLine}</p>
+        )}
+        <LagScatter
+          points={stepsVsPeakPoints}
+          xLabel="Steps"
+          yLabel="Peak next-day pain"
+          autoScaleYAxis={autoScaleYAxis}
+        />
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Steps vs average next-day pain</h2>
+          <InfoTooltip
+            text="Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
+        {stepsVsAverageLine && (
+          <p className={styles.cardSubtitle}>{stepsVsAverageLine}</p>
+        )}
+        <LagScatter
+          points={stepsVsAveragePoints}
+          xLabel="Steps"
+          yLabel="Average next-day pain"
+          autoScaleYAxis={autoScaleYAxis}
+        />
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Physio load vs next-morning pain</h2>
           <InfoTooltip
             text="Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain"
@@ -150,6 +225,65 @@ export function InsightsCharts({
           yLabel="Next-morning pain"
           autoScaleYAxis={autoScaleYAxis}
         />
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
+            Physio load vs peak next-day pain
+          </h2>
+          <InfoTooltip
+            text="Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
+        {volumeVsPeakLine && (
+          <p className={styles.cardSubtitle}>{volumeVsPeakLine}</p>
+        )}
+        <LagScatter
+          points={volumeVsPeakPoints}
+          xLabel="Physio load"
+          yLabel="Peak next-day pain"
+          autoScaleYAxis={autoScaleYAxis}
+        />
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
+            Physio load vs average next-day pain
+          </h2>
+          <InfoTooltip
+            text="Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
+        {volumeVsAverageLine && (
+          <p className={styles.cardSubtitle}>{volumeVsAverageLine}</p>
+        )}
+        <LagScatter
+          points={volumeVsAveragePoints}
+          xLabel="Physio load"
+          yLabel="Average next-day pain"
+          autoScaleYAxis={autoScaleYAxis}
+        />
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Morning-to-day pain</h2>
+          <InfoTooltip
+            text="Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up"
+            label="What does this chart show?"
+          >
+            <Info size={14} />
+          </InfoTooltip>
+        </div>
+        <PainCandleChart data={painCandles} autoScaleYAxis={autoScaleYAxis} />
       </section>
 
       <section className={styles.card}>

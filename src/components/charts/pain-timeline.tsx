@@ -80,18 +80,22 @@ function PainTooltipContent({
 export function PainTimeline({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: PainTimelinePoint[];
   // When true, the Y-axis scales to fit the visible data's own max instead
   // of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel height
+  // used on /insights — see .fill in charts.module.css.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No pain data yet." height={280} />;
+    return <EmptyState message="No pain data yet." height={280} fill={fillHeight} />;
   }
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         {LINES.map((l) => (
           <span key={l.key} className={styles.legendItem}>
@@ -117,7 +121,11 @@ export function PainTimeline({
           Flare (≥3)
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer
+        width="100%"
+        height={fillHeight ? "100%" : 260}
+        className={fillHeight ? styles.fillChart : undefined}
+      >
         <ComposedChart
           data={data}
           margin={{ top: 6, right: 12, bottom: 0, left: -18 }}

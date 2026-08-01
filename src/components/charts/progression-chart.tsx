@@ -47,6 +47,7 @@ const SYNC_ID = "progression";
 export function ProgressionChart({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: ProgressionPoint[];
   // When true, the intensity panel's Y-axis scales to fit the visible
@@ -54,9 +55,19 @@ export function ProgressionChart({
   // Preferences). The hold-volume/physio-load panels below already
   // auto-scale unconditionally.
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel heights
+  // used on /insights — see .fill in charts.module.css. The panels keep
+  // their relative proportions via flexGrow weights matching those heights.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No physio sessions logged yet." height={410} />;
+    return (
+      <EmptyState
+        message="No physio sessions logged yet."
+        height={410}
+        fill={fillHeight}
+      />
+    );
   }
 
   const withRange: RangePoint[] = data.map((d) => {
@@ -82,7 +93,7 @@ export function ProgressionChart({
   });
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -117,12 +128,22 @@ export function ProgressionChart({
       {/* Three panels get a gap (.panelStack) plus an explicit divider
           element (.panelDivider) between them, so one panel's "0" doesn't
           read as touching the panel below it. */}
-      <div className={styles.panelStack}>
+      <div
+        className={
+          fillHeight
+            ? `${styles.panelStack} ${styles.fillPanels}`
+            : styles.panelStack
+        }
+      >
         {/* Panel 1: intensity band */}
         {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
             reserved space below the 0 gridline, and Recharts otherwise drops
             the 0% tick's <text> entirely on panels like this one. */}
-        <ResponsiveContainer width="100%" height={170}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 170}
+          style={fillHeight ? { flex: 170, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
@@ -186,7 +207,11 @@ export function ProgressionChart({
         <div className={styles.panelDivider} />
 
         {/* Panel 2: hold volume */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
@@ -225,7 +250,11 @@ export function ProgressionChart({
         <div className={styles.panelDivider} />
 
         {/* Panel 3: physio load */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}

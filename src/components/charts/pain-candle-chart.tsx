@@ -131,14 +131,18 @@ function CandleTooltip({
 export function PainCandleChart({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: PainCandle[];
   // When true, the Y-axis scales to fit the visible data's own range
   // instead of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel height
+  // used on /insights — see .fill in charts.module.css.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No pain data yet." height={260} />;
+    return <EmptyState message="No pain data yet." height={260} fill={fillHeight} />;
   }
 
   const points: CandlePoint[] = data.map((d) => ({
@@ -147,7 +151,7 @@ export function PainCandleChart({
   }));
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -164,7 +168,11 @@ export function PainCandleChart({
           Worsened (night &gt; morning)
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer
+        width="100%"
+        height={fillHeight ? "100%" : 260}
+        className={fillHeight ? styles.fillChart : undefined}
+      >
         <ComposedChart
           data={points}
           margin={{ top: 8, right: 12, bottom: 4, left: -18 }}

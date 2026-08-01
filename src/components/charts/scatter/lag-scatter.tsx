@@ -23,12 +23,14 @@ import {
 } from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import styles from "../charts.module.css";
 
 export function LagScatter({
   points,
   xLabel,
   yLabel,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   points: PairedPoint[];
   xLabel: string;
@@ -36,13 +38,20 @@ export function LagScatter({
   // When true, the Y-axis scales to fit the visible data's own max instead
   // of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel height
+  // used on /insights — see .fill in charts.module.css.
+  fillHeight?: boolean;
 }) {
   if (points.length === 0) {
-    return <EmptyState message="No data yet." height={240} />;
+    return <EmptyState message="No data yet." height={240} fill={fillHeight} />;
   }
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
+    <ResponsiveContainer
+      width="100%"
+      height={fillHeight ? "100%" : 240}
+      className={fillHeight ? styles.fillChart : undefined}
+    >
       <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
         <CartesianGrid stroke={CHART_CHROME.grid} />
         <XAxis

@@ -58,11 +58,20 @@ export function WidgetShell({
   onRemove?: () => void;
 }) {
   const content = definition.render(bundle, ctx);
+  const fill = ctx.fillHeight;
 
   if (definition.bare) {
-    if (!editMode) return content;
+    if (!editMode) {
+      return fill ? <div className={styles.fillBare}>{content}</div> : content;
+    }
     return (
-      <div className={styles.bareEditWrapper}>
+      <div
+        className={
+          fill
+            ? `${styles.bareEditWrapper} ${styles.fillBare}`
+            : styles.bareEditWrapper
+        }
+      >
         <div className={styles.bareEditBar}>
           <DragHandle />
           <RemoveButton label={definition.label} onRemove={onRemove} />
@@ -73,7 +82,11 @@ export function WidgetShell({
   }
 
   return (
-    <section className={cardStyles.card}>
+    <section
+      className={
+        fill ? `${cardStyles.card} ${styles.fillCard}` : cardStyles.card
+      }
+    >
       <div className={cardStyles.cardHeader}>
         <h2 className={cardStyles.cardTitle}>{definition.label}</h2>
         <div className={styles.headerActions}>
@@ -90,7 +103,7 @@ export function WidgetShell({
           )}
         </div>
       </div>
-      {content}
+      {fill ? <div className={styles.fillBody}>{content}</div> : content}
     </section>
   );
 }

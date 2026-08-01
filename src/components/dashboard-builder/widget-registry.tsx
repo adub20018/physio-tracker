@@ -63,6 +63,21 @@ export type WidgetRenderContext = {
   // Account → Preferences: fit each chart's Y-axis to the visible data
   // instead of a fixed range.
   autoScaleYAxis: boolean;
+  // True on the desktop grid, where the widget's cell has a real height the
+  // user can drag — the chart then fills that height instead of rendering
+  // at its fixed pixel size. False in the mobile stack, which has no
+  // definite height to fill (a chart there would collapse to nothing).
+  fillHeight: boolean;
+};
+
+// Grid-unit size bounds for one widget type, in the same 12-column /
+// 20px-row units as x/y/w/h. Enforced by react-grid-layout during resize,
+// so a widget can't be dragged into a size where it stops being readable.
+export type WidgetSizeBounds = {
+  minW: number;
+  maxW?: number;
+  minH: number;
+  maxH?: number;
 };
 
 export type WidgetDefinition = {
@@ -70,6 +85,7 @@ export type WidgetDefinition = {
   label: string;
   category: WidgetCategory;
   defaultSize: { w: number; h: number };
+  bounds: WidgetSizeBounds;
   // True for widgets that are already a complete, self-styled unit (stat
   // tiles) — the widget shell skips its own .card/.cardHeader wrapper for
   // these, since double-framing would look wrong.
@@ -80,31 +96,49 @@ export type WidgetDefinition = {
   render: (bundle: ChartDataBundle, ctx: WidgetRenderContext) => React.ReactNode;
 };
 
+// A stat tile is a fixed-height unit: it's one line of type over a small
+// sparkline, so there's nothing to gain from making it taller and it breaks
+// if made shorter. minH === maxH locks its height while leaving width free
+// between a quarter and a half of the grid.
+const STAT_TILE_BOUNDS: WidgetSizeBounds = {
+  minW: 2,
+  maxW: 6,
+  minH: 5,
+  maxH: 5,
+};
+
+// Charts need real room for axes and tick labels before they stop being
+// readable; below roughly a quarter-width and ~170px tall they're just
+// noise. No maximum — a chart can be as large as the user wants.
+const CHART_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 6 };
+
+// The heatmap is a fixed-cell-size grid (14px squares), so it doesn't gain
+// anything from extra height the way a plotted chart does.
+const HEATMAP_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 5 };
+
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
 // widget: owns one widget's independent persisted range selection, filters
 // its full-history data down to that range, and renders the picker above
 // whatever the caller passes as children. `renderCaption` is optional
 // (scatter widgets show a correlation line; the 4 dashboard charts don't).
 function RangedChart<T extends { date: string }>({
-  widgetId,
-  today,
+  ctx,
   fullData,
   renderCaption,
   renderChart,
 }: {
-  widgetId: string;
-  today: string;
+  ctx: WidgetRenderContext;
   fullData: T[];
   renderCaption?: (data: T[]) => React.ReactNode;
   renderChart: (data: T[]) => React.ReactNode;
 }) {
   const [range, setRange] = usePersistedTimeRange(
-    `physimate:widget-range:${widgetId}`,
+    `physimate:widget-range:${ctx.widgetId}`,
   );
   const rangeDays = daysForRange(range);
   const data = useMemo(
-    () => filterWindow(fullData, today, rangeDays),
-    [fullData, today, rangeDays],
+    () => filterWindow(fullData, ctx.today, rangeDays),
+    [fullData, ctx.today, rangeDays],
   );
   return (
     <>
@@ -186,6 +220,7 @@ function SleepVsPainWidget({
         xLabel="Sleep (hours)"
         yLabel="Pain"
         autoScaleYAxis={ctx.autoScaleYAxis}
+        fillHeight={ctx.fillHeight}
       />
     </>
   );
@@ -200,6 +235,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Avg pain (7D)",
     category: "Stat tiles",
     defaultSize: { w: 3, h: 5 },
+    bounds: STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -231,6 +267,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Avg daily steps (7D)",
     category: "Stat tiles",
     defaultSize: { w: 3, h: 5 },
+    bounds: STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -268,6 +305,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Avg sleep (7D)",
     category: "Stat tiles",
     defaultSize: { w: 3, h: 5 },
+    bounds: STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -298,6 +336,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio load (7D)",
     category: "Stat tiles",
     defaultSize: { w: 3, h: 5 },
+    bounds: STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -338,14 +377,18 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Pain over time",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: 'Raw readings with the 7-day trend — the line that answers "am I actually progressing?"',
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullTimeline}
         renderChart={(data) => (
-          <PainTimeline data={data} autoScaleYAxis={ctx.autoScaleYAxis} />
+          <PainTimeline
+            data={data}
+            autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+          />
         )}
       />
     ),
@@ -355,14 +398,18 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Load vs next-day pain",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullLoad}
         renderChart={(data) => (
-          <LoadVsSymptoms data={data} autoScaleYAxis={ctx.autoScaleYAxis} />
+          <LoadVsSymptoms
+            data={data}
+            autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+          />
         )}
       />
     ),
@@ -372,14 +419,18 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Sleep & pain over time",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullSleepTimelineData}
         renderChart={(data) => (
-          <SleepPainTimeline data={data} autoScaleYAxis={ctx.autoScaleYAxis} />
+          <SleepPainTimeline
+            data={data}
+            autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+          />
         )}
       />
     ),
@@ -389,14 +440,18 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio progression",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullProgression}
         renderChart={(data) => (
-          <ProgressionChart data={data} autoScaleYAxis={ctx.autoScaleYAxis} />
+          <ProgressionChart
+            data={data}
+            autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+          />
         )}
       />
     ),
@@ -406,6 +461,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Calendar / Pain Heatmap",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 10 },
+    bounds: HEATMAP_BOUNDS,
     hint: "Average pain per day, at a glance",
     // Deliberately ignores the selected time range, same as today — a
     // heatmap narrowed to "7D" would just be seven squares.
@@ -418,11 +474,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Steps vs next-morning pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Data is lagged (day-over-day) so the steps are compared to the next morning's pain",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullStepsPoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -431,6 +487,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Steps"
             yLabel="Next-morning pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -441,11 +498,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Steps vs peak next-day pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullStepsVsPeakPoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -454,6 +511,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Steps"
             yLabel="Peak next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -464,11 +522,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Steps vs average next-day pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullStepsVsAveragePoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -477,6 +535,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Steps"
             yLabel="Average next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -487,11 +546,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio load vs next-morning pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullVolumePoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -500,6 +559,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Physio load"
             yLabel="Next-morning pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -510,11 +570,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio load vs peak next-day pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullVolumeVsPeakPoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -523,6 +583,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Physio load"
             yLabel="Peak next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -533,11 +594,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio load vs average next-day pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullVolumeVsAveragePoints}
         renderCaption={(data) => <ScatterCaption points={data} />}
         renderChart={(data) => (
@@ -546,6 +607,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             xLabel="Physio load"
             yLabel="Average next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
           />
         )}
       />
@@ -556,14 +618,18 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Morning-to-day pain",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up",
     render: (bundle, ctx) => (
       <RangedChart
-        widgetId={ctx.widgetId}
-        today={ctx.today}
+        ctx={ctx}
         fullData={bundle.fullPainCandles}
         renderChart={(data) => (
-          <PainCandleChart data={data} autoScaleYAxis={ctx.autoScaleYAxis} />
+          <PainCandleChart
+            data={data}
+            autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+          />
         )}
       />
     ),
@@ -573,6 +639,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Sleep vs pain, all day",
     category: "Insights charts",
     defaultSize: { w: 6, h: 10 },
+    bounds: CHART_BOUNDS,
     hint: "Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one",
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
   },

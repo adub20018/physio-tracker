@@ -70,3 +70,60 @@
 .gridContainer {
   width: 100%;
 }
+
+/* Every grid cell is an absolutely positioned box of an exact pixel height.
+   Its single child (the widget shell) has to fill that box, or the widget
+   keeps its natural height and the cell's height becomes meaningless —
+   which is what made resizing look like it did nothing vertically. */
+.gridContainer :global(.react-grid-item) > * {
+  height: 100%;
+}
+
+/* ── Resize handle ────────────────────────────────────────────────
+   react-grid-layout's own stylesheet draws the handle as a black corner
+   bracket (border-*: 2px solid rgba(0,0,0,0.4)) and react-resizable's adds
+   a black SVG glyph — both invisible against this app's always-dark
+   surfaces, which is why the handle looked missing even though it was
+   there and draggable. These rules replace it with a themed bracket.
+
+   The library also only reveals the handle on :hover. In edit mode that's
+   the wrong default — the whole point of the mode is to show what's
+   adjustable — so it stays visible throughout, and only fades up on hover
+   for emphasis. */
+.gridContainer :global(.react-grid-item) > :global(.react-resizable-handle) {
+  background-image: none;
+  z-index: 3;
+}
+
+.gridContainer
+  :global(.react-grid-item)
+  > :global(.react-resizable-handle)::after {
+  border-right-color: var(--muted);
+  border-bottom-color: var(--muted);
+  /* Slightly bigger than the library's 5px so it reads as a grab target. */
+  width: 8px;
+  height: 8px;
+}
+
+.editing :global(.react-grid-item) > :global(.react-resizable-handle) {
+  opacity: 0.75;
+}
+
+.editing :global(.react-grid-item):hover > :global(.react-resizable-handle) {
+  opacity: 1;
+}
+
+.editing
+  :global(.react-grid-item):hover
+  > :global(.react-resizable-handle)::after {
+  border-right-color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* The drop shadow of the cell being dragged/resized, plus the placeholder
+   showing where it will land — red by default in the library's CSS. */
+.gridContainer :global(.react-grid-item.react-grid-placeholder) {
+  background: var(--accent);
+  border-radius: 12px;
+  opacity: 0.15;
+}

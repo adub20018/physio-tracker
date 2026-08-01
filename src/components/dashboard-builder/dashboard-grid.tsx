@@ -150,13 +150,23 @@ export function DashboardGrid({
     );
   }
 
-  const layout: Layout = known.map((w) => ({
-    i: w.id,
-    x: w.x,
-    y: w.y,
-    w: w.w,
-    h: w.h,
-  }));
+  // Each item carries its widget type's own size bounds, so react-grid-layout
+  // clamps the resize live rather than letting a chart be dragged down to an
+  // unreadable sliver or a fixed-height stat tile be stretched.
+  const layout: Layout = known.map((w) => {
+    const { bounds } = WIDGET_REGISTRY[w.widgetType];
+    return {
+      i: w.id,
+      x: w.x,
+      y: w.y,
+      w: w.w,
+      h: w.h,
+      minW: bounds.minW,
+      maxW: bounds.maxW,
+      minH: bounds.minH,
+      maxH: bounds.maxH,
+    };
+  });
   const sorted = sortForDisplay(known);
 
   return (
@@ -244,7 +254,12 @@ export function DashboardGrid({
                 <WidgetShell
                   definition={WIDGET_REGISTRY[widget.widgetType]}
                   bundle={bundle}
-                  ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
+                  ctx={{
+                    widgetId: widget.id,
+                    today,
+                    autoScaleYAxis,
+                    fillHeight: false,
+                  }}
                   editMode={isEditing}
                   onRemove={() => removeWidget(widget.id)}
                 />
@@ -253,7 +268,14 @@ export function DashboardGrid({
           ))}
         </div>
       ) : (
-        <div ref={containerRef} className={styles.gridContainer}>
+        <div
+          ref={containerRef}
+          className={
+            isEditing
+              ? `${styles.gridContainer} ${styles.editing}`
+              : styles.gridContainer
+          }
+        >
           {mounted && (
             <ReactGridLayout
               layout={layout}
@@ -268,7 +290,12 @@ export function DashboardGrid({
                   <WidgetShell
                     definition={WIDGET_REGISTRY[widget.widgetType]}
                     bundle={bundle}
-                    ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
+                    ctx={{
+                      widgetId: widget.id,
+                      today,
+                      autoScaleYAxis,
+                      fillHeight: true,
+                    }}
                     editMode={isEditing}
                     onRemove={() => removeWidget(widget.id)}
                   />

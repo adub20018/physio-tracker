@@ -6,11 +6,11 @@
 // shared ChartDataBundle instead of page-local variables.
 //
 // Range-dependent widgets (everything except stat tiles and the heatmap)
-// each get their OWN independent time-range selector, keyed by the widget's
-// DB row id — a deliberate change from today's dashboard-charts.tsx/
-// insights-charts.tsx, where one shared picker drives a fixed group of
-// charts. These widgets can now end up on different dashboards entirely,
-// so syncing them no longer makes sense.
+// all read one shared time range, owned by the dashboard and set from its
+// config popover — a dashboard is one view of one period, and charts sitting
+// side by side on different ranges can't be read against each other. Stat
+// tiles stay on their own fixed 7-day window regardless, and the heatmap
+// deliberately always shows full history.
 "use client";
 
 import { useMemo } from "react";
@@ -19,12 +19,10 @@ import { Footprints } from "lucide-react";
 import { BedDouble } from "lucide-react";
 import { WeightTilde } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
-import { daysForRange, TIME_RANGE_HINT_PHRASES } from "@/lib/time-range";
-import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
+import { TIME_RANGE_HINT_PHRASES } from "@/lib/time-range";
 import { pearson, correlationStrength } from "@/domain/correlation";
 import type { PairedPoint } from "@/domain/correlation";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
-import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
 import { PainTimeline } from "@/components/charts/pain-timeline";
 import { LoadVsSymptoms } from "@/components/charts/load-vs-symptoms";
@@ -55,11 +53,14 @@ function fmtDelta(
 export type WidgetCategory = "Stat tiles" | "Dashboard charts" | "Insights charts";
 
 export type WidgetRenderContext = {
-  // The widget's own DB row id — used as the storage key for its
-  // independent time-range selection, so it's stable across re-renders and
-  // saves without colliding with any other widget's choice.
+  // The widget's own DB row id.
   widgetId: string;
   today: string;
+  // How far back the range-dependent widgets look, in days. Owned by the
+  // dashboard (set in its config popover) rather than per widget: one
+  // dashboard is one view of a period, so having each chart on its own
+  // range made them impossible to read against each other.
+  rangeDays: number;
   // Account → Preferences: fit each chart's Y-axis to the visible data
   // instead of a fixed range.
   autoScaleYAxis: boolean;
@@ -132,19 +133,12 @@ function RangedChart<T extends { date: string }>({
   renderCaption?: (data: T[]) => React.ReactNode;
   renderChart: (data: T[]) => React.ReactNode;
 }) {
-  const [range, setRange] = usePersistedTimeRange(
-    `physimate:widget-range:${ctx.widgetId}`,
-  );
-  const rangeDays = daysForRange(range);
   const data = useMemo(
-    () => filterWindow(fullData, ctx.today, rangeDays),
-    [fullData, ctx.today, rangeDays],
+    () => filterWindow(fullData, ctx.today, ctx.rangeDays),
+    [fullData, ctx.today, ctx.rangeDays],
   );
   return (
     <>
-      <div className={styles.rangeControl}>
-        <TimeRangeSelector value={range} onChange={setRange} />
-      </div>
       {renderCaption?.(data)}
       {renderChart(data)}
     </>
@@ -175,21 +169,17 @@ function SleepVsPainWidget({
   bundle: ChartDataBundle;
   ctx: WidgetRenderContext;
 }) {
-  const [range, setRange] = usePersistedTimeRange(
-    `physimate:widget-range:${ctx.widgetId}`,
-  );
-  const rangeDays = daysForRange(range);
   const morning = useMemo(
-    () => filterWindow(bundle.fullSleepVsMorning, ctx.today, rangeDays),
-    [bundle.fullSleepVsMorning, ctx.today, rangeDays],
+    () => filterWindow(bundle.fullSleepVsMorning, ctx.today, ctx.rangeDays),
+    [bundle.fullSleepVsMorning, ctx.today, ctx.rangeDays],
   );
   const daytime = useMemo(
-    () => filterWindow(bundle.fullSleepVsDaytime, ctx.today, rangeDays),
-    [bundle.fullSleepVsDaytime, ctx.today, rangeDays],
+    () => filterWindow(bundle.fullSleepVsDaytime, ctx.today, ctx.rangeDays),
+    [bundle.fullSleepVsDaytime, ctx.today, ctx.rangeDays],
   );
   const night = useMemo(
-    () => filterWindow(bundle.fullSleepVsNight, ctx.today, rangeDays),
-    [bundle.fullSleepVsNight, ctx.today, rangeDays],
+    () => filterWindow(bundle.fullSleepVsNight, ctx.today, ctx.rangeDays),
+    [bundle.fullSleepVsNight, ctx.today, ctx.rangeDays],
   );
   const morningLine = correlationLine(morning);
   const daytimeLine = correlationLine(daytime);
@@ -197,9 +187,6 @@ function SleepVsPainWidget({
 
   return (
     <>
-      <div className={styles.rangeControl}>
-        <TimeRangeSelector value={range} onChange={setRange} />
-      </div>
       {(morningLine || daytimeLine || nightLine) && (
         <ul className={styles.rList}>
           {morningLine && (

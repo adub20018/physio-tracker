@@ -58,7 +58,17 @@ export function DashboardGrid({
   autoScaleYAxis: boolean;
 }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const { width, containerRef, mounted } = useContainerWidth();
+  // measureBeforeMount is required to make `mounted` mean what the "wait
+  // for it before rendering" pattern below assumes: react-grid-layout's
+  // default is `mounted: !measureBeforeMount`, i.e. mounted=true and
+  // width=1280 (its hardcoded fallback) from the very first render unless
+  // this is set. Without it, the grid briefly (and, if the correction
+  // doesn't reflow in time, persistently) lays out against a 1280px-wide
+  // container regardless of the page's real ~64rem max width — which is
+  // exactly why widgets were overflowing to the right and overlapping.
+  const { width, containerRef, mounted } = useContainerWidth({
+    measureBeforeMount: true,
+  });
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 

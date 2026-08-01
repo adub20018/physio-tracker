@@ -12,6 +12,7 @@ import type {
   DashboardWithWidgets,
   NewDashboardWidgetInput,
 } from "@/repositories/types";
+import { DEFAULT_DASHBOARD_WIDGETS } from "@/repositories/default-dashboard-widgets";
 
 export class DrizzleDashboardRepository implements DashboardRepository {
   async listForUser(userId: string): Promise<Dashboard[]> {
@@ -117,5 +118,14 @@ export class DrizzleDashboardRepository implements DashboardRepository {
           ]
         : []),
     ]);
+  }
+
+  async getOrCreateDefault(userId: string): Promise<Dashboard> {
+    const existing = await this.listForUser(userId);
+    if (existing.length > 0) return existing[0];
+
+    const created = await this.create(userId, "Default");
+    await this.saveWidgets(created.id, userId, DEFAULT_DASHBOARD_WIDGETS);
+    return created;
   }
 }

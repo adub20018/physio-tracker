@@ -106,4 +106,9 @@ export interface DashboardRepository {
     userId: string,
     widgets: NewDashboardWidgetInput[],
   ): Promise<void>;
+  // The user's first dashboard by sortOrder, or a freshly-seeded "Default"
+  // one (see default-dashboard-widgets.ts) if they have none yet — either
+  // because it's their first visit, or because they deleted every
+  // dashboard they had. /dashboard redirects here.
+  getOrCreateDefault(userId: string): Promise<Dashboard>;
 }

@@ -207,37 +207,37 @@ export default async function LogOverviewPage({
         <p className="subtitle">Pick what you&apos;re logging right now.</p>
       </header>
 
-      <LogDateBar date={date} />
-
-      <div className={styles.tiles}>
-        {tiles.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`${styles.tile} ${t.progress.filled === 0 ? styles.tileEmpty : ""}`}
-          >
-            <SegmentProgress
-              filled={t.progress.filled}
-              total={t.progress.total}
-            />
-            <div
-              className={`${styles.tileBody}${t.fillBody ? ` ${styles.tileBodyFill}` : ""}`}
+      <LogDateBar date={date}>
+        <div className={styles.tiles}>
+          {tiles.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              className={`${styles.tile} ${t.progress.filled === 0 ? styles.tileEmpty : ""}`}
             >
-              <div className={styles.tileHeader}>
-                <span className={styles.tileTitle}>{t.title}</span>
-                <span className={styles.iconBadge} style={t.badgeStyle}>
-                  {t.icons}
+              <SegmentProgress
+                filled={t.progress.filled}
+                total={t.progress.total}
+              />
+              <div
+                className={`${styles.tileBody}${t.fillBody ? ` ${styles.tileBodyFill}` : ""}`}
+              >
+                <div className={styles.tileHeader}>
+                  <span className={styles.tileTitle}>{t.title}</span>
+                  <span className={styles.iconBadge} style={t.badgeStyle}>
+                    {t.icons}
+                  </span>
+                </div>
+                <span
+                  className={`${styles.tileSummary}${t.fillBody ? ` ${styles.tileSummaryFill}` : ""}`}
+                >
+                  {t.summary}
                 </span>
               </div>
-              <span
-                className={`${styles.tileSummary}${t.fillBody ? ` ${styles.tileSummaryFill}` : ""}`}
-              >
-                {t.summary}
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      </LogDateBar>
 
       <div className={styles.footerLinks}>
         <Link href={`/log/review?date=${date}`} className={styles.reviewLink}>

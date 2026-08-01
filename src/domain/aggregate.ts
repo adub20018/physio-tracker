@@ -14,6 +14,32 @@ export function dailyPainAverage(
   return average([day.painMorning, day.painDaytime, day.painNight]);
 }
 
+function presentPainReadings(
+  day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">,
+): number[] {
+  return [day.painMorning, day.painDaytime, day.painNight].filter(
+    (v): v is number => v != null,
+  );
+}
+
+// Highest of the day's recorded pain readings — the worst moment of the
+// day, as opposed to dailyPainAverage's overall picture. Null when nothing
+// was recorded.
+export function dailyPainPeak(
+  day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">,
+): number | null {
+  const present = presentPainReadings(day);
+  return present.length > 0 ? Math.max(...present) : null;
+}
+
+// Lowest of the day's recorded pain readings — the best moment of the day.
+export function dailyPainMin(
+  day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">,
+): number | null {
+  const present = presentPainReadings(day);
+  return present.length > 0 ? Math.min(...present) : null;
+}
+
 // Items whose date falls in the calendar window [end - (nDays-1), end].
 // Calendar-based (not "last N logged rows") so missed days count as missing.
 // Generic over anything with a `date`, not just DomainDay, so the same

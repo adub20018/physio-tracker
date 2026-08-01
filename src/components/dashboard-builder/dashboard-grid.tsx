@@ -277,7 +277,10 @@ export function DashboardGrid({
       )}
 
       {isDesktop ? (
-        <div ref={containerRef} className={styles.gridContainer}>
+        <div
+          ref={containerRef}
+          className={`${styles.gridContainer} ${isEditing ? styles.editing : ""}`}
+        >
           {mounted ? (
             <ReactGridLayout
               layout={layout}

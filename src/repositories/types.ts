@@ -111,4 +111,9 @@ export interface DashboardRepository {
   // because it's their first visit, or because they deleted every
   // dashboard they had. /dashboard redirects here.
   getOrCreateDefault(userId: string): Promise<Dashboard>;
+  // Replaces a dashboard's widgets with the default starting layout,
+  // discarding whatever the user had arranged — the "Reset to default
+  // dashboard" action. Only touches widgets; the dashboard's own name and
+  // position in the switcher are left alone.
+  resetToDefault(id: string, userId: string): Promise<void>;
 }

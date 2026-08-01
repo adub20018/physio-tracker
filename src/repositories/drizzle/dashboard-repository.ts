@@ -128,4 +128,10 @@ export class DrizzleDashboardRepository implements DashboardRepository {
     await this.saveWidgets(created.id, userId, DEFAULT_DASHBOARD_WIDGETS);
     return created;
   }
+
+  // saveWidgets already confirms ownership and no-ops for a dashboard that
+  // isn't this user's, so there's nothing extra to check here.
+  async resetToDefault(id: string, userId: string): Promise<void> {
+    await this.saveWidgets(id, userId, DEFAULT_DASHBOARD_WIDGETS);
+  }
 }

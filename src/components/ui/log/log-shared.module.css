@@ -86,11 +86,26 @@
   align-items: center;
 }
 
-.dateInputRow :global(.p-inputtext) {
+/* The [< prev][date][next >] group — a MyFitnessPal-style stepper pill.
+   Sits to the left of the standalone calendar-trigger button in .dateInputRow. */
+.dateStepGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.dateStepGroup :global(.p-inputtext) {
   flex: 1;
   min-width: 0;
   cursor: pointer;
   font-size: 1.15rem;
+  text-align: center;
+}
+
+.dateStepButton {
+  flex-shrink: 0;
 }
 
 /* A labelled pain slider row: label+value on top, slider+clear below. */

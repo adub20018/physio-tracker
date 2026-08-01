@@ -1,15 +1,24 @@
-/* Edit/Save/Cancel/Add-widget row, sitting above the grid or stack. */
+/* Edit/Save/Cancel/Add-widget row plus the settings gear, sitting above the
+   grid or stack. Wraps rather than overflowing at narrow widths. */
 .controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.editActions {
+.controlsLeft,
+.controlsRight {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
+}
+
+/* The gear stays hard right even when it's the only thing on that side. */
+.controlsRight {
+  margin-left: auto;
 }
 
 .error {

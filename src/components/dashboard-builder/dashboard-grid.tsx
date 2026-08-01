@@ -23,12 +23,15 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { Pencil, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { daysForRange } from "@/lib/time-range";
+import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
 import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
 import { WIDGET_REGISTRY } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
+import { DashboardConfig } from "./dashboard-config";
 import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
 
@@ -71,6 +74,13 @@ export function DashboardGrid({
   });
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // Keyed per dashboard: each is its own view of a period, so switching
+  // dashboards shouldn't drag the last one's range along with it.
+  const [range, setRange] = usePersistedTimeRange(
+    `physimate:dashboard-range:${dashboardId}`,
+  );
+  const rangeDays = daysForRange(range);
 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<DashboardWidget[]>(widgets);
@@ -182,8 +192,8 @@ export function DashboardGrid({
   return (
     <>
       <div className={styles.controls}>
-        {isEditing ? (
-          <>
+        <div className={styles.controlsLeft}>
+          {isEditing ? (
             <Button
               variant="outlined"
               severity="secondary"
@@ -192,7 +202,21 @@ export function DashboardGrid({
             >
               <Plus size={14} /> Add widget
             </Button>
-            <div className={styles.editActions}>
+          ) : (
+            <Button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              onClick={startEdit}
+            >
+              <Pencil size={14} /> Edit dashboard
+            </Button>
+          )}
+        </div>
+
+        <div className={styles.controlsRight}>
+          {isEditing && (
+            <>
               <Button
                 variant="outlined"
                 severity="secondary"
@@ -212,18 +236,18 @@ export function DashboardGrid({
                   "Save"
                 )}
               </Button>
-            </div>
-          </>
-        ) : (
-          <Button
-            variant="outlined"
-            severity="secondary"
-            size="small"
-            onClick={startEdit}
-          >
-            <Pencil size={14} /> Edit dashboard
-          </Button>
-        )}
+            </>
+          )}
+          <DashboardConfig
+            dashboardId={dashboardId}
+            range={range}
+            onRangeChange={setRange}
+            // A reset replaces the saved widgets, so any edit draft still
+            // open is now stale — drop it rather than let a later Save
+            // write the pre-reset layout straight back.
+            onReset={() => setIsEditing(false)}
+          />
+        </div>
       </div>
 
       {error && (
@@ -267,6 +291,7 @@ export function DashboardGrid({
                   ctx={{
                     widgetId: widget.id,
                     today,
+                    rangeDays,
                     autoScaleYAxis,
                     fillHeight: false,
                   }}
@@ -303,6 +328,7 @@ export function DashboardGrid({
                     ctx={{
                       widgetId: widget.id,
                       today,
+                      rangeDays,
                       autoScaleYAxis,
                       fillHeight: true,
                     }}

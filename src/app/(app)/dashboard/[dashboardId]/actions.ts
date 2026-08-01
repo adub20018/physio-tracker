@@ -27,3 +27,14 @@ export async function saveDashboardLayout(
   revalidatePath(`/dashboard/${dashboardId}`);
   return { ok: true };
 }
+
+// Restores the default starting layout, discarding the user's arrangement —
+// the "Reset to default dashboard" action in the dashboard config.
+export async function resetDashboardToDefault(
+  dashboardId: string,
+): Promise<SaveLayoutResult> {
+  const user = await getCurrentUser();
+  await dashboardRepository.resetToDefault(dashboardId, user.id);
+  revalidatePath(`/dashboard/${dashboardId}`);
+  return { ok: true };
+}

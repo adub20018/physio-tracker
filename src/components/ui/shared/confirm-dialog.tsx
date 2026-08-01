@@ -16,6 +16,10 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  // In-progress text for the confirm button. Defaults to the delete
+  // wording this dialog was first built for; anything that isn't a
+  // deletion (e.g. resetting a dashboard layout) passes its own.
+  pendingLabel = "Deleting…",
   onConfirm,
   isPending,
   error,
@@ -25,6 +29,7 @@ export function ConfirmDialog({
   title: string;
   description: string;
   confirmLabel: string;
+  pendingLabel?: string;
   onConfirm: () => void;
   isPending: boolean;
   error?: string | null;
@@ -84,7 +89,7 @@ export function ConfirmDialog({
                 {isPending ? (
                   <>
                     <ButtonSpinner />
-                    Deleting…
+                    {pendingLabel}
                   </>
                 ) : (
                   confirmLabel

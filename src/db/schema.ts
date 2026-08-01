@@ -104,8 +104,48 @@ export const userSettings = pgTable("user_settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// One row per user-created dashboard (the customizable-dashboard system).
+// Every user gets a seeded "Default" dashboard on first visit — see
+// dashboardRepository.getOrCreateDefault. sortOrder controls the order
+// dashboards appear in the switcher; ties broken by createdAt.
+export const dashboards = pgTable("dashboards", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  // References neon_auth.user.id — same cross-schema situation as
+  // dailyLogs.userId (see the comment there); the FK constraint is
+  // hand-written into this table's migration file.
+  userId: uuid("user_id").notNull(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// One row per chart placed on a dashboard. widgetType is a key into the
+// widget registry (src/components/dashboard-builder/widget-registry.tsx),
+// not a foreign key — the registry is code, not a database table. x/y/w/h
+// are react-grid-layout grid units (a 12-column grid); mobile rendering
+// ignores w/h and just stacks widgets full-width in y order.
+export const dashboardWidgets = pgTable("dashboard_widgets", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  dashboardId: text("dashboard_id")
+    .notNull()
+    .references(() => dashboards.id, { onDelete: "cascade" }),
+  widgetType: text("widget_type").notNull(),
+  x: integer("x").notNull(),
+  y: integer("y").notNull(),
+  w: integer("w").notNull(),
+  h: integer("h").notNull(),
+});
+
 // Row types inferred from the schema, for use by the repository layer.
 export type DailyLog = typeof dailyLogs.$inferSelect;
 export type NewDailyLog = typeof dailyLogs.$inferInsert;
 export type ExerciseEntry = typeof exerciseEntries.$inferSelect;
 export type NewExerciseEntry = typeof exerciseEntries.$inferInsert;
+export type Dashboard = typeof dashboards.$inferSelect;
+export type NewDashboard = typeof dashboards.$inferInsert;
+export type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
+export type NewDashboardWidgetRow = typeof dashboardWidgets.$inferInsert;

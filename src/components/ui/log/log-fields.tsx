@@ -26,6 +26,7 @@ import {
   PAIN_SCALE_MIN,
   PAIN_SCALE_STEP,
 } from "@/domain/constants";
+import { addDays } from "@/domain/lag";
 import { Slider } from "@primereact/ui/slider";
 import styles from "./log-shared.module.css";
 
@@ -188,11 +189,13 @@ export function TagMultiSelect({
   );
 }
 
-// PrimeReact DatePicker composed for a single-date input with calendar popup,
-// following the official styled-mode demo: the input renders as InputText
-// (that's where its text-field styling comes from) and the nav arrows render
-// as icon Buttons. Only used on the overview page now — section pages show
-// the active date as a plain label (LogSectionHeader).
+// PrimeReact DatePicker composed as a MyFitnessPal-style date stepper: a
+// [< prev day][date input][next day >] pill (the chevrons just call onChange
+// with ±1 day directly, bypassing the calendar entirely) plus a standalone
+// calendar-icon trigger further right for picking an arbitrary date. The
+// input itself still opens the same calendar on click, same as before. Only
+// used on the overview page now — section pages show the active date as a
+// plain label (LogSectionHeader).
 export function LogDatePicker({
   date,
   onChange,
@@ -233,10 +236,49 @@ export function LogDatePicker({
       }}
       dateFormat="DD, dd MM, yy"
     >
-      <DatePicker.Input as={InputText} id="log-date" readOnly />
-      <DatePicker.Trigger aria-label="Open calendar">
-        <Calendar size={16} />
-      </DatePicker.Trigger>
+      <div className={styles.dateInputRow}>
+        <div className={styles.dateStepGroup}>
+          <Button
+            className={styles.dateStepButton}
+            iconOnly
+            variant="outlined"
+            severity="secondary"
+            size="small"
+            aria-label="Previous day"
+            onClick={() => onChange(addDays(date, -1))}
+          >
+            <ChevronLeft size={16} />
+          </Button>
+          <DatePicker.Input
+            as={InputText}
+            className={styles.datePickerInput}
+            variant="outlined"
+            id="log-date"
+            readOnly
+          />
+          <Button
+            className={styles.dateStepButton}
+            iconOnly
+            variant="outlined"
+            severity="secondary"
+            size="small"
+            aria-label="Next day"
+            onClick={() => onChange(addDays(date, 1))}
+          >
+            <ChevronRight size={16} />
+          </Button>
+        </div>
+        <DatePicker.Trigger
+          className={styles.datePickerButton}
+          as={Button}
+          iconOnly
+          variant="outlined"
+          severity="secondary"
+          aria-label="Open calendar"
+        >
+          <Calendar size={16} />
+        </DatePicker.Trigger>
+      </div>
       <DatePicker.Portal>
         <DatePicker.Positioner align="start">
           <DatePicker.Popup>

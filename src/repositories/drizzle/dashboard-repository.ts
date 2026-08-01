@@ -14,6 +14,18 @@ import type {
 } from "@/repositories/types";
 import { DEFAULT_DASHBOARD_WIDGETS } from "@/repositories/default-dashboard-widgets";
 
+// The id given to the auto-seeded "Default" dashboard. Derived from the
+// user rather than random so that two concurrent first-visits can't each
+// create one — see getOrCreateDefault. Only ever used for that first
+// seeded row; every other dashboard gets a random id as usual.
+//
+// Hyphen-separated, not colon: this id goes straight into the
+// /dashboard/[dashboardId] path, and a colon in a path segment doesn't
+// survive the round trip (the route stops matching and the page 404s).
+function defaultDashboardId(userId: string): string {
+  return `default-${userId}`;
+}
+
 export class DrizzleDashboardRepository implements DashboardRepository {
   async listForUser(userId: string): Promise<Dashboard[]> {
     const rows = await db
@@ -120,13 +132,37 @@ export class DrizzleDashboardRepository implements DashboardRepository {
     ]);
   }
 
+  // Deliberately NOT list-then-create-if-empty: /dashboard is commonly hit
+  // twice at once (Next prefetches it alongside the real navigation), and
+  // both requests would find an empty list and each seed their own
+  // "Default" — observed happening 38ms apart. Instead the seeded row gets
+  // a deterministic id, so the second insert collides on the primary key
+  // and no-ops, and only the request that actually inserted goes on to
+  // write the widgets.
   async getOrCreateDefault(userId: string): Promise<Dashboard> {
     const existing = await this.listForUser(userId);
     if (existing.length > 0) return existing[0];
 
-    const created = await this.create(userId, "Default");
-    await this.saveWidgets(created.id, userId, DEFAULT_DASHBOARD_WIDGETS);
-    return created;
+    const id = defaultDashboardId(userId);
+    const [inserted] = await db
+      .insert(dashboards)
+      .values({ id, userId, name: "Default", sortOrder: 0 })
+      .onConflictDoNothing()
+      .returning();
+
+    if (!inserted) {
+      // Lost the race — the winner's row exists now (and is seeding its own
+      // widgets), so just use it.
+      const after = await this.listForUser(userId);
+      return after[0] ?? { id, name: "Default", sortOrder: 0 };
+    }
+
+    await this.saveWidgets(id, userId, DEFAULT_DASHBOARD_WIDGETS);
+    return {
+      id: inserted.id,
+      name: inserted.name,
+      sortOrder: inserted.sortOrder,
+    };
   }
 
   // saveWidgets already confirms ownership and no-ops for a dashboard that

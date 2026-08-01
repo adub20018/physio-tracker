@@ -1,0 +1,30 @@
+/* Sibling of confirm-dialog.module.css — same popup sizing and footer, with
+   a text field instead of a description paragraph. */
+
+.popup {
+  width: min(24rem, calc(100vw - 2rem));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+}
+
+.input {
+  width: 100%;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

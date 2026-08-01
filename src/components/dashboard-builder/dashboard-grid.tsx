@@ -58,7 +58,17 @@ export function DashboardGrid({
   autoScaleYAxis: boolean;
 }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const { width, containerRef, mounted } = useContainerWidth();
+  // measureBeforeMount: without it useContainerWidth starts `mounted` true
+  // while `width` is still its hardcoded 1280px default, so the very first
+  // paint lays the grid out at 1280 regardless of the real container width
+  // — inside this page's 64rem column that puts full-width widgets a couple
+  // of hundred pixels off the right edge. Passing it makes `mounted` stay
+  // false until a real measurement exists, which is what the {mounted && …}
+  // gate below is for (and what react-grid-layout's own README recommends
+  // for server-rendered pages).
+  const { width, containerRef, mounted } = useContainerWidth({
+    measureBeforeMount: true,
+  });
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 

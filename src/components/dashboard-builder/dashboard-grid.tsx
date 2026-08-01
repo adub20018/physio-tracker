@@ -39,6 +39,16 @@ import styles from "./dashboard-grid.module.css";
 // switching from a stacked to a grid-like layout.
 const DESKTOP_QUERY = "(min-width: 44rem)";
 
+// A widget spanning h rows is h*ROW_HEIGHT + (h-1)*verticalMargin tall, so
+// one row step is ROW_HEIGHT + verticalMargin = 20px. Deliberately fine:
+// the vertical gutter has to stay wide enough to separate cards (12px),
+// and since it's charged per row step, a *large* row height is what makes
+// resizing coarse. Small rows + that gutter give 20px granularity while
+// still letting a stat tile land on its natural ~120px content height
+// (h=7 → 128px) instead of being forced to a much taller multiple.
+const ROW_HEIGHT = 8;
+const GRID_MARGIN: [number, number] = [16, 12];
+
 function sortForDisplay(widgets: DashboardWidget[]): DashboardWidget[] {
   return [...widgets].sort((a, b) => a.y - b.y || a.x - b.x);
 }
@@ -322,7 +332,7 @@ export function DashboardGrid({
             <ReactGridLayout
               layout={layout}
               width={width}
-              gridConfig={{ cols: 12, rowHeight: 20, margin: [16, 16] }}
+              gridConfig={{ cols: 12, rowHeight: ROW_HEIGHT, margin: GRID_MARGIN }}
               dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
               resizeConfig={{ enabled: isEditing }}
               onLayoutChange={handleLayoutChange}

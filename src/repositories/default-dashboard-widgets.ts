@@ -9,17 +9,19 @@
 // type is fundamentally just a string key either side can agree on.
 import type { NewDashboardWidgetInput } from "./types";
 
-// Grid units: 12 columns, and the row height/margin set in dashboard-grid.tsx.
-const TILE_H = 5;
-const CHART_H = 10;
+// Grid units: 12 columns, and the row height/margin set in dashboard-grid.tsx
+// (one row step is 20px). TILE_H matches the stat tile's locked height in
+// widget-registry.tsx's STAT_TILE_BOUNDS — 128px, its natural content size.
+const TILE_H = 7;
+const CHART_H = 18;
 
 export const DEFAULT_DASHBOARD_WIDGETS: NewDashboardWidgetInput[] = [
   { widgetType: "stat-pain", x: 0, y: 0, w: 3, h: TILE_H },
   { widgetType: "stat-steps", x: 3, y: 0, w: 3, h: TILE_H },
   { widgetType: "stat-sleep", x: 6, y: 0, w: 3, h: TILE_H },
   { widgetType: "stat-physio-load", x: 9, y: 0, w: 3, h: TILE_H },
-  { widgetType: "chart-pain-timeline", x: 0, y: 5, w: 12, h: CHART_H },
-  { widgetType: "chart-load-vs-symptoms", x: 0, y: 15, w: 12, h: CHART_H },
-  { widgetType: "chart-progression", x: 0, y: 25, w: 12, h: CHART_H },
-  { widgetType: "chart-heatmap", x: 0, y: 35, w: 12, h: CHART_H },
+  { widgetType: "chart-pain-timeline", x: 0, y: 7, w: 12, h: CHART_H },
+  { widgetType: "chart-load-vs-symptoms", x: 0, y: 25, w: 12, h: CHART_H },
+  { widgetType: "chart-progression", x: 0, y: 43, w: 12, h: CHART_H },
+  { widgetType: "chart-heatmap", x: 0, y: 61, w: 12, h: CHART_H },
 ];

@@ -1,0 +1,355 @@
+// Combines every other domain function into one call: every series a
+// dashboard or insights chart could need, computed once from the same
+// `days`/`today`/`flareThreshold` inputs. This is what makes the
+// customizable-dashboard widget system possible — a widget doesn't know or
+// care which page it's rendered on, it just reads its own slice out of one
+// shared bundle. Pure (same inputs always produce the same bundle, no I/O),
+// so it lives in domain/ and is unit-tested like everything else here.
+//
+// Excludes Flare Review and the Weekly Report Card on purpose — those stay
+// Insights-only for now (not part of the v1 widget catalog), so their
+// computation stays local to insights/page.tsx rather than living here.
+import type { DomainDay } from "./types";
+import {
+  dailyPainAverage,
+  dailyPainPeak,
+  lastNDaysSeries,
+  windowComparison,
+  type DatedValue,
+} from "./aggregate";
+import { rollingAverage } from "./rolling";
+import { dailyPhysioLoad } from "./load";
+import { isFlareDay, daysSinceLastFlare } from "./flare";
+import {
+  addDays,
+  nextDayValue,
+  nextMorningPain,
+  nextDaytimePain,
+  nextNightPain,
+} from "./lag";
+import { dailyPainCandles, type PainCandle } from "./candle";
+import { pairSeries, type PairedPoint } from "./correlation";
+
+// Stat tiles always use a fixed 7-day window, independent of whatever range
+// a chart widget elsewhere might be showing — see dashboard/page.tsx's
+// original comment: averaging a "how am I doing right now" tile over months
+// would smear an improving baseline together with early, low numbers.
+const STAT_WINDOW_DAYS = 7;
+
+export type SparklinePoint = DatedValue<number> & { display: string };
+
+export type StatWindowValues = {
+  painAvg: number | null;
+  stepsAvg: number | null;
+  sleepAvg: number | null;
+  physioLoadAvg: number | null;
+};
+
+export type PainTimelinePoint = {
+  date: string;
+  morning: number | null;
+  daytime: number | null;
+  night: number | null;
+  rollingAvg: number | null;
+  flareValue: number | null;
+};
+
+export type LoadVsSymptomsPoint = {
+  date: string;
+  steps: number | null;
+  physioLoad: number;
+  nextMorningPain: number | null;
+  nextDaytimePain: number | null;
+  nextNightPain: number | null;
+};
+
+export type SleepPainPoint = {
+  date: string;
+  sleepHours: number | null;
+  painMorning: number | null;
+  painDaytime: number | null;
+  painNight: number | null;
+};
+
+export type ProgressionPoint = {
+  date: string;
+  intensityMin: number | null;
+  intensityMax: number | null;
+  intensityMid: number | null;
+  holdVolume: number;
+  physioLoad: number;
+};
+
+export type HeatmapDay = { date: string; avgPain: number | null };
+
+export type ChartDataBundle = {
+  // Stat tiles: fixed 7-day window vs the 7 days before it.
+  flareGap: number | null;
+  statCurrent: StatWindowValues;
+  statPrevious: StatWindowValues;
+  painSparkline: SparklinePoint[];
+  stepsSparkline: SparklinePoint[];
+  sleepSparkline: SparklinePoint[];
+  physioLoadSparkline: SparklinePoint[];
+
+  // Dashboard charts: full history, range-filtered client-side by the widget.
+  fullTimeline: PainTimelinePoint[];
+  fullLoad: LoadVsSymptomsPoint[];
+  fullSleepTimelineData: SleepPainPoint[];
+  fullProgression: ProgressionPoint[];
+  heatmap: HeatmapDay[];
+
+  // Insights scatters + candlestick: full history.
+  fullStepsPoints: PairedPoint[];
+  fullVolumePoints: PairedPoint[];
+  fullStepsVsPeakPoints: PairedPoint[];
+  fullStepsVsAveragePoints: PairedPoint[];
+  fullVolumeVsPeakPoints: PairedPoint[];
+  fullVolumeVsAveragePoints: PairedPoint[];
+  fullPainCandles: PainCandle[];
+  fullSleepVsMorning: PairedPoint[];
+  fullSleepVsDaytime: PairedPoint[];
+  fullSleepVsNight: PairedPoint[];
+};
+
+export function buildChartDataBundle(
+  days: DomainDay[],
+  today: string,
+  flareThreshold: number,
+): ChartDataBundle {
+  // ── Stat tiles ──────────────────────────────────────────────────────────
+  // Today is excluded from the window: a partially-logged day would bias
+  // the averages. Days-since-flare still counts from today itself.
+  const statWindowEnd = addDays(today, -1);
+  const { current, previous } = windowComparison(
+    days,
+    statWindowEnd,
+    STAT_WINDOW_DAYS,
+  );
+  const flareGap = daysSinceLastFlare(days, today, flareThreshold);
+
+  const statCurrent: StatWindowValues = {
+    painAvg: current.painAvg,
+    stepsAvg: current.stepsAvg,
+    sleepAvg: current.sleepAvg,
+    physioLoadAvg:
+      current.loggedDays > 0 ? current.physioLoad / current.loggedDays : null,
+  };
+  const statPrevious: StatWindowValues = {
+    painAvg: previous.painAvg,
+    stepsAvg: previous.stepsAvg,
+    sleepAvg: previous.sleepAvg,
+    physioLoadAvg:
+      previous.loggedDays > 0 ? previous.physioLoad / previous.loggedDays : null,
+  };
+
+  const painSparkline: SparklinePoint[] = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    STAT_WINDOW_DAYS,
+    dailyPainAverage,
+  ).map((d) => ({
+    ...d,
+    display: d.value != null ? `${d.value.toFixed(1)}/10 pain` : "Not logged",
+  }));
+  const stepsSparkline: SparklinePoint[] = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    STAT_WINDOW_DAYS,
+    (d) => d.steps,
+  ).map((d) => ({
+    ...d,
+    display:
+      d.value != null
+        ? `${Math.round(d.value).toLocaleString()} steps`
+        : "Not logged",
+  }));
+  const sleepSparkline: SparklinePoint[] = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    STAT_WINDOW_DAYS,
+    (d) => d.sleepHours,
+  ).map((d) => ({
+    ...d,
+    display: d.value != null ? `${d.value.toFixed(1)} hrs sleep` : "Not logged",
+  }));
+  const physioLoadSparkline: SparklinePoint[] = lastNDaysSeries(
+    days,
+    statWindowEnd,
+    STAT_WINDOW_DAYS,
+    (d) => dailyPhysioLoad(d),
+  ).map((d) => ({
+    ...d,
+    display:
+      d.value != null
+        ? `${Math.round(d.value).toLocaleString()} physio load`
+        : "Not logged",
+  }));
+
+  // ── Pain timeline ───────────────────────────────────────────────────────
+  const painAvgs = days.map(dailyPainAverage);
+  const rolling = rollingAverage(painAvgs, 7);
+  const fullTimeline: PainTimelinePoint[] = days.map((d, i) => {
+    const readings = [d.painMorning, d.painDaytime, d.painNight].filter(
+      (p): p is number => p != null,
+    );
+    return {
+      date: d.date,
+      morning: d.painMorning,
+      daytime: d.painDaytime,
+      night: d.painNight,
+      rollingAvg: rolling[i] != null ? Number(rolling[i]!.toFixed(2)) : null,
+      flareValue: isFlareDay(d, flareThreshold) ? Math.max(...readings) : null,
+    };
+  });
+
+  // ── Load vs next-day symptoms ───────────────────────────────────────────
+  const nextMorning = nextMorningPain(days);
+  const nextDaytime = nextDaytimePain(days);
+  const nextNight = nextNightPain(days);
+  const fullLoad: LoadVsSymptomsPoint[] = days.map((d, i) => ({
+    date: d.date,
+    steps: d.steps,
+    physioLoad: Number(dailyPhysioLoad(d).toFixed(1)),
+    nextMorningPain: nextMorning[i],
+    nextDaytimePain: nextDaytime[i],
+    nextNightPain: nextNight[i],
+  }));
+
+  // ── Sleep & pain, same day (not lagged — sleep precedes all 3 readings) ─
+  const fullSleepTimelineData: SleepPainPoint[] = days.map((d) => ({
+    date: d.date,
+    sleepHours: d.sleepHours,
+    painMorning: d.painMorning,
+    painDaytime: d.painDaytime,
+    painNight: d.painNight,
+  }));
+
+  // ── Physio progression (physio days only) ──────────────────────────────
+  const fullProgression: ProgressionPoint[] = days
+    .filter((d) => d.exercises.length > 0)
+    .map((d) => {
+      const mins = d.exercises
+        .map((e) => e.intensityMin)
+        .filter((v): v is number => v != null);
+      const maxs = d.exercises
+        .map((e) => e.intensityMax)
+        .filter((v): v is number => v != null);
+      const min = mins.length > 0 ? Math.min(...mins) : null;
+      const max = maxs.length > 0 ? Math.max(...maxs) : null;
+      return {
+        date: d.date,
+        intensityMin: min,
+        intensityMax: max,
+        intensityMid: min != null && max != null ? (min + max) / 2 : null,
+        holdVolume: d.exercises.reduce(
+          (sum, e) => sum + e.sets * e.durationOrReps,
+          0,
+        ),
+        physioLoad: Number(dailyPhysioLoad(d).toFixed(1)),
+      };
+    });
+
+  // ── Calendar heatmap: full range, unlogged days included ───────────────
+  const byDate = new Map(days.map((d) => [d.date, d]));
+  const heatmap: HeatmapDay[] = [];
+  if (days.length > 0) {
+    for (let date = days[0].date; date <= today; date = addDays(date, 1)) {
+      const day = byDate.get(date);
+      heatmap.push({ date, avgPain: day ? dailyPainAverage(day) : null });
+    }
+  }
+
+  // ── Insights scatters ───────────────────────────────────────────────────
+  const dates = days.map((d) => d.date);
+  const nextMorningLabels = days.map((d) => `${d.date} → next morning`);
+  const nextDayLabels = days.map((d) => `${d.date} → next day`);
+  const nextPeakPain = nextDayValue(days, dailyPainPeak);
+  const nextAveragePain = nextDayValue(days, dailyPainAverage);
+
+  const fullStepsPoints = pairSeries(
+    days.map((d) => d.steps),
+    nextMorning,
+    nextMorningLabels,
+    dates,
+  );
+  const fullVolumePoints = pairSeries(
+    days.map((d) => dailyPhysioLoad(d)),
+    nextMorning,
+    nextMorningLabels,
+    dates,
+  );
+  const fullStepsVsPeakPoints = pairSeries(
+    days.map((d) => d.steps),
+    nextPeakPain,
+    nextDayLabels,
+    dates,
+  );
+  const fullStepsVsAveragePoints = pairSeries(
+    days.map((d) => d.steps),
+    nextAveragePain,
+    nextDayLabels,
+    dates,
+  );
+  const fullVolumeVsPeakPoints = pairSeries(
+    days.map((d) => dailyPhysioLoad(d)),
+    nextPeakPain,
+    nextDayLabels,
+    dates,
+  );
+  const fullVolumeVsAveragePoints = pairSeries(
+    days.map((d) => dailyPhysioLoad(d)),
+    nextAveragePain,
+    nextDayLabels,
+    dates,
+  );
+
+  // ── Morning-to-day pain candlestick ─────────────────────────────────────
+  const fullPainCandles = dailyPainCandles(days);
+
+  // ── Sleep vs pain, all day (same-day, not lagged) ──────────────────────
+  const sleepHoursSeries = days.map((d) => d.sleepHours);
+  const fullSleepVsMorning = pairSeries(
+    sleepHoursSeries,
+    days.map((d) => d.painMorning),
+    dates,
+    dates,
+  );
+  const fullSleepVsDaytime = pairSeries(
+    sleepHoursSeries,
+    days.map((d) => d.painDaytime),
+    dates,
+    dates,
+  );
+  const fullSleepVsNight = pairSeries(
+    sleepHoursSeries,
+    days.map((d) => d.painNight),
+    dates,
+    dates,
+  );
+
+  return {
+    flareGap,
+    statCurrent,
+    statPrevious,
+    painSparkline,
+    stepsSparkline,
+    sleepSparkline,
+    physioLoadSparkline,
+    fullTimeline,
+    fullLoad,
+    fullSleepTimelineData,
+    fullProgression,
+    heatmap,
+    fullStepsPoints,
+    fullVolumePoints,
+    fullStepsVsPeakPoints,
+    fullStepsVsAveragePoints,
+    fullVolumeVsPeakPoints,
+    fullVolumeVsAveragePoints,
+    fullPainCandles,
+    fullSleepVsMorning,
+    fullSleepVsDaytime,
+    fullSleepVsNight,
+  };
+}

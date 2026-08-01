@@ -1,0 +1,58 @@
+/* Edit-mode chrome added on top of dashboard.module.css's shared
+   .card/.cardHeader — a small actions row (drag handle + remove) sitting
+   next to whatever's already in the header (title, InfoTooltip). */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  background: var(--surface-sunken);
+  color: var(--p-red-300, #fca5a5);
+}
+
+/* Stat tiles are "bare" — already a complete, self-styled unit with no
+   header slot to inject a drag handle/remove button into. In edit mode
+   only, they get a minimal top strip carrying just those two controls,
+   sitting above the tile rather than inside it. */
+.bareEditWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bareEditBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}

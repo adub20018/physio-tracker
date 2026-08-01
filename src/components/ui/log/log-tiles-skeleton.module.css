@@ -1,0 +1,41 @@
+/* Matches the shape of the overview's real tile grid (log-overview.module.css
+   .tiles/.tile/.tileBody/.tileHeader) closely enough that swapping the
+   skeleton for real content doesn't jump the layout — duplicated here
+   rather than importing across the app/ → components/ boundary, same
+   reasoning as card-skeleton.module.css's own duplication of .card. */
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 30rem) {
+  .tiles {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-subtle);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.tileBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+}
+
+.tileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}

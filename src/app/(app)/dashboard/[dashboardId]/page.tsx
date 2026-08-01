@@ -46,6 +46,7 @@ export default async function DashboardViewPage({
       </header>
 
       <DashboardGrid
+        dashboardId={dashboard.id}
         widgets={dashboard.widgets}
         bundle={bundle}
         today={today}

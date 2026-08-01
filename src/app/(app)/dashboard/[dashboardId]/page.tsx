@@ -17,6 +17,7 @@ import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { buildChartDataBundle } from "@/domain/dashboard-bundle";
 import { DashboardGrid } from "@/components/dashboard-builder/dashboard-grid";
+import { DashboardSwitcher } from "@/components/dashboard-builder/dashboard-switcher";
 
 // Always render at request time — a dashboard must reflect today's log.
 export const dynamic = "force-dynamic";
@@ -31,10 +32,12 @@ export default async function DashboardViewPage({
   const dashboard = await dashboardRepository.getWithWidgets(dashboardId, user.id);
   if (!dashboard) notFound();
 
-  const [logs, { flareThreshold, chartAutoScaleYAxis }] = await Promise.all([
-    dailyLogRepository.listAll(user.id),
-    userSettingsRepository.get(user.id),
-  ]);
+  const [logs, { flareThreshold, chartAutoScaleYAxis }, dashboards] =
+    await Promise.all([
+      dailyLogRepository.listAll(user.id),
+      userSettingsRepository.get(user.id),
+      dashboardRepository.listForUser(user.id),
+    ]);
   const days = toDomainDays(logs);
   const today = await todayIso();
   const bundle = buildChartDataBundle(days, today, flareThreshold);
@@ -42,11 +45,16 @@ export default async function DashboardViewPage({
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
       <header className="page-header">
-        <h1>{dashboard.name}</h1>
+        <DashboardSwitcher
+          dashboards={dashboards}
+          currentId={dashboard.id}
+          currentName={dashboard.name}
+        />
       </header>
 
       <DashboardGrid
         dashboardId={dashboard.id}
+        dashboardName={dashboard.name}
         widgets={dashboard.widgets}
         bundle={bundle}
         today={today}

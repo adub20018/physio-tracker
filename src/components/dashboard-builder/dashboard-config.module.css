@@ -24,3 +24,8 @@
   line-height: 1.45;
   margin: 0.5rem 0 0.65rem;
 }
+
+.actionRow {
+  display: flex;
+  gap: 0.5rem;
+}

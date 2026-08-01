@@ -59,12 +59,14 @@ function nextY(widgets: DashboardWidget[]): number {
 
 export function DashboardGrid({
   dashboardId,
+  dashboardName,
   widgets,
   bundle,
   today,
   autoScaleYAxis,
 }: {
   dashboardId: string;
+  dashboardName: string;
   widgets: DashboardWidget[];
   bundle: ChartDataBundle;
   today: string;
@@ -250,6 +252,7 @@ export function DashboardGrid({
           )}
           <DashboardConfig
             dashboardId={dashboardId}
+            dashboardName={dashboardName}
             range={range}
             onRangeChange={setRange}
             // A reset replaces the saved widgets, so any edit draft still

@@ -283,6 +283,16 @@ export function DashboardGrid({
         >
           {mounted ? (
             <ReactGridLayout
+              // react-grid-layout has a long-standing bug (open since 2018,
+              // e.g. react-grid-layout/react-grid-layout#756 and #1936):
+              // toggling isDraggable/isResizable (dragConfig.enabled /
+              // resizeConfig.enabled here) after mount doesn't take effect
+              // on already-rendered items — only a forced remount (or,
+              // per the reports, a window resize) picks up the new value.
+              // Keying on isEditing forces exactly that remount whenever
+              // edit mode toggles, so entering/leaving it actually enables
+              // or disables drag/resize instead of silently doing nothing.
+              key={isEditing ? "editing" : "viewing"}
               layout={layout}
               width={width}
               gridConfig={{ cols: 12, rowHeight: 20, margin: [16, 16] }}

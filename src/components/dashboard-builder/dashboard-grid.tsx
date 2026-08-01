@@ -1,14 +1,12 @@
-// Renders one dashboard's widgets, and owns its edit mode. Desktop/tablet
-// uses react-grid-layout for real drag/resize; mobile skips it entirely and
-// uses move-up/move-down buttons instead — a freeform multi-column resize
-// grid doesn't mean anything on a narrow phone screen, and drag-resize
-// handles are unreliable on small touchscreens anyway.
+// Renders one dashboard's widgets, and owns its edit mode. Wide screens
+// get react-grid-layout for real 2D drag/resize (any widget, any WxH);
+// narrow ones fall back to a single-column stack with move-up/move-down
+// buttons — a freeform multi-column resize grid doesn't mean anything on
+// a phone, and drag-resize handles are unreliable on small touchscreens.
 //
-// Both `isDesktop` (useMediaQuery) and the grid's own container-width
-// measurement (useContainerWidth) are client-only and resolve a moment
-// after first paint — the stacked mobile layout (renderStack) doubles as
-// the fallback shown on desktop for that brief window too, so widgets are
-// never just... gone while either one is still settling.
+// Which of the two renders is decided purely by the CONTAINER's measured
+// width (see below), not a viewport media query, and the stack doubles as
+// the pre-measurement placeholder, so widgets are never missing.
 //
 // Edit mode holds a local working copy (`draft`) of the widget list,
 // snapshotted from the server-loaded `widgets` prop when editing starts.
@@ -17,18 +15,14 @@
 // keep the two in sync, since only one of them is ever read at a time.
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import ReactGridLayout, {
-  useContainerWidth,
-  type Layout,
-} from "react-grid-layout";
+import ReactGridLayout, { type Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { Pencil, Plus, ChevronUp, ChevronDown } from "lucide-react";
-import { useMediaQuery } from "@/lib/use-media-query";
 import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
@@ -38,9 +32,11 @@ import { AddWidgetDialog } from "./add-widget-dialog";
 import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
 
-// Matches the tablet breakpoint used elsewhere in the app's own CSS for
-// switching from a stacked to a grid-like layout.
-const DESKTOP_QUERY = "(min-width: 44rem)";
+// Below this measured CONTAINER width (not viewport width), fall back to
+// the stacked single-column layout. Measuring the container rather than
+// the window is the point: the page caps itself at 64rem, so the viewport
+// can be far wider than the space the grid actually has to lay out in.
+const MIN_GRID_WIDTH = 704; // 44rem, the app's usual tablet breakpoint
 
 function sortForDisplay(widgets: DashboardWidget[]): DashboardWidget[] {
   return [...widgets].sort((a, b) => a.y - b.y || a.x - b.x);
@@ -63,18 +59,42 @@ export function DashboardGrid({
   today: string;
   autoScaleYAxis: boolean;
 }) {
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  // measureBeforeMount is required to make `mounted` mean what the "wait
-  // for it before rendering" pattern below assumes: react-grid-layout's
-  // default is `mounted: !measureBeforeMount`, i.e. mounted=true and
-  // width=1280 (its hardcoded fallback) from the very first render unless
-  // this is set. Without it, the grid briefly (and, if the correction
-  // doesn't reflow in time, persistently) lays out against a 1280px-wide
-  // container regardless of the page's real ~64rem max width — which is
-  // exactly why widgets were overflowing to the right and overlapping.
-  const { width, containerRef, mounted } = useContainerWidth({
-    measureBeforeMount: true,
-  });
+  // The grid's own width, measured from the container element rather than
+  // read off the viewport. Two independent paths set it, deliberately:
+  // the ref callback fires the moment the node is attached (giving a
+  // correct width on the very first commit, before paint), and the
+  // ResizeObserver keeps it current afterwards. Measuring this way also
+  // means react-grid-layout is always given the real available width, so
+  // items can't be laid out against a wrong/assumed one.
+  //
+  // This replaces an earlier matchMedia + useSyncExternalStore approach
+  // that decided wide-vs-narrow from the viewport. Its server snapshot is
+  // necessarily "false" (no viewport to measure while server-rendering),
+  // and the client-side correction to the real value never reliably
+  // landed — leaving the dashboard stuck on the stacked narrow layout
+  // even on a maximized ultra-wide window. Measuring an actual element
+  // has no server/client snapshot split to get stuck in.
+  const nodeRef = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState<number | null>(null);
+
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    nodeRef.current = node;
+    if (node) setWidth(Math.round(node.clientWidth));
+  }, []);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    // observe() fires the callback once immediately, so this also covers
+    // the case where the ref callback's measurement was somehow missed.
+    const observer = new ResizeObserver((entries) => {
+      const measured = entries[0]?.contentRect.width ?? node.clientWidth;
+      setWidth(Math.round(measured));
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -276,54 +296,52 @@ export function DashboardGrid({
         </Message.Root>
       )}
 
-      {isDesktop ? (
-        <div
-          ref={containerRef}
-          className={`${styles.gridContainer} ${isEditing ? styles.editing : ""}`}
-        >
-          {mounted ? (
-            <ReactGridLayout
-              // react-grid-layout has a long-standing bug (open since 2018,
-              // e.g. react-grid-layout/react-grid-layout#756 and #1936):
-              // toggling isDraggable/isResizable (dragConfig.enabled /
-              // resizeConfig.enabled here) after mount doesn't take effect
-              // on already-rendered items — only a forced remount (or,
-              // per the reports, a window resize) picks up the new value.
-              // Keying on isEditing forces exactly that remount whenever
-              // edit mode toggles, so entering/leaving it actually enables
-              // or disables drag/resize instead of silently doing nothing.
-              key={isEditing ? "editing" : "viewing"}
-              layout={layout}
-              width={width}
-              gridConfig={{ cols: 12, rowHeight: 20, margin: [16, 16] }}
-              dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
-              resizeConfig={{ enabled: isEditing }}
-              onLayoutChange={handleLayoutChange}
-            >
-              {known.map((widget) => (
-                <div key={widget.id}>
-                  <WidgetShell
-                    definition={WIDGET_REGISTRY[widget.widgetType]}
-                    bundle={bundle}
-                    ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
-                    editMode={isEditing}
-                    onRemove={() => removeWidget(widget.id)}
-                  />
-                </div>
-              ))}
-            </ReactGridLayout>
-          ) : (
-            // useContainerWidth needs one measurement pass (via the ref
-            // above) before the real grid can render — showing the stacked
-            // layout as a placeholder for that brief window means content
-            // is never just... gone, only reflows once into the grid a
-            // moment later.
-            renderStack()
-          )}
-        </div>
-      ) : (
-        renderStack()
-      )}
+      {/* The container is ALWAYS rendered, never behind a conditional —
+          it's the element being measured, so if it only mounted once we'd
+          already decided to show the grid, the measurement could never
+          happen and the decision could never be made. */}
+      <div
+        ref={setContainerRef}
+        className={`${styles.gridContainer} ${isEditing ? styles.editing : ""}`}
+      >
+        {width != null && width >= MIN_GRID_WIDTH ? (
+          <ReactGridLayout
+            // react-grid-layout has a long-standing bug (open since 2018,
+            // e.g. react-grid-layout/react-grid-layout#756 and #1936):
+            // toggling isDraggable/isResizable (dragConfig.enabled /
+            // resizeConfig.enabled here) after mount doesn't take effect
+            // on already-rendered items — only a forced remount (or, per
+            // the reports, a window resize) picks up the new value.
+            // Keying on isEditing forces exactly that remount whenever
+            // edit mode toggles, so entering/leaving it actually enables
+            // or disables drag/resize instead of silently doing nothing.
+            key={isEditing ? "editing" : "viewing"}
+            layout={layout}
+            width={width}
+            gridConfig={{ cols: 12, rowHeight: 20, margin: [16, 16] }}
+            dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
+            resizeConfig={{ enabled: isEditing }}
+            onLayoutChange={handleLayoutChange}
+          >
+            {known.map((widget) => (
+              <div key={widget.id}>
+                <WidgetShell
+                  definition={WIDGET_REGISTRY[widget.widgetType]}
+                  bundle={bundle}
+                  ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
+                  editMode={isEditing}
+                  onRemove={() => removeWidget(widget.id)}
+                />
+              </div>
+            ))}
+          </ReactGridLayout>
+        ) : (
+          // Genuinely narrow (phone), or the very first render before the
+          // measurement lands. Either way the stack is the right thing to
+          // show, so content is never missing while we work it out.
+          renderStack()
+        )}
+      </div>
 
       <AddWidgetDialog
         open={addOpen}

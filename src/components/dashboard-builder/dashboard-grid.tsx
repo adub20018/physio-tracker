@@ -4,6 +4,12 @@
 // grid doesn't mean anything on a narrow phone screen, and drag-resize
 // handles are unreliable on small touchscreens anyway.
 //
+// Both `isDesktop` (useMediaQuery) and the grid's own container-width
+// measurement (useContainerWidth) are client-only and resolve a moment
+// after first paint — the stacked mobile layout (renderStack) doubles as
+// the fallback shown on desktop for that brief window too, so widgets are
+// never just... gone while either one is still settling.
+//
 // Edit mode holds a local working copy (`draft`) of the widget list,
 // snapshotted from the server-loaded `widgets` prop when editing starts.
 // Save persists it via a Server Action and refreshes; Cancel just drops the
@@ -169,6 +175,52 @@ export function DashboardGrid({
   }));
   const sorted = sortForDisplay(known);
 
+  // True mobile view, and also the placeholder shown on desktop for the
+  // brief window before useContainerWidth's first measurement completes
+  // (see the `mounted` branch below) — same content either way, so there's
+  // never a moment where the widgets are just gone.
+  function renderStack() {
+    return (
+      <div className={styles.mobileStack}>
+        {sorted.map((widget, index) => (
+          <div key={widget.id} className={styles.mobileItem}>
+            {isEditing && (
+              <div className={styles.mobileMoveControls}>
+                <button
+                  type="button"
+                  className={styles.moveButton}
+                  onClick={() => moveWidget(widget.id, -1)}
+                  disabled={index === 0}
+                  aria-label="Move up"
+                >
+                  <ChevronUp size={16} />
+                </button>
+                <button
+                  type="button"
+                  className={styles.moveButton}
+                  onClick={() => moveWidget(widget.id, 1)}
+                  disabled={index === sorted.length - 1}
+                  aria-label="Move down"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+            )}
+            <div className={styles.mobileItemContent}>
+              <WidgetShell
+                definition={WIDGET_REGISTRY[widget.widgetType]}
+                bundle={bundle}
+                ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
+                editMode={isEditing}
+                onRemove={() => removeWidget(widget.id)}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className={styles.controls}>
@@ -224,47 +276,9 @@ export function DashboardGrid({
         </Message.Root>
       )}
 
-      {!isDesktop ? (
-        <div className={styles.mobileStack}>
-          {sorted.map((widget, index) => (
-            <div key={widget.id} className={styles.mobileItem}>
-              {isEditing && (
-                <div className={styles.mobileMoveControls}>
-                  <button
-                    type="button"
-                    className={styles.moveButton}
-                    onClick={() => moveWidget(widget.id, -1)}
-                    disabled={index === 0}
-                    aria-label="Move up"
-                  >
-                    <ChevronUp size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.moveButton}
-                    onClick={() => moveWidget(widget.id, 1)}
-                    disabled={index === sorted.length - 1}
-                    aria-label="Move down"
-                  >
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-              )}
-              <div className={styles.mobileItemContent}>
-                <WidgetShell
-                  definition={WIDGET_REGISTRY[widget.widgetType]}
-                  bundle={bundle}
-                  ctx={{ widgetId: widget.id, today, autoScaleYAxis }}
-                  editMode={isEditing}
-                  onRemove={() => removeWidget(widget.id)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
+      {isDesktop ? (
         <div ref={containerRef} className={styles.gridContainer}>
-          {mounted && (
+          {mounted ? (
             <ReactGridLayout
               layout={layout}
               width={width}
@@ -285,8 +299,17 @@ export function DashboardGrid({
                 </div>
               ))}
             </ReactGridLayout>
+          ) : (
+            // useContainerWidth needs one measurement pass (via the ref
+            // above) before the real grid can render — showing the stacked
+            // layout as a placeholder for that brief window means content
+            // is never just... gone, only reflows once into the grid a
+            // moment later.
+            renderStack()
           )}
         </div>
+      ) : (
+        renderStack()
       )}
 
       <AddWidgetDialog

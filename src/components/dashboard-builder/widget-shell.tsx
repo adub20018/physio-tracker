@@ -57,28 +57,25 @@ export function WidgetShell({
   editMode?: boolean;
   onRemove?: () => void;
 }) {
-  const content = definition.render(bundle, ctx);
   const fill = ctx.fillHeight;
+  const editControls = editMode ? (
+    <>
+      <DragHandle />
+      <RemoveButton label={definition.label} onRemove={onRemove} />
+    </>
+  ) : undefined;
+
+  // Bare widgets (stat tiles) place the controls inside their own header,
+  // swapping them for the icon badge — see StatTile's `actions` prop. Doing
+  // it that way instead of stacking a control bar above the tile is what
+  // keeps the tile exactly the same height in edit mode as out of it.
+  const content = definition.render(
+    bundle,
+    definition.bare ? { ...ctx, editControls } : ctx,
+  );
 
   if (definition.bare) {
-    if (!editMode) {
-      return fill ? <div className={styles.fillBare}>{content}</div> : content;
-    }
-    return (
-      <div
-        className={
-          fill
-            ? `${styles.bareEditWrapper} ${styles.fillBare}`
-            : styles.bareEditWrapper
-        }
-      >
-        <div className={styles.bareEditBar}>
-          <DragHandle />
-          <RemoveButton label={definition.label} onRemove={onRemove} />
-        </div>
-        {content}
-      </div>
-    );
+    return fill ? <div className={styles.fillBare}>{content}</div> : content;
   }
 
   return (

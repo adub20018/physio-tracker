@@ -30,9 +30,10 @@
   flex-direction: column;
 }
 
-/* Bare (stat tile) widgets in fill mode. The tile is the last child in
-   both layouts (on its own when viewing, below the edit bar when editing),
-   so only that last child grows — the edit bar keeps its natural height. */
+/* Bare (stat tile) widgets in fill mode: the tile is the only child and
+   simply fills the cell. Its edit-mode controls live inside its own header
+   (StatTile's `actions`), so nothing is ever stacked above it and its
+   height is identical whether or not the dashboard is being edited. */
 .fillBare {
   height: 100%;
   min-height: 0;
@@ -40,7 +41,7 @@
   flex-direction: column;
 }
 
-.fillBare > :last-child {
+.fillBare > * {
   flex: 1;
   min-height: 0;
   box-sizing: border-box;
@@ -55,12 +56,14 @@
   gap: 0.35rem;
 }
 
+/* 1.6rem, not larger: these also sit inside a stat tile's own 2rem-tall
+   header slot (in place of its icon badge), and must not stretch it. */
 .dragHandle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.6rem;
+  height: 1.6rem;
   color: var(--muted);
   cursor: grab;
   touch-action: none;
@@ -74,8 +77,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border: none;
   border-radius: 6px;
   background: transparent;
@@ -86,21 +89,4 @@
 .removeButton:hover {
   background: var(--surface-sunken);
   color: var(--p-red-300, #fca5a5);
-}
-
-/* Stat tiles are "bare" — already a complete, self-styled unit with no
-   header slot to inject a drag handle/remove button into. In edit mode
-   only, they get a minimal top strip carrying just those two controls,
-   sitting above the tile rather than inside it. */
-.bareEditWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.bareEditBar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.35rem;
 }

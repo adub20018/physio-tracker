@@ -69,11 +69,18 @@ export type WidgetRenderContext = {
   // at its fixed pixel size. False in the mobile stack, which has no
   // definite height to fill (a chart there would collapse to nothing).
   fillHeight: boolean;
+  // Edit mode's drag handle + remove button, supplied by WidgetShell. Only
+  // "bare" widgets (stat tiles) read this — they have no card header for
+  // the shell to put the controls in, so they place them inside their own
+  // header instead, which keeps their height the same in edit mode as out
+  // of it. Undefined when not editing.
+  editControls?: React.ReactNode;
 };
 
-// Grid-unit size bounds for one widget type, in the same 12-column /
-// 20px-row units as x/y/w/h. Enforced by react-grid-layout during resize,
-// so a widget can't be dragged into a size where it stops being readable.
+// Grid-unit size bounds for one widget type, in the same units as x/y/w/h
+// (12 columns; one row step is 20px — see ROW_HEIGHT in dashboard-grid.tsx).
+// Enforced by react-grid-layout during resize, so a widget can't be dragged
+// into a size where it stops being readable.
 export type WidgetSizeBounds = {
   minW: number;
   maxW?: number;
@@ -97,25 +104,26 @@ export type WidgetDefinition = {
   render: (bundle: ChartDataBundle, ctx: WidgetRenderContext) => React.ReactNode;
 };
 
-// A stat tile is a fixed-height unit: it's one line of type over a small
-// sparkline, so there's nothing to gain from making it taller and it breaks
-// if made shorter. minH === maxH locks its height while leaving width free
-// between a quarter and a half of the grid.
+// A stat tile is a fixed-height unit: value + label + a 28px sparkline,
+// about 120px of content. h=7 (128px) is the smallest row count that fits
+// it without squeezing, and there's nothing to gain from more — so
+// minH === maxH locks the height, leaving only width adjustable, between a
+// quarter and a half of the grid.
 const STAT_TILE_BOUNDS: WidgetSizeBounds = {
   minW: 2,
   maxW: 6,
-  minH: 5,
-  maxH: 5,
+  minH: 7,
+  maxH: 7,
 };
 
 // Charts need real room for axes and tick labels before they stop being
-// readable; below roughly a quarter-width and ~170px tall they're just
+// readable; below roughly a quarter-width and ~190px tall they're just
 // noise. No maximum — a chart can be as large as the user wants.
-const CHART_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 6 };
+const CHART_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 10 };
 
 // The heatmap is a fixed-cell-size grid (14px squares), so it doesn't gain
 // anything from extra height the way a plotted chart does.
-const HEATMAP_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 5 };
+const HEATMAP_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 8 };
 
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
 // widget: owns one widget's independent persisted range selection, filters
@@ -221,10 +229,10 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "stat-pain",
     label: "Avg pain (7D)",
     category: "Stat tiles",
-    defaultSize: { w: 3, h: 5 },
+    defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
     bare: true,
-    render: (bundle) => {
+    render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
       const delta = fmtDelta(current.painAvg, previous.painAvg, 1);
       return (
@@ -245,6 +253,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           accentColor={SERIES.pain}
           sparklineValues={bundle.painSparkline}
           sparklineVariant="area"
+          actions={ctx.editControls}
         />
       );
     },
@@ -253,10 +262,10 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "stat-steps",
     label: "Avg daily steps (7D)",
     category: "Stat tiles",
-    defaultSize: { w: 3, h: 5 },
+    defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
     bare: true,
-    render: (bundle) => {
+    render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
       const delta = fmtDelta(
         current.stepsAvg != null ? Math.round(current.stepsAvg) : null,
@@ -283,6 +292,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           icon={<Footprints size={16} />}
           accentColor={SERIES.steps}
           sparklineValues={bundle.stepsSparkline}
+          actions={ctx.editControls}
         />
       );
     },
@@ -291,10 +301,10 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "stat-sleep",
     label: "Avg sleep (7D)",
     category: "Stat tiles",
-    defaultSize: { w: 3, h: 5 },
+    defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
     bare: true,
-    render: (bundle) => {
+    render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
       const delta = fmtDelta(current.sleepAvg, previous.sleepAvg, 1);
       return (
@@ -314,6 +324,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           icon={<BedDouble size={16} />}
           accentColor={SERIES.sleep}
           sparklineValues={bundle.sleepSparkline}
+          actions={ctx.editControls}
         />
       );
     },
@@ -322,10 +333,10 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "stat-physio-load",
     label: "Physio load (7D)",
     category: "Stat tiles",
-    defaultSize: { w: 3, h: 5 },
+    defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
     bare: true,
-    render: (bundle) => {
+    render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
       const delta = fmtDelta(
         current.physioLoadAvg != null ? Math.round(current.physioLoadAvg) : null,
@@ -353,6 +364,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           accentColor={SERIES.load}
           sparklineValues={bundle.physioLoadSparkline}
           sparklineVariant="area"
+          actions={ctx.editControls}
         />
       );
     },
@@ -363,7 +375,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-pain-timeline",
     label: "Pain over time",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 10 },
+    defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     hint: 'Raw readings with the 7-day trend — the line that answers "am I actually progressing?"',
     render: (bundle, ctx) => (
@@ -384,7 +396,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-load-vs-symptoms",
     label: "Load vs next-day pain",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 10 },
+    defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
     render: (bundle, ctx) => (
@@ -405,7 +417,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-sleep-pain",
     label: "Sleep & pain over time",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 10 },
+    defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings",
     render: (bundle, ctx) => (
@@ -426,7 +438,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-progression",
     label: "Physio progression",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 10 },
+    defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
     render: (bundle, ctx) => (
@@ -447,7 +459,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-heatmap",
     label: "Calendar / Pain Heatmap",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 10 },
+    defaultSize: { w: 12, h: 18 },
     bounds: HEATMAP_BOUNDS,
     hint: "Average pain per day, at a glance",
     // Deliberately ignores the selected time range, same as today — a
@@ -460,7 +472,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-steps-morning",
     label: "Steps vs next-morning pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Data is lagged (day-over-day) so the steps are compared to the next morning's pain",
     render: (bundle, ctx) => (
@@ -484,7 +496,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-steps-peak",
     label: "Steps vs peak next-day pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
@@ -508,7 +520,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-steps-average",
     label: "Steps vs average next-day pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
@@ -532,7 +544,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-load-morning",
     label: "Physio load vs next-morning pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain",
     render: (bundle, ctx) => (
@@ -556,7 +568,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-load-peak",
     label: "Physio load vs peak next-day pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
@@ -580,7 +592,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-load-average",
     label: "Physio load vs average next-day pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
@@ -604,7 +616,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-pain-candle",
     label: "Morning-to-day pain",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up",
     render: (bundle, ctx) => (
@@ -625,7 +637,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "scatter-sleep-pain",
     label: "Sleep vs pain, all day",
     category: "Insights charts",
-    defaultSize: { w: 6, h: 10 },
+    defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
     hint: "Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one",
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,

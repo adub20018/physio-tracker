@@ -55,6 +55,12 @@ export type StatTileProps = {
   // with the space beneath it filled, for metrics where a continuous trend
   // reads better than discrete days (average pain, physio load).
   sparklineVariant?: "bar" | "area";
+  // Controls that take the icon badge's place in the header row — the
+  // dashboard's edit-mode drag/remove buttons. They swap for the badge
+  // rather than sitting above the tile so the tile's height doesn't change
+  // between viewing and editing; the badge's only job (the metric hint) is
+  // of no use while you're rearranging anyway.
+  actions?: React.ReactNode;
 };
 
 export function StatTile({
@@ -70,6 +76,7 @@ export function StatTile({
   accentColor,
   sparklineValues,
   sparklineVariant = "bar",
+  actions,
 }: StatTileProps) {
   const badgeStyle = {
     background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
@@ -104,7 +111,9 @@ export function StatTile({
             </span>
           )}
         </div>
-        {hint ? (
+        {actions ? (
+          <span className={styles.actions}>{actions}</span>
+        ) : hint ? (
           <InfoTooltip
             text={hint}
             label={`What is ${label}?`}

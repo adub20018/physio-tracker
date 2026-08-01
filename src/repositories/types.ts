@@ -54,3 +54,56 @@ export interface UserSettingsRepository {
   // defaults again — part of the "delete all data" account action.
   delete(userId: string): Promise<void>;
 }
+
+// A user-created dashboard (the customizable-dashboard system) — just the
+// fields a caller cares about, not DB plumbing (no userId/createdAt).
+export type Dashboard = {
+  id: string;
+  name: string;
+  sortOrder: number;
+};
+
+// One chart placed on a dashboard. widgetType is a key into the widget
+// registry (src/components/dashboard-builder/widget-registry.tsx); x/y/w/h
+// are react-grid-layout grid units.
+export type DashboardWidget = {
+  id: string;
+  widgetType: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+export type DashboardWithWidgets = Dashboard & { widgets: DashboardWidget[] };
+
+// Input for saveWidgets: the widget's placement/type, no id — saving a
+// layout always replaces the dashboard's whole widget set wholesale
+// (simplest correct model for an explicit-Save edit flow), so ids are
+// regenerated rather than matched up with whatever existed before.
+export type NewDashboardWidgetInput = Omit<DashboardWidget, "id">;
+
+export interface DashboardRepository {
+  // Every dashboard a user has, ordered by sortOrder then creation order.
+  listForUser(userId: string): Promise<Dashboard[]>;
+  // Creates a new, empty dashboard, appended to the end of the user's list.
+  create(userId: string, name: string): Promise<Dashboard>;
+  // Renames a dashboard. No-ops (returns without throwing) if it doesn't
+  // belong to userId — callers should treat "not found" and "not yours" the
+  // same way (404), so this doesn't need to distinguish them.
+  rename(id: string, userId: string, name: string): Promise<void>;
+  // Removes a dashboard (and, via cascade, its widgets).
+  delete(id: string, userId: string): Promise<void>;
+  // Persists a new relative order for a user's dashboards (the switcher's
+  // list order) — orderedIds must contain exactly that user's dashboard ids.
+  reorder(userId: string, orderedIds: string[]): Promise<void>;
+  // A single dashboard with its widgets, or null if it doesn't exist or
+  // doesn't belong to userId (callers 404 on null, same reasoning as rename).
+  getWithWidgets(id: string, userId: string): Promise<DashboardWithWidgets | null>;
+  // Replaces a dashboard's entire widget set — the Save action in edit mode.
+  saveWidgets(
+    dashboardId: string,
+    userId: string,
+    widgets: NewDashboardWidgetInput[],
+  ): Promise<void>;
+}

@@ -50,7 +50,8 @@ function fmtDelta(
   return { text, direction: diff >= 0 ? "up" : "down" };
 }
 
-export type WidgetCategory = "Stat tiles" | "Dashboard charts" | "Insights charts";
+export type WidgetCategory =
+  "Stat tiles" | "Dashboard charts" | "Insights charts";
 
 export type WidgetRenderContext = {
   // The widget's own DB row id.
@@ -78,15 +79,31 @@ export type WidgetRenderContext = {
 };
 
 // Grid-unit size bounds for one widget type, in the same units as x/y/w/h
-// (12 columns; one row step is 20px — see ROW_HEIGHT in dashboard-grid.tsx).
-// Enforced by react-grid-layout during resize, so a widget can't be dragged
-// into a size where it stops being readable.
+// (12 columns on desktop / 2 on mobile; one row step is 20px — see
+// ROW_HEIGHT in dashboard-grid.tsx). Passed straight to react-grid-layout,
+// which clamps live during a resize drag rather than letting a widget be
+// dragged into a size where it stops being readable.
+//
+// All four are required, not optional: an omitted maximum silently means
+// "unbounded", which is a decision worth making explicitly per widget
+// rather than by forgetting. The constants below are shared by widgets
+// with the same needs, but any definition can supply its own object
+// instead — bounds are per widget type, not per category.
 export type WidgetSizeBounds = {
   minW: number;
-  maxW?: number;
+  maxW: number;
   minH: number;
-  maxH?: number;
+  maxH: number;
 };
+
+// Grid width is 12 columns on desktop, 2 on the phone layout.
+const DESKTOP_MAX_W = 12;
+const MOBILE_MAX_W = 2;
+
+// ~888px. A ceiling rather than a real constraint: tall is fine, but a
+// widget dragged to several screens high is almost always a slip, and an
+// unbounded drag can leave the rest of the dashboard stranded far below.
+const TALL_MAX_H = 34;
 
 export type WidgetDefinition = {
   type: string;
@@ -107,7 +124,10 @@ export type WidgetDefinition = {
   // InfoTooltip text for the widget shell's header — unused for bare
   // widgets, which already carry their own hint (StatTile's own tooltip).
   hint?: string;
-  render: (bundle: ChartDataBundle, ctx: WidgetRenderContext) => React.ReactNode;
+  render: (
+    bundle: ChartDataBundle,
+    ctx: WidgetRenderContext,
+  ) => React.ReactNode;
 };
 
 // A stat tile is a fixed-height unit: value + label + a 28px sparkline,
@@ -116,7 +136,7 @@ export type WidgetDefinition = {
 // minH === maxH locks the height, leaving only width adjustable, between a
 // quarter and a half of the grid.
 const STAT_TILE_BOUNDS: WidgetSizeBounds = {
-  minW: 2,
+  minW: 3,
   maxW: 6,
   minH: 7,
   maxH: 7,
@@ -124,12 +144,23 @@ const STAT_TILE_BOUNDS: WidgetSizeBounds = {
 
 // Charts need real room for axes and tick labels before they stop being
 // readable; below roughly a quarter-width and ~190px tall they're just
-// noise. No maximum — a chart can be as large as the user wants.
-const CHART_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 10 };
+// noise. Free to grow to the full grid width.
+const CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 12,
+  maxH: TALL_MAX_H,
+};
 
-// The heatmap is a fixed-cell-size grid (14px squares), so it doesn't gain
-// anything from extra height the way a plotted chart does.
-const HEATMAP_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 8 };
+// The heatmap is a fixed-cell-size grid (14px squares), so unlike a plotted
+// chart it gains nothing from extra height — past roughly 390px the cells
+// stay put and the rest is whitespace, hence the tighter ceiling.
+const HEATMAP_BOUNDS: WidgetSizeBounds = {
+  minW: 3,
+  maxW: DESKTOP_MAX_W,
+  minH: 8,
+  maxH: 20,
+};
 
 // ── Phone grid (2 columns) ────────────────────────────────────────────
 // A stat tile can be one column (2-up) or two (full width); its height is
@@ -144,18 +175,21 @@ const MOBILE_STAT_TILE_BOUNDS: WidgetSizeBounds = {
 };
 
 // Charts always span both columns: a plot with axes and tick labels is
-// illegible at ~160px wide whatever the desktop layout says. Height is
-// free above a floor that keeps the axes readable.
+// illegible at ~150px wide whatever the desktop layout says, so min and max
+// width are pinned together. Height is adjustable above a readable floor.
 const MOBILE_CHART_BOUNDS: WidgetSizeBounds = {
-  minW: 2,
-  maxW: 2,
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
   minH: 12,
+  maxH: TALL_MAX_H,
 };
 
+// Same fixed-cell reasoning as the desktop heatmap above.
 const MOBILE_HEATMAP_BOUNDS: WidgetSizeBounds = {
-  minW: 2,
-  maxW: 2,
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
   minH: 10,
+  maxH: 20,
 };
 
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
@@ -236,13 +270,25 @@ function SleepVsPainWidget({
           {daytimeLine && (
             <li style={{ color: SERIES.daytime }}>Daytime: {daytimeLine}</li>
           )}
-          {nightLine && <li style={{ color: SERIES.night }}>Night: {nightLine}</li>}
+          {nightLine && (
+            <li style={{ color: SERIES.night }}>Night: {nightLine}</li>
+          )}
         </ul>
       )}
       <MultiScatter
         series={[
-          { key: "morning", label: "Morning", color: SERIES.morning, points: morning },
-          { key: "daytime", label: "Daytime", color: SERIES.daytime, points: daytime },
+          {
+            key: "morning",
+            label: "Morning",
+            color: SERIES.morning,
+            points: morning,
+          },
+          {
+            key: "daytime",
+            label: "Daytime",
+            color: SERIES.daytime,
+            points: daytime,
+          },
           { key: "night", label: "Night", color: SERIES.night, points: night },
         ]}
         xLabel="Sleep (hours)"
@@ -380,8 +426,12 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
       const delta = fmtDelta(
-        current.physioLoadAvg != null ? Math.round(current.physioLoadAvg) : null,
-        previous.physioLoadAvg != null ? Math.round(previous.physioLoadAvg) : null,
+        current.physioLoadAvg != null
+          ? Math.round(current.physioLoadAvg)
+          : null,
+        previous.physioLoadAvg != null
+          ? Math.round(previous.physioLoadAvg)
+          : null,
         0,
       );
       return (
@@ -711,6 +761,5 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
 ];
 
-export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = Object.fromEntries(
-  WIDGET_DEFINITIONS.map((def) => [def.type, def]),
-);
+export const WIDGET_REGISTRY: Record<string, WidgetDefinition> =
+  Object.fromEntries(WIDGET_DEFINITIONS.map((def) => [def.type, def]));

@@ -171,11 +171,12 @@ export function DashboardGrid({
   const rangeDays = daysForRange(range);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [savedWidgets, setSavedWidgets] = useState<DashboardWidget[]>(widgets);
   const [draft, setDraft] = useState<DashboardWidget[]>(widgets);
   const [addOpen, setAddOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const active = isEditing ? draft : widgets;
+  const active = isEditing ? draft : savedWidgets;
   // Drop any widget whose type isn't (or is no longer) in the registry —
   // keeps `layout` and the rendered children in exact 1:1 correspondence,
   // which react-grid-layout expects.
@@ -183,7 +184,7 @@ export function DashboardGrid({
   const existingTypes = new Set(known.map((w) => w.widgetType));
 
   function startEdit() {
-    setDraft(widgets);
+    setDraft(savedWidgets);
     setError(null);
     setIsEditing(true);
   }
@@ -213,6 +214,7 @@ export function DashboardGrid({
     startTransition(async () => {
       const result = await saveDashboardLayout(dashboardId, payload);
       if (result.ok) {
+        setSavedWidgets(draft);
         setIsEditing(false);
         router.refresh();
       } else {

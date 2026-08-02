@@ -15,7 +15,6 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
 }
 
 .valueLine {
@@ -111,4 +110,5 @@
    that, never below it. */
 .sparkline {
   margin-top: auto;
+  height: 100%;
 }

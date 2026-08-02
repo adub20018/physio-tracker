@@ -45,7 +45,6 @@
   border-radius: 12px;
   background: var(--surface);
   padding: 1.1rem 1.25rem 0.9rem;
-  margin-bottom: 1.25rem;
   box-shadow: var(--shadow-subtle);
 }
 

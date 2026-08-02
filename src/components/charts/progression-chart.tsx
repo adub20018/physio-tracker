@@ -19,7 +19,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -141,8 +147,8 @@ export function ProgressionChart({
             the 0% tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 170}
-          style={fillHeight ? { flex: 170, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={withRange}
@@ -158,14 +164,11 @@ export function ProgressionChart({
                 panel to band keeps them all identical. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 50]}
               ticks={autoScaleYAxis ? undefined : [0, 25, 50]}
               interval={0}
               tickFormatter={(v: number) => `${v}%`}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -221,14 +224,7 @@ export function ProgressionChart({
             {/* scale="band" explicitly, matching Panel 1 — see the note
                 there for why every synced panel needs to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -271,14 +267,7 @@ export function ProgressionChart({
               tickLine={false}
               minTickGap={28}
             />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}

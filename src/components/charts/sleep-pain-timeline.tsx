@@ -16,7 +16,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -109,14 +115,7 @@ export function SleepPainTimeline({
             {/* scale="band" explicitly, matching Panel 2's Line-only axis —
                 see the note there for why both panels need to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -167,12 +166,9 @@ export function SleepPainTimeline({
               minTickGap={28}
             />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
               ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}

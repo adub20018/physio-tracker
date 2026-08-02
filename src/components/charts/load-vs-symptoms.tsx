@@ -17,7 +17,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -154,16 +160,10 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={[0, "auto"]}
-              // interval={0}: Recharts otherwise silently drops the domain-min
-              // (0) tick on this panel — not a CSS clipping issue, the <text>
-              // never renders — forcing every computed tick to draw fixes it.
               interval={0}
               tickFormatter={compactNumber}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -199,13 +199,10 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={[0, "auto"]}
               interval={0}
               tickFormatter={compactNumber}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -243,12 +240,9 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden={false} />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
               ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}

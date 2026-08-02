@@ -52,3 +52,10 @@ export const TOOLTIP_STYLE: React.CSSProperties = {
 export function shortDate(iso: string): string {
   return iso.slice(5);
 }
+
+export const CHART_Y_AXIS = {
+  width: 48,
+  tick: CHART_CHROME.tick,
+  axisLine: false,
+  tickLine: false,
+};

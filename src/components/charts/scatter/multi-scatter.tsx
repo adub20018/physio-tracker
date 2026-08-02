@@ -14,7 +14,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, TOOLTIP_STYLE } from "@/components/charts/chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  TOOLTIP_STYLE,
+} from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "@/components/charts/charts.module.css";
@@ -84,15 +88,12 @@ export function MultiScatter({
             height={34}
           />
           <YAxis
+            {...CHART_Y_AXIS}
             dataKey="y"
             name={yLabel}
             type="number"
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={44}
             label={{
               value: yLabel,
               angle: -90,

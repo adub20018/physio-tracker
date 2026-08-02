@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import {
   CHART_CHROME,
+  CHART_Y_AXIS,
   FLARE_COLOR,
   SERIES,
   TOOLTIP_STYLE,
@@ -91,7 +92,9 @@ export function PainTimeline({
   fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No pain data yet." height={280} fill={fillHeight} />;
+    return (
+      <EmptyState message="No pain data yet." height={280} fill={fillHeight} />
+    );
   }
 
   return (
@@ -140,11 +143,9 @@ export function PainTimeline({
             minTickGap={28}
           />
           <YAxis
+            {...CHART_Y_AXIS}
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
           />
           <Tooltip
             content={<PainTooltipContent />}

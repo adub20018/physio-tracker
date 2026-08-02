@@ -85,6 +85,8 @@
 
 .editing :global(.react-grid-item) > :global(.react-resizable-handle) {
   opacity: 0.75;
+  height: 1.5rem;
+  width: 1.5rem;
 }
 
 .editing :global(.react-grid-item):hover > :global(.react-resizable-handle) {

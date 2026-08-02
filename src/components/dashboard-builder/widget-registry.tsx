@@ -558,7 +558,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-heatmap",
     label: "Calendar / Pain Heatmap",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 18 },
+    defaultSize: { w: 6, h: 12 },
     bounds: HEATMAP_BOUNDS,
     mobileDefaultSize: { w: 2, h: 12 },
     mobileBounds: MOBILE_HEATMAP_BOUNDS,

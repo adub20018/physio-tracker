@@ -146,6 +146,7 @@ export function PainTimeline({
             {...CHART_Y_AXIS}
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
+            interval={0}
           />
           <Tooltip
             content={<PainTooltipContent />}

@@ -94,6 +94,12 @@ export type WidgetDefinition = {
   category: WidgetCategory;
   defaultSize: { w: number; h: number };
   bounds: WidgetSizeBounds;
+  // The same two, in the phone grid's units (2 columns — see MOBILE_COLS in
+  // dashboard-grid.tsx). Separate because a size that reads well across 12
+  // desktop columns means nothing across 2, and because the minimum heights
+  // differ: content that fits on one line at full width wraps at half.
+  mobileDefaultSize: { w: number; h: number };
+  mobileBounds: WidgetSizeBounds;
   // True for widgets that are already a complete, self-styled unit (stat
   // tiles) — the widget shell skips its own .card/.cardHeader wrapper for
   // these, since double-framing would look wrong.
@@ -124,6 +130,33 @@ const CHART_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 10 };
 // The heatmap is a fixed-cell-size grid (14px squares), so it doesn't gain
 // anything from extra height the way a plotted chart does.
 const HEATMAP_BOUNDS: WidgetSizeBounds = { minW: 3, minH: 8 };
+
+// ── Phone grid (2 columns) ────────────────────────────────────────────
+// A stat tile can be one column (2-up) or two (full width); its height is
+// locked at 9 rows / 168px, which is what its content needs once the
+// value+delta line wraps at half width — measured at 149px, so this leaves
+// headroom rather than letting it be dragged small enough to clip.
+const MOBILE_STAT_TILE_BOUNDS: WidgetSizeBounds = {
+  minW: 1,
+  maxW: 2,
+  minH: 9,
+  maxH: 9,
+};
+
+// Charts always span both columns: a plot with axes and tick labels is
+// illegible at ~160px wide whatever the desktop layout says. Height is
+// free above a floor that keeps the axes readable.
+const MOBILE_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 2,
+  maxW: 2,
+  minH: 12,
+};
+
+const MOBILE_HEATMAP_BOUNDS: WidgetSizeBounds = {
+  minW: 2,
+  maxW: 2,
+  minH: 10,
+};
 
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
 // widget: owns one widget's independent persisted range selection, filters
@@ -231,6 +264,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Stat tiles",
     defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -264,6 +299,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Stat tiles",
     defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -303,6 +340,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Stat tiles",
     defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -335,6 +374,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Stat tiles",
     defaultSize: { w: 3, h: 7 },
     bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
     bare: true,
     render: (bundle, ctx) => {
       const { statCurrent: current, statPrevious: previous } = bundle;
@@ -377,6 +418,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Raw readings with the 7-day trend — the line that answers "am I actually progressing?"',
     render: (bundle, ctx) => (
       <RangedChart
@@ -398,6 +441,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
     render: (bundle, ctx) => (
       <RangedChart
@@ -419,6 +464,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings",
     render: (bundle, ctx) => (
       <RangedChart
@@ -440,6 +487,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
     render: (bundle, ctx) => (
       <RangedChart
@@ -461,6 +510,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: HEATMAP_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 12 },
+    mobileBounds: MOBILE_HEATMAP_BOUNDS,
     hint: "Average pain per day, at a glance",
     // Deliberately ignores the selected time range, same as today — a
     // heatmap narrowed to "7D" would just be seven squares.
@@ -474,6 +525,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Data is lagged (day-over-day) so the steps are compared to the next morning's pain",
     render: (bundle, ctx) => (
       <RangedChart
@@ -498,6 +551,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
       <RangedChart
@@ -522,6 +577,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
       <RangedChart
@@ -546,6 +603,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain",
     render: (bundle, ctx) => (
       <RangedChart
@@ -570,6 +629,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level",
     render: (bundle, ctx) => (
       <RangedChart
@@ -594,6 +655,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
     render: (bundle, ctx) => (
       <RangedChart
@@ -618,6 +681,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up",
     render: (bundle, ctx) => (
       <RangedChart
@@ -639,6 +704,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
     bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
     hint: "Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one",
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
   },

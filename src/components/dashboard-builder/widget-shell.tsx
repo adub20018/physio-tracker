@@ -11,11 +11,11 @@
 //     dashboard-grid.tsx points react-grid-layout's dragConfig.handle at
 //     that selector, so dragging only starts here, not from anywhere on the
 //     chart) plus a remove button.
-//   - mobile: move-up/move-down instead of the handle, since the mobile
-//     layout is an ordered reflow rather than a draggable grid. Keeping
-//     them in the header (rather than in a column beside the card) matters
-//     most there: a half-width stat tile has no horizontal room to spare.
-import { GripVertical, X, Info, ChevronUp, ChevronDown } from "lucide-react";
+//   - the same on mobile: react-draggable handles touch, so the handle is
+//     dragged rather than tapped. Keeping the controls in the header
+//     (rather than in a column beside the card) matters most there — a
+//     half-width stat tile has no horizontal room to spare.
+import { GripVertical, X, Info } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import type { WidgetDefinition, WidgetRenderContext } from "./widget-registry";
@@ -55,49 +55,17 @@ export function WidgetShell({
   ctx,
   editMode = false,
   onRemove,
-  move,
 }: {
   definition: WidgetDefinition;
   bundle: ChartDataBundle;
   ctx: WidgetRenderContext;
   editMode?: boolean;
   onRemove?: () => void;
-  // Supplied by the mobile layout, which reorders instead of dragging.
-  // When present, up/down buttons replace the drag handle.
-  move?: {
-    onUp: () => void;
-    onDown: () => void;
-    canMoveUp: boolean;
-    canMoveDown: boolean;
-  };
 }) {
   const fill = ctx.fillHeight;
   const editControls = editMode ? (
     <>
-      {move ? (
-        <>
-          <button
-            type="button"
-            className={styles.moveButton}
-            onClick={move.onUp}
-            disabled={!move.canMoveUp}
-            aria-label={`Move ${definition.label} earlier`}
-          >
-            <ChevronUp size={14} />
-          </button>
-          <button
-            type="button"
-            className={styles.moveButton}
-            onClick={move.onDown}
-            disabled={!move.canMoveDown}
-            aria-label={`Move ${definition.label} later`}
-          >
-            <ChevronDown size={14} />
-          </button>
-        </>
-      ) : (
-        <DragHandle />
-      )}
+      <DragHandle />
       <RemoveButton label={definition.label} onRemove={onRemove} />
     </>
   ) : undefined;

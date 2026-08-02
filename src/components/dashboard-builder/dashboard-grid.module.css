@@ -25,38 +25,22 @@
   margin-bottom: 1rem;
 }
 
-/* Mobile: a two-column reflow rather than a replay of the desktop grid.
-   Stat tiles take one column each so they pair up 2x2; charts span both.
-
-   Crucially the rows are `auto`, not a fixed pixel height — this is what
-   the desktop grid can't do. A stat tile squeezed to half a phone's width
-   may wrap its delta onto a second line, and here the row simply grows to
-   fit instead of the extra content being pushed out through the bottom of
-   a hard-coded cell. Nothing on mobile sets fillHeight, so every widget
-   reports its natural content height and the grid sizes around it. */
-.mobileStack {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: auto;
-  gap: 1rem;
-  align-items: stretch;
+/* Touch drag/resize: without this the browser claims the gesture for
+   scrolling and the handle never sees it. Applied to the handles only, so
+   the page still scrolls normally everywhere else on the card. */
+.gridContainer :global(.react-resizable-handle),
+.gridContainer [data-drag-handle] {
+  touch-action: none;
 }
 
-.mobileHalf {
-  grid-column: span 1;
-  min-width: 0;
-}
-
-.mobileFull {
-  grid-column: 1 / -1;
-  min-width: 0;
-}
-
-/* Side-by-side tiles should agree on a height — the taller of the pair
-   wins, and the shorter one's sparkline stays pinned to its bottom edge
-   (stat-tile.module.css's margin-top:auto). */
-.mobileHalf > * {
-  height: 100%;
+/* The resize handle's hit area is a 20px box in the library's CSS — fine
+   for a mouse, too small for a fingertip. Enlarged on coarse pointers
+   only, so desktop keeps the tighter corner target. */
+@media (pointer: coarse) {
+  .gridContainer :global(.react-grid-item) > :global(.react-resizable-handle) {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* Desktop/tablet: the react-grid-layout container needs an explicit width

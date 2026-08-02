@@ -51,7 +51,7 @@ const DESKTOP_QUERY = "(min-width: 44rem)";
 // still letting a stat tile land on its natural ~120px content height
 // (h=7 → 128px) instead of being forced to a much taller multiple.
 const ROW_HEIGHT = 8;
-const GRID_MARGIN: [number, number] = [16, 12];
+const GRID_MARGIN: [number, number] = [12, 12];
 
 const DESKTOP_COLS = 12;
 // Two columns on a phone: enough for stat tiles to sit 2-up, and coarse
@@ -388,6 +388,7 @@ export function DashboardGrid({
               cols: isDesktop ? DESKTOP_COLS : MOBILE_COLS,
               rowHeight: ROW_HEIGHT,
               margin: isDesktop ? GRID_MARGIN : MOBILE_MARGIN,
+              containerPadding: [0, 0],
             }}
             // react-draggable/react-resizable (which react-grid-layout is
             // built on) handle touch as well as mouse, so the same

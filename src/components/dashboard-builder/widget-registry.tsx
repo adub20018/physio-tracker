@@ -318,7 +318,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       const delta = fmtDelta(current.painAvg, previous.painAvg, 1);
       return (
         <StatTile
-          label="Avg pain (7D)"
+          label="Avg pain"
           value={current.painAvg != null ? current.painAvg.toFixed(1) : "—"}
           unit="/10"
           delta={delta?.text}
@@ -357,7 +357,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       );
       return (
         <StatTile
-          label="Avg daily steps (7D)"
+          label="Avg daily steps"
           value={
             current.stepsAvg != null
               ? Math.round(current.stepsAvg).toLocaleString()
@@ -394,7 +394,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       const delta = fmtDelta(current.sleepAvg, previous.sleepAvg, 1);
       return (
         <StatTile
-          label="Avg sleep (7D)"
+          label="Avg sleep"
           value={current.sleepAvg != null ? current.sleepAvg.toFixed(1) : "—"}
           unit="hrs"
           delta={delta?.text}
@@ -436,7 +436,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       );
       return (
         <StatTile
-          label="Physio load (7D)"
+          label="Physio load"
           value={
             current.physioLoadAvg != null
               ? Math.round(current.physioLoadAvg).toLocaleString()

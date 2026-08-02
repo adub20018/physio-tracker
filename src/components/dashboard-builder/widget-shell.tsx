@@ -36,7 +36,13 @@ function DragHandle() {
   );
 }
 
-function RemoveButton({ label, onRemove }: { label: string; onRemove?: () => void }) {
+function RemoveButton({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove?: () => void;
+}) {
   return (
     <button
       type="button"
@@ -93,11 +99,14 @@ export function WidgetShell({
         <h2 className={cardStyles.cardTitle}>{definition.label}</h2>
         <div className={styles.headerActions}>
           {definition.hint && (
-            <InfoTooltip text={definition.hint} label="What does this chart show?">
+            <InfoTooltip
+              text={definition.hint}
+              label="What does this chart show?"
+            >
               <Info size={14} />
             </InfoTooltip>
           )}
-          {editControls}
+          {editMode && <span className={styles.actions}>{editControls}</span>}
         </div>
       </div>
       {fill ? <div className={styles.fillBody}>{content}</div> : content}

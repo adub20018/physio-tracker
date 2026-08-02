@@ -81,17 +81,13 @@
   border-radius: 50%;
 }
 
-/* Edit-mode controls standing in for the icon badge. Matches the badge's
-   2rem height exactly so swapping one for the other can't change the
-   header row's height — and therefore can't change the tile's height
-   between viewing and editing. */
+/* Edit-mode controls */
 .actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.15rem;
-  flex-shrink: 0;
-  height: 2rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #27272a;
+  border-radius: 0 8px 0 8px;
 }
 
 .label {

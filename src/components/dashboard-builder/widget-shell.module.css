@@ -47,13 +47,19 @@
   box-sizing: border-box;
 }
 
-/* Edit-mode chrome added on top of dashboard.module.css's shared
-   .card/.cardHeader — a small actions row (drag handle + remove) sitting
-   next to whatever's already in the header (title, InfoTooltip). */
 .headerActions {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+/* Edit-mode controls */
+.actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #27272a;
+  border-radius: 0 8px 0 8px;
 }
 
 /* 1.6rem, not larger: these also sit inside a stat tile's own 2rem-tall
@@ -80,14 +86,12 @@
   width: 1.6rem;
   height: 1.6rem;
   border: none;
-  border-radius: 6px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
+  border-radius: 0 8px 0 0;
 }
 
 .removeButton:hover {
-  background: var(--surface-sunken);
-  color: var(--p-red-300, #fca5a5);
+  color: var(--p-red-400, #f87171);
 }
-

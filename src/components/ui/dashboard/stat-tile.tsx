@@ -111,9 +111,8 @@ export function StatTile({
             </span>
           )}
         </div>
-        {actions ? (
-          <span className={styles.actions}>{actions}</span>
-        ) : hint ? (
+        {actions && <span className={styles.actions}>{actions}</span>}
+        {hint ? (
           <InfoTooltip
             text={hint}
             label={`What is ${label}?`}

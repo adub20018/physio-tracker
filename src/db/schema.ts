@@ -138,6 +138,16 @@ export const dashboardWidgets = pgTable("dashboard_widgets", {
   y: integer("y").notNull(),
   w: integer("w").notNull(),
   h: integer("h").notNull(),
+  // The same widget's placement on the narrow (phone) grid, which has its
+  // own column count — a size that reads well across 12 desktop columns is
+  // unusable across 2 on a phone, so the two layouts are arranged
+  // independently. Null until the user actually rearranges on mobile; a
+  // sensible position is derived from the desktop one until then (see
+  // deriveMobileLayout in dashboard-grid.tsx).
+  mobileX: integer("mobile_x"),
+  mobileY: integer("mobile_y"),
+  mobileW: integer("mobile_w"),
+  mobileH: integer("mobile_h"),
 });
 
 // Row types inferred from the schema, for use by the repository layer.

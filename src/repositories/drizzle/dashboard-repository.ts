@@ -101,6 +101,10 @@ export class DrizzleDashboardRepository implements DashboardRepository {
         y: w.y,
         w: w.w,
         h: w.h,
+        mobileX: w.mobileX,
+        mobileY: w.mobileY,
+        mobileW: w.mobileW,
+        mobileH: w.mobileH,
       })),
     };
   }

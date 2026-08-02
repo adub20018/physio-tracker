@@ -43,6 +43,13 @@
       "when": 1785551263330,
       "tag": "0005_previous_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785629872738,
+      "tag": "0006_even_firebrand",
+      "breakpoints": true
     }
   ]
 }

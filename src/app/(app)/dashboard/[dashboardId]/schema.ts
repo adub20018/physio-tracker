@@ -11,6 +11,11 @@ export const dashboardWidgetInputSchema = z.object({
   y: z.number().int().min(0),
   w: z.number().int().min(1).max(12),
   h: z.number().int().min(1).max(100),
+  // The phone grid's own placement; null until arranged there.
+  mobileX: z.number().int().min(0).nullable(),
+  mobileY: z.number().int().min(0).nullable(),
+  mobileW: z.number().int().min(1).max(12).nullable(),
+  mobileH: z.number().int().min(1).max(100).nullable(),
 });
 
 export const saveDashboardLayoutSchema = z.array(dashboardWidgetInputSchema).max(100);

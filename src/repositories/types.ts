@@ -73,6 +73,14 @@ export type DashboardWidget = {
   y: number;
   w: number;
   h: number;
+  // Placement on the narrow (phone) grid, which has its own column count
+  // and is arranged independently of the desktop one. Null until the user
+  // has rearranged on mobile — a position is derived from the desktop
+  // layout until then.
+  mobileX: number | null;
+  mobileY: number | null;
+  mobileW: number | null;
+  mobileH: number | null;
 };
 
 export type DashboardWithWidgets = Dashboard & { widgets: DashboardWidget[] };

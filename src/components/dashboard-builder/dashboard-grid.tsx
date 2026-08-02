@@ -21,14 +21,14 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
-import { Pencil, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { daysForRange } from "@/lib/time-range";
 import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
 import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
-import { WIDGET_REGISTRY } from "./widget-registry";
+import { WIDGET_REGISTRY, type WidgetDefinition } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
@@ -55,6 +55,18 @@ function sortForDisplay(widgets: DashboardWidget[]): DashboardWidget[] {
 
 function nextY(widgets: DashboardWidget[]): number {
   return widgets.reduce((max, w) => Math.max(max, w.y + w.h), 0);
+}
+
+// Mobile reflows into two columns rather than replaying the desktop grid:
+// stat tiles take one column each so they pair up 2x2, and everything else
+// spans both. A chart squeezed into half a phone's width is unreadable
+// whatever the user set on desktop, so only stat tiles get a say — and even
+// they go full width if deliberately made wider than half the desktop grid.
+function mobileSpansHalf(
+  widget: DashboardWidget,
+  definition: WidgetDefinition,
+): boolean {
+  return Boolean(definition.bare) && widget.w <= 6;
 }
 
 export function DashboardGrid({
@@ -289,30 +301,14 @@ export function DashboardGrid({
         {!isDesktop ? (
           <div className={styles.mobileStack}>
             {sorted.map((widget, index) => (
-            <div key={widget.id} className={styles.mobileItem}>
-              {isEditing && (
-                <div className={styles.mobileMoveControls}>
-                  <button
-                    type="button"
-                    className={styles.moveButton}
-                    onClick={() => moveWidget(widget.id, -1)}
-                    disabled={index === 0}
-                    aria-label="Move up"
-                  >
-                    <ChevronUp size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.moveButton}
-                    onClick={() => moveWidget(widget.id, 1)}
-                    disabled={index === sorted.length - 1}
-                    aria-label="Move down"
-                  >
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-              )}
-              <div className={styles.mobileItemContent}>
+              <div
+                key={widget.id}
+                className={
+                  mobileSpansHalf(widget, WIDGET_REGISTRY[widget.widgetType])
+                    ? styles.mobileHalf
+                    : styles.mobileFull
+                }
+              >
                 <WidgetShell
                   definition={WIDGET_REGISTRY[widget.widgetType]}
                   bundle={bundle}
@@ -321,15 +317,23 @@ export function DashboardGrid({
                     today,
                     rangeDays,
                     autoScaleYAxis,
+                    // No definite cell height on mobile — the row sizes
+                    // itself from the content, so charts and tiles render
+                    // at their natural heights and can grow when text wraps.
                     fillHeight: false,
                   }}
                   editMode={isEditing}
                   onRemove={() => removeWidget(widget.id)}
+                  move={{
+                    onUp: () => moveWidget(widget.id, -1),
+                    onDown: () => moveWidget(widget.id, 1),
+                    canMoveUp: index > 0,
+                    canMoveDown: index < sorted.length - 1,
+                  }}
                 />
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         ) : (
           mounted && (
             <ReactGridLayout

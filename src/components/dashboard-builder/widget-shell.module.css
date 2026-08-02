@@ -90,3 +90,28 @@
   background: var(--surface-sunken);
   color: var(--p-red-300, #fca5a5);
 }
+
+/* Mobile's reorder controls, in place of the desktop drag handle. Same
+   1.6rem box as the others so a stat tile's header row keeps its height. */
+.moveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.moveButton:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--foreground);
+}
+
+.moveButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

@@ -25,53 +25,38 @@
   margin-bottom: 1rem;
 }
 
-/* Mobile: always a single stacked column, full width — no grid math needed
-   even for viewing, since a freeform multi-column resize grid doesn't mean
-   anything on a narrow phone screen anyway. */
+/* Mobile: a two-column reflow rather than a replay of the desktop grid.
+   Stat tiles take one column each so they pair up 2x2; charts span both.
+
+   Crucially the rows are `auto`, not a fixed pixel height — this is what
+   the desktop grid can't do. A stat tile squeezed to half a phone's width
+   may wrap its delta onto a second line, and here the row simply grows to
+   fit instead of the extra content being pushed out through the bottom of
+   a hard-coded cell. Nothing on mobile sets fillHeight, so every widget
+   reports its natural content height and the grid sizes around it. */
 .mobileStack {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: auto;
   gap: 1rem;
-}
-
-.mobileItem {
-  display: flex;
   align-items: stretch;
-  gap: 0.5rem;
 }
 
-.mobileItemContent {
-  flex: 1;
+.mobileHalf {
+  grid-column: span 1;
   min-width: 0;
 }
 
-/* Edit-mode reordering on mobile: up/down instead of drag, since a
-   freeform drag-resize handle is unreliable on small touchscreens and
-   there's nowhere to resize a single-column stack to anyway. */
-.mobileMoveControls {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.35rem;
-  flex-shrink: 0;
+.mobileFull {
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 
-.moveButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.moveButton:disabled {
-  opacity: 0.4;
-  cursor: default;
+/* Side-by-side tiles should agree on a height — the taller of the pair
+   wins, and the shorter one's sparkline stays pinned to its bottom edge
+   (stat-tile.module.css's margin-top:auto). */
+.mobileHalf > * {
+  height: 100%;
 }
 
 /* Desktop/tablet: the react-grid-layout container needs an explicit width

@@ -1,0 +1,31 @@
+.popup {
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0.9rem 1rem 1rem;
+}
+
+.section + .section {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+.sectionTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+  margin: 0 0 0.5rem;
+}
+
+.sectionHint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0.5rem 0 0.65rem;
+}
+
+.actionRow {
+  display: flex;
+  gap: 0.5rem;
+}

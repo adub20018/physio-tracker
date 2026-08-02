@@ -16,7 +16,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -34,19 +40,24 @@ const SYNC_ID = "sleep-pain-timeline";
 export function SleepPainTimeline({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: SleepPainPoint[];
   // When true, the pain panel's Y-axis scales to fit the visible data's own
   // max instead of the fixed 0–10 pain scale (Account → Preferences). The
   // sleep panel above already auto-scales unconditionally.
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel heights
+  // used on /insights — see .fill in charts.module.css. The panels keep
+  // their relative proportions via flexGrow weights matching those heights.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No data yet." height={250} />;
+    return <EmptyState message="No data yet." height={250} fill={fillHeight} />;
   }
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -78,13 +89,23 @@ export function SleepPainTimeline({
         </span>
       </div>
 
-      <div className={styles.panelStack}>
+      <div
+        className={
+          fillHeight
+            ? `${styles.panelStack} ${styles.fillPanels}`
+            : styles.panelStack
+        }
+      >
         {/* Panel 1: sleep hours */}
         {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
             reserved space below the 0 gridline, and Recharts otherwise drops
             the 0 tick's <text> entirely on panels like this one — both
             lessons learned on the Load vs symptoms chart. */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
@@ -94,14 +115,7 @@ export function SleepPainTimeline({
             {/* scale="band" explicitly, matching Panel 2's Line-only axis —
                 see the note there for why both panels need to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -125,7 +139,11 @@ export function SleepPainTimeline({
         {/* Panel 2: morning/daytime/night pain, all three — sleep may not
             just affect the immediate waking reading, so all of the day's
             readings are shown against the same night's sleep. */}
-        <ResponsiveContainer width="100%" height={130}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 130}
+          style={fillHeight ? { flex: 130, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
@@ -148,12 +166,9 @@ export function SleepPainTimeline({
               minTickGap={28}
             />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
               ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}

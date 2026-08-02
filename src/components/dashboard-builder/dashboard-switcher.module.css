@@ -1,0 +1,39 @@
+/* The dashboard name doubles as the switcher's trigger, so it has to read
+   as the page's h1 while still being an obviously clickable control. */
+.trigger {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.4rem;
+  margin-left: -0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.trigger:hover {
+  background: var(--surface);
+}
+
+.chevron {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Marks which dashboard is currently open in the list. */
+.currentItem {
+  font-weight: 600;
+}
+
+.check {
+  margin-left: auto;
+  color: var(--accent);
+}
+
+/* Keeps the tick column aligned for the non-current rows too. */
+.checkSpacer {
+  margin-left: auto;
+  width: 14px;
+}

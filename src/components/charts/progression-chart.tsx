@@ -19,7 +19,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -47,6 +53,7 @@ const SYNC_ID = "progression";
 export function ProgressionChart({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: ProgressionPoint[];
   // When true, the intensity panel's Y-axis scales to fit the visible
@@ -54,9 +61,19 @@ export function ProgressionChart({
   // Preferences). The hold-volume/physio-load panels below already
   // auto-scale unconditionally.
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel heights
+  // used on /insights — see .fill in charts.module.css. The panels keep
+  // their relative proportions via flexGrow weights matching those heights.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No physio sessions logged yet." height={410} />;
+    return (
+      <EmptyState
+        message="No physio sessions logged yet."
+        height={410}
+        fill={fillHeight}
+      />
+    );
   }
 
   const withRange: RangePoint[] = data.map((d) => {
@@ -82,7 +99,7 @@ export function ProgressionChart({
   });
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -117,12 +134,22 @@ export function ProgressionChart({
       {/* Three panels get a gap (.panelStack) plus an explicit divider
           element (.panelDivider) between them, so one panel's "0" doesn't
           read as touching the panel below it. */}
-      <div className={styles.panelStack}>
+      <div
+        className={
+          fillHeight
+            ? `${styles.panelStack} ${styles.fillPanels}`
+            : styles.panelStack
+        }
+      >
         {/* Panel 1: intensity band */}
         {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
             reserved space below the 0 gridline, and Recharts otherwise drops
             the 0% tick's <text> entirely on panels like this one. */}
-        <ResponsiveContainer width="100%" height={170}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
@@ -137,14 +164,11 @@ export function ProgressionChart({
                 panel to band keeps them all identical. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 50]}
               ticks={autoScaleYAxis ? undefined : [0, 25, 50]}
               interval={0}
               tickFormatter={(v: number) => `${v}%`}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -186,7 +210,11 @@ export function ProgressionChart({
         <div className={styles.panelDivider} />
 
         {/* Panel 2: hold volume */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
@@ -196,14 +224,7 @@ export function ProgressionChart({
             {/* scale="band" explicitly, matching Panel 1 — see the note
                 there for why every synced panel needs to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -225,7 +246,11 @@ export function ProgressionChart({
         <div className={styles.panelDivider} />
 
         {/* Panel 3: physio load */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
@@ -242,14 +267,7 @@ export function ProgressionChart({
               tickLine={false}
               minTickGap={28}
             />
-            <YAxis
-              domain={[0, "auto"]}
-              interval={0}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
-            />
+            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}

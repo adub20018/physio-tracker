@@ -17,7 +17,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, SERIES, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  SERIES,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
 
@@ -70,6 +76,7 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
 export function LoadVsSymptoms({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: LoadVsSymptomsPoint[];
   // When true, the next-day-pain panel's Y-axis scales to fit the visible
@@ -77,13 +84,17 @@ export function LoadVsSymptoms({
   // Preferences). The steps/physio load panels above already auto-scale
   // unconditionally.
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel heights
+  // used on /insights — see .fill in charts.module.css. The panels keep
+  // their relative proportions via flexGrow weights matching those heights.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No data yet." height={370} />;
+    return <EmptyState message="No data yet." height={370} fill={fillHeight} />;
   }
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -125,12 +136,22 @@ export function LoadVsSymptoms({
       {/* Three panels get a gap (.panelStack) plus an explicit divider
           element (.panelDivider) between them, so a panel's "0" tick
           doesn't read as touching the next panel's top. */}
-      <div className={styles.panelStack}>
+      <div
+        className={
+          fillHeight
+            ? `${styles.panelStack} ${styles.fillPanels}`
+            : styles.panelStack
+        }
+      >
         {/* Panel 1: steps */}
         {/* bottom margin > 0: with a hidden x-axis there's no reserved space
             below the 0 gridline, so the "0" tick label gets clipped by the
             container edge without it. */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
@@ -139,16 +160,10 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={[0, "auto"]}
-              // interval={0}: Recharts otherwise silently drops the domain-min
-              // (0) tick on this panel — not a CSS clipping issue, the <text>
-              // never renders — forcing every computed tick to draw fixes it.
               interval={0}
               tickFormatter={compactNumber}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -171,7 +186,11 @@ export function LoadVsSymptoms({
         <div className={styles.panelDivider} />
 
         {/* Panel 2: physio load */}
-        <ResponsiveContainer width="100%" height={110}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 110}
+          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
@@ -180,13 +199,10 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={[0, "auto"]}
               interval={0}
               tickFormatter={compactNumber}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -211,7 +227,11 @@ export function LoadVsSymptoms({
         {/* Panel 3: next-day pain (the symptom response), all three
             readings — load can show up at any point in the next day, not
             just the first reading taken. */}
-        <ResponsiveContainer width="100%" height={130}>
+        <ResponsiveContainer
+          width="100%"
+          height={fillHeight ? "100%" : 130}
+          style={fillHeight ? { flex: 130, minHeight: 0 } : undefined}
+        >
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
@@ -220,12 +240,9 @@ export function LoadVsSymptoms({
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             <PanelXAxis hidden={false} />
             <YAxis
+              {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
               ticks={autoScaleYAxis ? undefined : [0, 5, 10]}
-              tick={CHART_CHROME.tick}
-              axisLine={false}
-              tickLine={false}
-              width={46}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}

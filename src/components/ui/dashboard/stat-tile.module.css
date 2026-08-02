@@ -15,7 +15,6 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
 }
 
 .valueLine {
@@ -81,6 +80,15 @@
   border-radius: 50%;
 }
 
+/* Edit-mode controls */
+.actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #27272a;
+  border-radius: 0 8px 0 8px;
+}
+
 .label {
   display: inline-flex;
   /* flex-start, not center: when the label text wraps to two lines on a
@@ -102,4 +110,5 @@
    that, never below it. */
 .sparkline {
   margin-top: auto;
+  height: 100%;
 }

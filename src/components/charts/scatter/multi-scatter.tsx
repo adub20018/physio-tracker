@@ -14,7 +14,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, TOOLTIP_STYLE } from "@/components/charts/chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  TOOLTIP_STYLE,
+} from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "@/components/charts/charts.module.css";
@@ -31,6 +35,7 @@ export function MultiScatter({
   xLabel,
   yLabel,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   series: ScatterSeries[];
   xLabel: string;
@@ -38,13 +43,16 @@ export function MultiScatter({
   // When true, the Y-axis scales to fit the visible data's own max instead
   // of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel height
+  // used on /insights — see .fill in charts.module.css.
+  fillHeight?: boolean;
 }) {
   if (series.every((s) => s.points.length === 0)) {
-    return <EmptyState message="No data yet." height={280} />;
+    return <EmptyState message="No data yet." height={280} fill={fillHeight} />;
   }
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         {series.map((s) => (
           <span key={s.key} className={styles.legendItem}>
@@ -56,7 +64,11 @@ export function MultiScatter({
           </span>
         ))}
       </div>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer
+        width="100%"
+        height={fillHeight ? "100%" : 260}
+        className={fillHeight ? styles.fillChart : undefined}
+      >
         <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
           <CartesianGrid stroke={CHART_CHROME.grid} />
           <XAxis
@@ -76,15 +88,12 @@ export function MultiScatter({
             height={34}
           />
           <YAxis
+            {...CHART_Y_AXIS}
             dataKey="y"
             name={yLabel}
             type="number"
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={44}
             label={{
               value: yLabel,
               angle: -90,

@@ -1,0 +1,97 @@
+/* ── Fill mode ────────────────────────────────────────────────────
+   On the desktop grid, react-grid-layout gives each cell an absolutely
+   positioned box of an exact pixel height. Without these, the card inside
+   keeps its natural content height and simply sits in the top of that box
+   — which is the "dragging the handle taller just adds a gap, dragging it
+   shorter makes it overlap the widget below" bug. Making the card fill the
+   cell and laying it out as a flex column lets the chart claim whatever
+   height is left after the header (see .fill in charts.module.css).
+
+   The chart body wrapper needs min-height:0 for the same reason it does
+   there: a flex child won't shrink below its content's intrinsic size
+   otherwise, so charts could grow but never shrink back. */
+.fillCard {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* The card's own padding is part of its height here, not added on top. */
+  box-sizing: border-box;
+  /* margin-bottom on the shared .card is for the stacked page layout; in a
+     grid cell it would push the content out past the bottom edge. */
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.fillBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bare (stat tile) widgets in fill mode: the tile is the only child and
+   simply fills the cell. Its edit-mode controls live inside its own header
+   (StatTile's `actions`), so nothing is ever stacked above it and its
+   height is identical whether or not the dashboard is being edited. */
+.fillBare {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fillBare > * {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Edit-mode controls */
+.actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #27272a;
+  border-radius: 0 8px 0 8px;
+}
+
+/* 1.6rem, not larger: these also sit inside a stat tile's own 2rem-tall
+   header slot (in place of its icon badge), and must not stretch it. */
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 0 8px 0 0;
+}
+
+.removeButton:hover {
+  color: var(--p-red-400, #f87171);
+}

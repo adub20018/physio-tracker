@@ -1,25 +1,31 @@
-// A generic "are you sure" modal for destructive actions — used by the
-// Privacy page's Delete all data / Delete account buttons, and reusable
-// wherever else a confirmed destructive action is needed later.
+// A small "type a name and confirm" modal — the text-input counterpart to
+// ConfirmDialog, sharing its Dialog composition and footer. Used for both
+// creating and renaming a dashboard, which differ only in their title,
+// button label, and starting value.
+//
+// The field is seeded from `initialValue` each time the dialog opens (keyed
+// on `open`), so reopening it after a cancel doesn't show the abandoned
+// text from last time.
 "use client";
 
+import { useState } from "react";
 import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
+import { InputText } from "@primereact/ui/inputtext";
 import { Message } from "@primereact/ui/message";
 import { Times } from "@primeicons/react/times";
 import { ButtonSpinner } from "./button-spinner";
-import styles from "./confirm-dialog.module.css";
+import styles from "./name-dialog.module.css";
 
-export function ConfirmDialog({
+export function NameDialog({
   open,
   onOpenChange,
   title,
-  description,
+  label,
+  placeholder,
+  initialValue = "",
   confirmLabel,
-  // In-progress text for the confirm button. Defaults to the delete
-  // wording this dialog was first built for; anything that isn't a
-  // deletion (e.g. resetting a dashboard layout) passes its own.
-  pendingLabel = "Deleting…",
+  pendingLabel,
   onConfirm,
   isPending,
   error,
@@ -27,13 +33,33 @@ export function ConfirmDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: string;
+  label: string;
+  placeholder?: string;
+  initialValue?: string;
   confirmLabel: string;
-  pendingLabel?: string;
-  onConfirm: () => void;
+  pendingLabel: string;
+  onConfirm: (name: string) => void;
   isPending: boolean;
   error?: string | null;
 }) {
+  const [value, setValue] = useState(initialValue);
+
+  // Reset the field to `initialValue` on each open, adjusted during render
+  // rather than from an effect: React's documented way to reset state when
+  // a prop changes (it re-renders immediately without committing the stale
+  // value, and doesn't trip react-hooks/set-state-in-effect).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setValue(initialValue);
+  }
+
+  const trimmed = value.trim();
+
+  function submit() {
+    if (trimmed.length > 0 && !isPending) onConfirm(trimmed);
+  }
+
   return (
     <Dialog.Root
       open={open}
@@ -63,7 +89,25 @@ export function ConfirmDialog({
               </Dialog.HeaderActions>
             </Dialog.Header>
             <Dialog.Content className={styles.content}>
-              <p>{description}</p>
+              <label className={styles.label} htmlFor="name-dialog-input">
+                {label}
+              </label>
+              <InputText
+                id="name-dialog-input"
+                className={styles.input}
+                value={value}
+                placeholder={placeholder}
+                disabled={isPending}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setValue(e.target.value)
+                }
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    submit();
+                  }
+                }}
+              />
               {error && (
                 <Message.Root severity="error" size="small">
                   <Message.Content>
@@ -82,9 +126,8 @@ export function ConfirmDialog({
                 Cancel
               </Button>
               <Button
-                severity="danger"
-                onClick={onConfirm}
-                disabled={isPending}
+                onClick={submit}
+                disabled={isPending || trimmed.length === 0}
               >
                 {isPending ? (
                   <>

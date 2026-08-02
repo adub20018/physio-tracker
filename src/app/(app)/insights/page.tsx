@@ -1,24 +1,22 @@
 // /insights — the correlation explorer (PLAN.md §3): lag scatter plots with
 // Pearson r, the flare-up review with its "days before" context, and the
-// weekly report card. Server component: loads logs, computes everything
-// with pure domain functions, and hands display-ready data to client
-// components. The three correlation scatter sections render via
-// <InsightsCharts>, a client component that owns the time-range picker's
-// state and does its own (cheap, in-memory) filtering — Flare review and
-// the Weekly report card are range-independent and render directly here.
-// "Sleep & pain over time" moved to the dashboard.
+// weekly report card. Server component: loads logs, pulls the scatter/
+// candlestick series from the shared buildChartDataBundle (domain/
+// dashboard-bundle.ts), computes Flare review + Weekly report locally
+// (not part of the shared bundle — see its own comment), and hands
+// display-ready data to client components. The correlation scatter
+// sections render via <InsightsCharts>, a client component that owns the
+// time-range picker's state and does its own (cheap, in-memory) filtering
+// — Flare review and the Weekly report card are range-independent and
+// render directly here. "Sleep & pain over time" moved to the dashboard.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { summarizeExercises, weekdayOf } from "@/lib/format";
-import { nextMorningPain, nextDayValue } from "@/domain/lag";
-import { dailyPhysioLoad } from "@/domain/load";
-import { dailyPainAverage, dailyPainPeak } from "@/domain/aggregate";
-import { dailyPainCandles } from "@/domain/candle";
+import { buildChartDataBundle } from "@/domain/dashboard-bundle";
 import { flareEpisodes } from "@/domain/flare";
 import { weeklyReport } from "@/domain/weekly";
-import { pairSeries } from "@/domain/correlation";
 import {
   FlareReview,
   type FlareEpisodeView,
@@ -72,83 +70,23 @@ export default async function InsightsPage() {
   const logByDate = new Map(logs.map((l) => [l.date, l]));
   const today = await todayIso();
 
-  // ── Lag scatters, full history (<InsightsCharts> slices to range) ─────
-  const nextPain = nextMorningPain(days);
-  const labels = days.map((d) => `${d.date} → next morning`);
-  const dates = days.map((d) => d.date);
-  const fullStepsPoints = pairSeries(
-    days.map((d) => d.steps),
-    nextPain,
-    labels,
-    dates,
-  );
-  const fullVolumePoints = pairSeries(
-    // Rest days (volume 0) stay in: doing nothing is also a data point.
-    days.map((d) => dailyPhysioLoad(d)),
-    nextPain,
-    labels,
-    dates,
-  );
-
-  // ── Steps/physio load vs the next day's PEAK and AVERAGE pain, not just
-  // its morning reading — the worst moment reached that day, and its
-  // overall level, each a different lens on the same lagged relationship.
-  const nextDayLabels = days.map((d) => `${d.date} → next day`);
-  const nextPeakPain = nextDayValue(days, dailyPainPeak);
-  const nextAveragePain = nextDayValue(days, dailyPainAverage);
-  const fullStepsVsPeakPoints = pairSeries(
-    days.map((d) => d.steps),
-    nextPeakPain,
-    nextDayLabels,
-    dates,
-  );
-  const fullStepsVsAveragePoints = pairSeries(
-    days.map((d) => d.steps),
-    nextAveragePain,
-    nextDayLabels,
-    dates,
-  );
-  const fullVolumeVsPeakPoints = pairSeries(
-    days.map((d) => dailyPhysioLoad(d)),
-    nextPeakPain,
-    nextDayLabels,
-    dates,
-  );
-  const fullVolumeVsAveragePoints = pairSeries(
-    days.map((d) => dailyPhysioLoad(d)),
-    nextAveragePain,
-    nextDayLabels,
-    dates,
-  );
-
-  // ── Morning-to-day pain candlestick, full history ──────────────────────
-  const fullPainCandles = dailyPainCandles(days);
-
-  // ── Sleep vs pain, all three readings: SAME day, not lagged ────────────
-  // Sleep hours logged on a date are the hours slept the night before
-  // waking up that day — they already precede ALL of that day's readings,
-  // unlike steps/physio load whose effect shows up the next morning. Sleep
-  // may affect the whole day, not just the immediate waking reading, so
-  // morning/daytime/night are each paired with the same night's sleep.
-  const sleepHoursSeries = days.map((d) => d.sleepHours);
-  const fullSleepVsMorning = pairSeries(
-    sleepHoursSeries,
-    days.map((d) => d.painMorning),
-    dates,
-    dates,
-  );
-  const fullSleepVsDaytime = pairSeries(
-    sleepHoursSeries,
-    days.map((d) => d.painDaytime),
-    dates,
-    dates,
-  );
-  const fullSleepVsNight = pairSeries(
-    sleepHoursSeries,
-    days.map((d) => d.painNight),
-    dates,
-    dates,
-  );
+  // Every derived series any dashboard/insights chart could need, computed
+  // once — see domain/dashboard-bundle.ts. This page only uses the
+  // scatter/candlestick slices; Flare review and the Weekly report card
+  // below aren't part of the shared bundle (not in the v1 widget catalog),
+  // so their computation stays local to this page.
+  const {
+    fullStepsPoints,
+    fullVolumePoints,
+    fullStepsVsPeakPoints,
+    fullStepsVsAveragePoints,
+    fullVolumeVsPeakPoints,
+    fullVolumeVsAveragePoints,
+    fullPainCandles,
+    fullSleepVsMorning,
+    fullSleepVsDaytime,
+    fullSleepVsNight,
+  } = buildChartDataBundle(days, today, flareThreshold);
 
   // ── Flare review ──────────────────────────────────────────────────────
   const episodes: FlareEpisodeView[] = flareEpisodes(

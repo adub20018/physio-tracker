@@ -1,0 +1,50 @@
+.popup {
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: min(32rem, calc(100vh - 4rem));
+}
+
+.content {
+  overflow-y: auto;
+}
+
+.group + .group {
+  margin-top: 1.25rem;
+}
+
+.groupTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+  margin: 0 0 0.5rem;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--surface-sunken);
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

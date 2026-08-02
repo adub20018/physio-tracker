@@ -22,7 +22,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { CHART_CHROME, TOOLTIP_STYLE, shortDate } from "./chart-theme";
+import {
+  CHART_CHROME,
+  CHART_Y_AXIS,
+  TOOLTIP_STYLE,
+  shortDate,
+} from "./chart-theme";
 import { painCandleTrend, type PainCandle } from "@/domain/candle";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import styles from "./charts.module.css";
@@ -121,9 +126,7 @@ function CandleTooltip({
       <div>Peak (high): {candle.high}</div>
       <div>Lowest (low): {candle.low}</div>
       <div>Night (close): {candle.close}</div>
-      <div style={{ marginTop: 4, color: colorFor(candle) }}>
-        {trendLabel}
-      </div>
+      <div style={{ marginTop: 4, color: colorFor(candle) }}>{trendLabel}</div>
     </div>
   );
 }
@@ -131,14 +134,20 @@ function CandleTooltip({
 export function PainCandleChart({
   data,
   autoScaleYAxis = false,
+  fillHeight = false,
 }: {
   data: PainCandle[];
   // When true, the Y-axis scales to fit the visible data's own range
   // instead of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
+  // When true, fill the parent's height instead of the fixed pixel height
+  // used on /insights — see .fill in charts.module.css.
+  fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No pain data yet." height={260} />;
+    return (
+      <EmptyState message="No pain data yet." height={260} fill={fillHeight} />
+    );
   }
 
   const points: CandlePoint[] = data.map((d) => ({
@@ -147,7 +156,7 @@ export function PainCandleChart({
   }));
 
   return (
-    <div>
+    <div className={fillHeight ? styles.fill : undefined}>
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span
@@ -164,7 +173,11 @@ export function PainCandleChart({
           Worsened (night &gt; morning)
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer
+        width="100%"
+        height={fillHeight ? "100%" : 260}
+        className={fillHeight ? styles.fillChart : undefined}
+      >
         <ComposedChart
           data={points}
           margin={{ top: 8, right: 12, bottom: 4, left: -18 }}
@@ -179,12 +192,9 @@ export function PainCandleChart({
             minTickGap={28}
           />
           <YAxis
+            {...CHART_Y_AXIS}
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            tick={CHART_CHROME.tick}
-            axisLine={false}
-            tickLine={false}
-            width={46}
           />
           <Tooltip
             content={<CandleTooltip />}

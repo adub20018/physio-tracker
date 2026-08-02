@@ -2,6 +2,44 @@
    The plots themselves are SVG (Recharts); these styles cover the HTML around
    them. */
 
+/* ── Fill mode ────────────────────────────────────────────────────
+   Every chart normally renders at a fixed pixel height (what /insights
+   uses). On a customizable dashboard the chart instead has to grow and
+   shrink with whatever height the user dragged its grid cell to, so each
+   chart takes a `fillHeight` prop that swaps these classes in and switches
+   its ResponsiveContainer to height="100%".
+
+   min-height: 0 appears on every one of these: a flex child defaults to
+   min-height:auto, which refuses to shrink below its content's intrinsic
+   size — so without it a chart could grow when the cell grows but never
+   shrink back down when it shrinks. */
+.fill {
+  height: 100%;
+  /* flex:1 as well as height:100% — the chart's parent is a flex column
+     (the widget shell's content area), where flex-basis decides the size,
+     but height:100% keeps it correct if it's ever dropped into a plain
+     definite-height block instead. */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The plot itself: takes whatever vertical space is left after the legend. */
+.fillChart {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Multi-panel charts (Load vs symptoms, Physio progression, Sleep & pain):
+   the stack fills the leftover space, and each panel inside divides it by
+   the flex-grow weights the chart passes — its original fixed pixel
+   heights, so the panels keep their relative proportions at any size. */
+.fillPanels {
+  flex: 1;
+  min-height: 0;
+}
+
 /* Legend: one quiet row above the plot. Identity = colored chip + text in
    text colors (never colored text). */
 .legend {

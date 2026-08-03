@@ -17,6 +17,7 @@ import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
 import type { TimeRange } from "@/lib/time-range";
+import type { DashboardWidget } from "@/repositories";
 import {
   resetDashboardToDefault,
   renameDashboard,
@@ -37,7 +38,7 @@ export function DashboardConfig({
   onRangeChange: (range: TimeRange) => void;
   // Lets the grid drop any in-progress edit draft, so a reset can't be
   // immediately overwritten by a stale Save.
-  onReset?: () => void;
+  onReset?: (widgets: DashboardWidget[]) => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -54,7 +55,11 @@ export function DashboardConfig({
       if (result.ok) {
         setResetOpen(false);
         setOpen(false);
-        onReset?.();
+
+        if (result.widgets) {
+          onReset?.(result.widgets);
+        }
+
         router.refresh();
       } else {
         setError(result.error);

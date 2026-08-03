@@ -508,7 +508,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     ),
   },
   {
-    type: "chart-load-vs-symptoms",
+    type: "chart-load-vs-pain",
     label: "Load vs next-day pain",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
@@ -554,7 +554,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     ),
   },
   {
-    type: "chart-progression",
+    type: "chart-physio-progression",
     label: "Physio progression",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },

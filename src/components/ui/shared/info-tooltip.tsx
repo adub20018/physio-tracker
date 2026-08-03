@@ -110,7 +110,12 @@ export function InfoTooltip({
         {children ?? <QuestionCircle size={14} className={styles.icon} />}
       </Tooltip.Trigger>
       <Tooltip.Portal>
-        <Tooltip.Positioner side="top" align="center" sideOffset={6}>
+        <Tooltip.Positioner
+          side="top"
+          align="center"
+          sideOffset={6}
+          strategy="fixed"
+        >
           <Tooltip.Popup className={styles.popup}>
             {text}
             <Tooltip.Arrow className={styles.arrow} />

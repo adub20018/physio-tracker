@@ -385,7 +385,6 @@ export function DashboardGrid({
       >
         {mounted && (
           <ReactGridLayout
-            positionStrategy={absoluteStrategy}
             layout={layout}
             width={width}
             gridConfig={{

@@ -385,6 +385,7 @@ export function DashboardGrid({
       >
         {mounted && (
           <ReactGridLayout
+            positionStrategy={absoluteStrategy} // Safari incorrectly positions portal tooltips when grid items use transform positioning. Absolute positioning fixes this
             layout={layout}
             width={width}
             gridConfig={{

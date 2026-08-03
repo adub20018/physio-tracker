@@ -130,43 +130,13 @@ export type WidgetDefinition = {
   ) => React.ReactNode;
 };
 
-// A stat tile is a fixed-height unit: value + label + a 28px sparkline,
-// about 120px of content. h=7 (128px) is the smallest row count that fits
-// it without squeezing, and there's nothing to gain from more — so
-// minH === maxH locks the height, leaving only width adjustable, between a
-// quarter and a half of the grid.
+// Stat tile bounds
 const STAT_TILE_BOUNDS: WidgetSizeBounds = {
   minW: 3,
   maxW: 6,
   minH: 7,
   maxH: 7,
 };
-
-// Charts need real room for axes and tick labels before they stop being
-// readable; below roughly a quarter-width and ~190px tall they're just
-// noise. Free to grow to the full grid width.
-const CHART_BOUNDS: WidgetSizeBounds = {
-  minW: 6,
-  maxW: DESKTOP_MAX_W,
-  minH: 12,
-  maxH: TALL_MAX_H,
-};
-
-// The heatmap is a fixed-cell-size grid (14px squares), so unlike a plotted
-// chart it gains nothing from extra height — past roughly 390px the cells
-// stay put and the rest is whitespace, hence the tighter ceiling.
-const HEATMAP_BOUNDS: WidgetSizeBounds = {
-  minW: 3,
-  maxW: DESKTOP_MAX_W,
-  minH: 8,
-  maxH: 20,
-};
-
-// ── Phone grid (2 columns) ────────────────────────────────────────────
-// A stat tile can be one column (2-up) or two (full width); its height is
-// locked at 9 rows / 168px, which is what its content needs once the
-// value+delta line wraps at half width — measured at 149px, so this leaves
-// headroom rather than letting it be dragged small enough to clip.
 const MOBILE_STAT_TILE_BOUNDS: WidgetSizeBounds = {
   minW: 1,
   maxW: 2,
@@ -174,22 +144,74 @@ const MOBILE_STAT_TILE_BOUNDS: WidgetSizeBounds = {
   maxH: 9,
 };
 
-// Charts always span both columns: a plot with axes and tick labels is
-// illegible at ~150px wide whatever the desktop layout says, so min and max
-// width are pinned together. Height is adjustable above a readable floor.
+// Single charts
+const CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 12,
+  maxH: 24,
+};
 const MOBILE_CHART_BOUNDS: WidgetSizeBounds = {
   minW: MOBILE_MAX_W,
   maxW: MOBILE_MAX_W,
   minH: 12,
+  maxH: 22,
+};
+
+// Double stacked charts
+const DOUBLE_STACKED_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 18,
+  maxH: 28,
+};
+const MOBILE_DOUBLE_STACKED_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
+  minH: 16,
+  maxH: 26,
+};
+
+// Triple stacked charts
+const TRIPLE_STACKED_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 20,
+  maxH: TALL_MAX_H,
+};
+const MOBILE_TRIPLE_STACKED_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
+  minH: 20,
   maxH: TALL_MAX_H,
 };
 
-// Same fixed-cell reasoning as the desktop heatmap above.
+// Heatmap chart bounds
+const HEATMAP_BOUNDS: WidgetSizeBounds = {
+  minW: 4,
+  maxW: DESKTOP_MAX_W,
+  minH: 12,
+  maxH: 12,
+};
 const MOBILE_HEATMAP_BOUNDS: WidgetSizeBounds = {
   minW: MOBILE_MAX_W,
   maxW: MOBILE_MAX_W,
-  minH: 10,
-  maxH: 20,
+  minH: 12,
+  maxH: 12,
+};
+
+// Multi scatter bounds
+const MULTI_SCATTER_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 16,
+  maxH: 24,
+};
+const MOBILE_MULTI_SCATTER_CHART_BOUNDS: WidgetSizeBounds = {
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
+  minH: 14,
+  maxH: 22,
 };
 
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
@@ -490,9 +512,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Load vs next-day pain",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
-    bounds: CHART_BOUNDS,
+    bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
     render: (bundle, ctx) => (
       <RangedChart
@@ -513,9 +535,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Sleep & pain over time",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
-    bounds: CHART_BOUNDS,
+    bounds: DOUBLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    mobileBounds: MOBILE_DOUBLE_STACKED_CHART_BOUNDS,
     hint: "Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings",
     render: (bundle, ctx) => (
       <RangedChart
@@ -536,9 +558,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Physio progression",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
-    bounds: CHART_BOUNDS,
+    bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
     render: (bundle, ctx) => (
       <RangedChart
@@ -753,9 +775,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     label: "Sleep vs pain, all day",
     category: "Insights charts",
     defaultSize: { w: 6, h: 18 },
-    bounds: CHART_BOUNDS,
+    bounds: MULTI_SCATTER_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    mobileBounds: MOBILE_MULTI_SCATTER_CHART_BOUNDS,
     hint: "Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one",
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
   },

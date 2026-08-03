@@ -5,13 +5,12 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dashboardRepository } from "@/repositories";
-import type { NewDashboardWidgetInput } from "@/repositories";
+import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
 import { saveDashboardLayoutSchema, dashboardNameSchema } from "./schema";
 
 export type SaveLayoutResult = { ok: true } | { ok: false; error: string };
 export type CreateDashboardResult =
-  | { ok: true; dashboardId: string }
-  | { ok: false; error: string };
+  { ok: true; dashboardId: string } | { ok: false; error: string };
 
 // Replaces a dashboard's entire widget set — the Save button in edit mode.
 // dashboardRepository.saveWidgets already scopes by userId and no-ops if
@@ -36,11 +35,22 @@ export async function saveDashboardLayout(
 // the "Reset to default dashboard" action in the dashboard config.
 export async function resetDashboardToDefault(
   dashboardId: string,
-): Promise<SaveLayoutResult> {
+): Promise<SaveLayoutResult & { widgets?: DashboardWidget[] }> {
   const user = await getCurrentUser();
+
   await dashboardRepository.resetToDefault(dashboardId, user.id);
+
+  const dashboard = await dashboardRepository.getWithWidgets(
+    dashboardId,
+    user.id,
+  );
+
   revalidatePath(`/dashboard/${dashboardId}`);
-  return { ok: true };
+
+  return {
+    ok: true,
+    widgets: dashboard?.widgets ?? [],
+  };
 }
 
 // Creates an empty dashboard and hands its id back for the client to

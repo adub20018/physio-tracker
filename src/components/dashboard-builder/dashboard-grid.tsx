@@ -357,7 +357,11 @@ export function DashboardGrid({
             // A reset replaces the saved widgets, so any edit draft still
             // open is now stale — drop it rather than let a later Save
             // write the pre-reset layout straight back.
-            onReset={() => setIsEditing(false)}
+            onReset={(widgets) => {
+              setSavedWidgets(widgets);
+              setDraft(widgets);
+              setIsEditing(false);
+            }}
           />
         </div>
       </div>

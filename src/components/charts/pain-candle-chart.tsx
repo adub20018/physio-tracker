@@ -146,7 +146,7 @@ export function PainCandleChart({
 }) {
   if (data.length === 0) {
     return (
-      <EmptyState message="No pain data yet." height={260} fill={fillHeight} />
+      <EmptyState message="No pain data yet" height={260} fill={fillHeight} />
     );
   }
 

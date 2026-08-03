@@ -90,7 +90,7 @@ export function LoadVsSymptoms({
   fillHeight?: boolean;
 }) {
   if (data.length === 0) {
-    return <EmptyState message="No data yet." height={370} fill={fillHeight} />;
+    return <EmptyState message="No data yet" height={370} fill={fillHeight} />;
   }
 
   return (

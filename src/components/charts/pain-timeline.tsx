@@ -93,7 +93,7 @@ export function PainTimeline({
 }) {
   if (data.length === 0) {
     return (
-      <EmptyState message="No pain data yet." height={280} fill={fillHeight} />
+      <EmptyState message="No pain data yet" height={280} fill={fillHeight} />
     );
   }
 

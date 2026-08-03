@@ -44,7 +44,7 @@ export function LagScatter({
   fillHeight?: boolean;
 }) {
   if (points.length === 0) {
-    return <EmptyState message="No data yet." height={240} fill={fillHeight} />;
+    return <EmptyState message="No data yet" height={240} fill={fillHeight} />;
   }
 
   return (

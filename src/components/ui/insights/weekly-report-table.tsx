@@ -42,7 +42,7 @@ export function WeeklyReportTable({
   flareThreshold: number;
 }) {
   if (rows.length === 0) {
-    return <EmptyState message="No weeks logged yet." />;
+    return <EmptyState message="No weeks logged yet" />;
   }
 
   return (

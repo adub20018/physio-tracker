@@ -25,7 +25,7 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
-import { Pencil, Plus } from "lucide-react";
+import { LayoutDashboard, Pencil, Plus } from "lucide-react";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { daysForRange } from "@/lib/time-range";
 import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
@@ -39,6 +39,7 @@ import { DashboardConfig } from "./dashboard-config";
 import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
 import { absoluteStrategy } from "react-grid-layout/core";
+import { EmptyDashboardState } from "../ui/shared/empty-dashboard-state";
 
 // Matches the tablet breakpoint used elsewhere in the app's own CSS for
 // switching from a stacked to a grid-like layout.
@@ -182,6 +183,7 @@ export function DashboardGrid({
   // keeps `layout` and the rendered children in exact 1:1 correspondence,
   // which react-grid-layout expects.
   const known = active.filter((w) => WIDGET_REGISTRY[w.widgetType]);
+  const isEmpty = known.length === 0;
   const existingTypes = new Set(known.map((w) => w.widgetType));
 
   function startEdit() {
@@ -387,44 +389,67 @@ export function DashboardGrid({
             : styles.gridContainer
         }
       >
-        {mounted && (
-          <ReactGridLayout
-            positionStrategy={absoluteStrategy} // Safari incorrectly positions portal tooltips when grid items use transform positioning. Absolute positioning fixes this
-            layout={layout}
-            width={width}
-            gridConfig={{
-              cols: isDesktop ? DESKTOP_COLS : MOBILE_COLS,
-              rowHeight: ROW_HEIGHT,
-              margin: isDesktop ? GRID_MARGIN : MOBILE_MARGIN,
-              containerPadding: [0, 0],
-            }}
-            // react-draggable/react-resizable (which react-grid-layout is
-            // built on) handle touch as well as mouse, so the same
-            // press-the-handle-and-drag and pull-the-corner gestures work
-            // on a phone — the handles just need touch-action: none so the
-            // browser scrolls the page instead of stealing the gesture.
-            dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
-            resizeConfig={{ enabled: isEditing }}
-            onLayoutChange={handleLayoutChange}
-          >
-            {known.map((widget) => (
-              <div key={widget.id}>
-                <WidgetShell
-                  definition={WIDGET_REGISTRY[widget.widgetType]}
-                  bundle={bundle}
-                  ctx={{
-                    widgetId: widget.id,
-                    today,
-                    rangeDays,
-                    autoScaleYAxis,
-                    fillHeight: true,
-                  }}
-                  editMode={isEditing}
-                  onRemove={() => removeWidget(widget.id)}
-                />
+        {isEmpty ? (
+          <>
+            <div className={styles.emptyDashboard}>
+              <div>
+                <LayoutDashboard size={20} className={styles.emptyMessage} />
+                <p className={styles.emptyMessageTitle}>No widgets yet</p>
+                <p className={styles.emptyMessage}>
+                  Add a widget to customize your dashboard
+                </p>
               </div>
-            ))}
-          </ReactGridLayout>
+              <Button
+                severity="primary"
+                onClick={() => {
+                  setIsEditing(true);
+                  setAddOpen(true);
+                }}
+              >
+                <Plus size={14} /> Add widget
+              </Button>
+            </div>
+          </>
+        ) : (
+          mounted && (
+            <ReactGridLayout
+              positionStrategy={absoluteStrategy} // Safari incorrectly positions portal tooltips when grid items use transform positioning. Absolute positioning fixes this
+              layout={layout}
+              width={width}
+              gridConfig={{
+                cols: isDesktop ? DESKTOP_COLS : MOBILE_COLS,
+                rowHeight: ROW_HEIGHT,
+                margin: isDesktop ? GRID_MARGIN : MOBILE_MARGIN,
+                containerPadding: [0, 0],
+              }}
+              // react-draggable/react-resizable (which react-grid-layout is
+              // built on) handle touch as well as mouse, so the same
+              // press-the-handle-and-drag and pull-the-corner gestures work
+              // on a phone — the handles just need touch-action: none so the
+              // browser scrolls the page instead of stealing the gesture.
+              dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
+              resizeConfig={{ enabled: isEditing }}
+              onLayoutChange={handleLayoutChange}
+            >
+              {known.map((widget) => (
+                <div key={widget.id}>
+                  <WidgetShell
+                    definition={WIDGET_REGISTRY[widget.widgetType]}
+                    bundle={bundle}
+                    ctx={{
+                      widgetId: widget.id,
+                      today,
+                      rangeDays,
+                      autoScaleYAxis,
+                      fillHeight: true,
+                    }}
+                    editMode={isEditing}
+                    onRemove={() => removeWidget(widget.id)}
+                  />
+                </div>
+              ))}
+            </ReactGridLayout>
+          )
         )}
       </div>
 

@@ -69,7 +69,7 @@ export function ProgressionChart({
   if (data.length === 0) {
     return (
       <EmptyState
-        message="No physio sessions logged yet."
+        message="No physio sessions logged yet"
         height={410}
         fill={fillHeight}
       />

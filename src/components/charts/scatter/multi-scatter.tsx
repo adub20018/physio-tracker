@@ -48,7 +48,7 @@ export function MultiScatter({
   fillHeight?: boolean;
 }) {
   if (series.every((s) => s.points.length === 0)) {
-    return <EmptyState message="No data yet." height={280} fill={fillHeight} />;
+    return <EmptyState message="No data yet" height={280} fill={fillHeight} />;
   }
 
   return (

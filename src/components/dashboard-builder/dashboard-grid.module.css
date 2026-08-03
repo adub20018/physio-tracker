@@ -25,6 +25,34 @@
   margin-bottom: 1rem;
 }
 
+.emptyDashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 8rem;
+  padding: 2.5rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.emptyDashboard div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.emptyMessageTitle {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.emptyMessage {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 /* Touch drag/resize: without this the browser claims the gesture for
    scrolling and the handle never sees it. Applied to the handles only, so
    the page still scrolls normally everywhere else on the card. */

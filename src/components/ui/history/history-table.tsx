@@ -58,7 +58,9 @@ function PainReading({
         <>
           <span
             className={styles.painDot}
-            style={{ background: SEVERITY_VAR[painSeverity(value, flareThreshold)] }}
+            style={{
+              background: SEVERITY_VAR[painSeverity(value, flareThreshold)],
+            }}
           />
           {value}
         </>
@@ -124,7 +126,7 @@ export function HistoryTable({
   flareThreshold: number;
 }) {
   if (rows.length === 0) {
-    return <EmptyState message="No days logged yet." />;
+    return <EmptyState message="No days logged yet" />;
   }
 
   return (
@@ -140,7 +142,10 @@ export function HistoryTable({
           <DataTable.Table>
             <DataTable.THead>
               <DataTable.THeadRow>
-                <DataTable.THeadCell aria-label="Expand" style={{ width: "2.5rem" }} />
+                <DataTable.THeadCell
+                  aria-label="Expand"
+                  style={{ width: "2.5rem" }}
+                />
                 <DataTable.THeadCell>
                   <SortableHeader field="date" label="Date" />
                 </DataTable.THeadCell>
@@ -160,7 +165,10 @@ export function HistoryTable({
                   <>
                     <DataTable.Row>
                       <DataTable.Cell>
-                        <DataTable.RowToggle className={styles.toggle} aria-label="Toggle details">
+                        <DataTable.RowToggle
+                          className={styles.toggle}
+                          aria-label="Toggle details"
+                        >
                           <DataTable.RowToggleIndicator match="collapsed">
                             ▸
                           </DataTable.RowToggleIndicator>
@@ -212,7 +220,9 @@ export function HistoryTable({
                         )}
                       </DataTable.Cell>
                       <DataTable.Cell className={styles.physio}>
-                        {item.exerciseSummary || <span className={styles.painEmpty}>–</span>}
+                        {item.exerciseSummary || (
+                          <span className={styles.painEmpty}>–</span>
+                        )}
                       </DataTable.Cell>
                     </DataTable.Row>
                     <DataTable.RowExpansion className={styles.detailRow}>

@@ -55,7 +55,7 @@ function toWeeks(days: HeatmapDay[]): (HeatmapDay | null)[][] {
 
 export function CalendarHeatmap({ data }: { data: HeatmapDay[] }) {
   if (data.length === 0) {
-    return <EmptyState message="No days logged yet." height={140} />;
+    return <EmptyState message="No days logged yet" height={140} />;
   }
 
   const weeks = toWeeks(data);

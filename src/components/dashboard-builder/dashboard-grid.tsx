@@ -38,6 +38,7 @@ import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
 import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
+import { absoluteStrategy } from "react-grid-layout/core";
 
 // Matches the tablet breakpoint used elsewhere in the app's own CSS for
 // switching from a stacked to a grid-like layout.
@@ -384,6 +385,7 @@ export function DashboardGrid({
       >
         {mounted && (
           <ReactGridLayout
+            positionStrategy={absoluteStrategy} // Safari incorrectly positions portal tooltips when grid items use transform positioning. Absolute positioning fixes this
             layout={layout}
             width={width}
             gridConfig={{

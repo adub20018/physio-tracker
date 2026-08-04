@@ -25,6 +25,7 @@ import {
   shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 // One day of load paired with the following day's pain, all three readings.
@@ -103,6 +104,8 @@ export function LoadVsSymptoms({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (data.length === 0) {
     return <EmptyState message="No data yet" height={370} fill={fillHeight} />;
   }
@@ -171,6 +174,7 @@ export function LoadVsSymptoms({
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -185,6 +189,7 @@ export function LoadVsSymptoms({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Bar
               dataKey="steps"
@@ -210,6 +215,7 @@ export function LoadVsSymptoms({
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -224,6 +230,7 @@ export function LoadVsSymptoms({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Bar
               dataKey="physioLoad"
@@ -251,6 +258,7 @@ export function LoadVsSymptoms({
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -265,6 +273,7 @@ export function LoadVsSymptoms({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ stroke: CHART_CHROME.axisLine }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Line
               dataKey="nextMorningPain"

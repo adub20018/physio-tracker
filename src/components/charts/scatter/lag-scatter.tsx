@@ -24,6 +24,7 @@ import {
 } from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "../use-chart-tooltip-suppression";
 import styles from "../charts.module.css";
 
 export function LagScatter({
@@ -49,6 +50,8 @@ export function LagScatter({
   // real dashboard.
   compact?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (points.length === 0) {
     return <EmptyState message="No data yet" height={240} fill={fillHeight} />;
   }
@@ -59,7 +62,10 @@ export function LagScatter({
       height={fillHeight ? "100%" : 240}
       className={fillHeight ? styles.fillChart : undefined}
     >
-      <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
+      <ScatterChart
+        margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
+        onClick={onChartClick}
+      >
         <CartesianGrid stroke={CHART_CHROME.grid} />
         <XAxis
           dataKey="x"
@@ -104,6 +110,7 @@ export function LagScatter({
           labelFormatter={(_, payload) =>
             (payload?.[0]?.payload as PairedPoint | undefined)?.label ?? ""
           }
+          active={tooltipSuppressed ? false : undefined}
         />
         <Scatter
           data={points}

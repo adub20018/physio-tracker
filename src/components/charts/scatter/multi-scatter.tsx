@@ -21,6 +21,7 @@ import {
 } from "@/components/charts/chart-theme";
 import type { PairedPoint } from "@/domain/correlation";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "@/components/charts/use-chart-tooltip-suppression";
 import styles from "@/components/charts/charts.module.css";
 
 export type ScatterSeries = {
@@ -60,6 +61,8 @@ export function MultiScatter({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (series.every((s) => s.points.length === 0)) {
     return <EmptyState message="No data yet" height={280} fill={fillHeight} />;
   }
@@ -84,7 +87,10 @@ export function MultiScatter({
         height={fillHeight ? "100%" : 260}
         className={fillHeight ? styles.fillChart : undefined}
       >
-        <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
+        <ScatterChart
+          margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
+          onClick={onChartClick}
+        >
           <CartesianGrid stroke={CHART_CHROME.grid} />
           <XAxis
             dataKey="x"
@@ -129,6 +135,7 @@ export function MultiScatter({
             labelFormatter={(_, payload) =>
               (payload?.[0]?.payload as PairedPoint | undefined)?.label ?? ""
             }
+            active={tooltipSuppressed ? false : undefined}
           />
           {series.map((s) => (
             <Scatter

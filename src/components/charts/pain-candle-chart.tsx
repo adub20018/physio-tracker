@@ -30,6 +30,7 @@ import {
 } from "./chart-theme";
 import { painCandleTrend, type PainCandle } from "@/domain/candle";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 type CandlePoint = PainCandle & { range: [number, number] };
@@ -156,6 +157,8 @@ export function PainCandleChart({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (data.length === 0) {
     return (
       <EmptyState message="No pain data yet" height={260} fill={fillHeight} />
@@ -194,6 +197,7 @@ export function PainCandleChart({
       >
         <ComposedChart
           data={points}
+          onClick={onChartClick}
           margin={{ top: 8, right: 12, bottom: 4, left: -18 }}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -214,6 +218,7 @@ export function PainCandleChart({
           <Tooltip
             content={<CandleTooltip />}
             cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            active={tooltipSuppressed ? false : undefined}
           />
           <Bar dataKey="range" shape={CandleShape} isAnimationActive={false} />
         </ComposedChart>

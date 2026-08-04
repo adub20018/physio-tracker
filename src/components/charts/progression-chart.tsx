@@ -27,6 +27,7 @@ import {
   shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 // One physio day on the progression chart (rest days are omitted by the
@@ -80,6 +81,8 @@ export function ProgressionChart({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (data.length === 0) {
     return (
       <EmptyState
@@ -169,6 +172,7 @@ export function ProgressionChart({
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -195,6 +199,7 @@ export function ProgressionChart({
                   ? [`${value[0]}–${value[1]}%`, name]
                   : [value, name]
               }
+              active={tooltipSuppressed ? false : undefined}
             />
             <Area
               dataKey="intensityRange"
@@ -234,6 +239,7 @@ export function ProgressionChart({
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -249,6 +255,7 @@ export function ProgressionChart({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Bar
               dataKey="holdVolume"
@@ -274,6 +281,7 @@ export function ProgressionChart({
           <ComposedChart
             data={withRange}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -296,6 +304,7 @@ export function ProgressionChart({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Bar
               dataKey="physioLoad"

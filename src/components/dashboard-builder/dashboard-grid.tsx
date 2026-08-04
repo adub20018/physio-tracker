@@ -164,6 +164,7 @@ export function DashboardGrid({
   today,
   autoScaleYAxis,
   initialRange,
+  hasEnoughDataForPreviews,
 }: {
   dashboardId: string;
   dashboardName: string;
@@ -175,6 +176,11 @@ export function DashboardGrid({
   // — loaded server-side, so the very first paint already shows the range
   // this dashboard was last left on, on any device, no flash of the default.
   initialRange: TimeRange;
+  // Whether the account has enough logged history for the Add-widget
+  // picker to preview from it directly — see
+  // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS. False falls back
+  // to the mock account there.
+  hasEnoughDataForPreviews: boolean;
 }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   // measureBeforeMount: without it useContainerWidth starts `mounted` true
@@ -534,6 +540,9 @@ export function DashboardGrid({
         onOpenChange={setAddOpen}
         existingTypes={existingTypes}
         onAdd={addWidget}
+        realBundle={bundle}
+        realToday={today}
+        hasEnoughDataForPreviews={hasEnoughDataForPreviews}
       />
     </>
   );

@@ -16,6 +16,7 @@ import {
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
 import { buildChartDataBundle } from "@/domain/dashboard-bundle";
+import { MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS } from "@/domain/constants";
 import { DashboardGrid } from "@/components/dashboard-builder/dashboard-grid";
 import { DashboardSwitcher } from "@/components/dashboard-builder/dashboard-switcher";
 
@@ -41,6 +42,7 @@ export default async function DashboardViewPage({
   const days = toDomainDays(logs);
   const today = await todayIso();
   const bundle = buildChartDataBundle(days, today, flareThreshold);
+  const hasEnoughDataForPreviews = days.length >= MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS;
 
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
@@ -60,6 +62,7 @@ export default async function DashboardViewPage({
         today={today}
         autoScaleYAxis={chartAutoScaleYAxis}
         initialRange={dashboard.timeRange}
+        hasEnoughDataForPreviews={hasEnoughDataForPreviews}
       />
     </main>
   );

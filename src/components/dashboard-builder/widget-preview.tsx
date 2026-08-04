@@ -1,19 +1,26 @@
-// Live thumbnail of one widget type, rendered against the fixed mock
-// account (widget-preview-data.ts) for the Add-widget picker. Reuses each
+// Live thumbnail of one widget type for the Add-widget picker. Reuses each
 // definition's own `render` — there is no separate "preview mode" chart
 // variant — inside a box with a definite height, since every fillHeight
 // chart (and StatTile's sparkline) sizes itself via height:100% against its
 // parent and collapses without one.
+//
+// Source-agnostic: `bundle`/`today` are resolved once by the caller
+// (add-widget-dialog.tsx), which picks either the signed-in user's own data
+// or the fabricated mock account depending on how much real history exists
+// — this component doesn't know or care which it got.
 "use client";
 
 import { Skeleton } from "@primereact/ui/skeleton";
 import { isStackedChart, type WidgetDefinition } from "./widget-registry";
-import { MOCK_CHART_DATA_BUNDLE, mockRenderContext } from "./widget-preview-data";
+import { previewRenderContext } from "./widget-preview-data";
+import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import styles from "./widget-preview.module.css";
 
 export function WidgetPreview({
   definition,
   loading = false,
+  bundle,
+  today,
 }: {
   definition: WidgetDefinition;
   // True for the first frame after the dialog opens (see AddWidgetDialog):
@@ -21,6 +28,10 @@ export function WidgetPreview({
   // so mounting ~20+ real chart instances doesn't happen in the same paint
   // as the dialog's own open transition.
   loading?: boolean;
+  // Already resolved to either the real account or the mock one — see
+  // add-widget-dialog.tsx.
+  bundle: ChartDataBundle;
+  today: string;
 }) {
   // Bare widgets (stat tiles) are already a complete self-styled unit, so
   // they get the same height:100%-flex-child wrapper WidgetShell's
@@ -46,8 +57,8 @@ export function WidgetPreview({
     );
   }
 
-  const ctx = mockRenderContext(definition.type);
-  const content = definition.render(MOCK_CHART_DATA_BUNDLE, ctx);
+  const ctx = previewRenderContext(definition.type, today);
+  const content = definition.render(bundle, ctx);
 
   return <div className={boxClass}>{content}</div>;
 }

@@ -54,6 +54,7 @@ export function ProgressionChart({
   data,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
 }: {
   data: ProgressionPoint[];
   // When true, the intensity panel's Y-axis scales to fit the visible
@@ -65,6 +66,11 @@ export function ProgressionChart({
   // used on /insights — see .fill in charts.module.css. The panels keep
   // their relative proportions via flexGrow weights matching those heights.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: skips the legend row and lets every
+  // panel's Y-axis drop ticks that don't fit instead of forcing every one
+  // (see interval below) — three stacked panels leave little room for
+  // either, and the full chart is one click away on the real dashboard.
+  compact?: boolean;
 }) {
   if (data.length === 0) {
     return (
@@ -100,36 +106,38 @@ export function ProgressionChart({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: SERIES.intensity, opacity: 0.35 }}
-          />
-          Intensity range (% load)
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendLine}
-            style={{ background: SERIES.intensity }}
-          />
-          Midpoint
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: SERIES.holdVolume }}
-          />
-          Hold volume (sets×sec)
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: SERIES.load }}
-          />
-          Physio load
-        </span>
-      </div>
+      {!compact && (
+        <div className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: SERIES.intensity, opacity: 0.35 }}
+            />
+            Intensity range (% load)
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendLine}
+              style={{ background: SERIES.intensity }}
+            />
+            Midpoint
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: SERIES.holdVolume }}
+            />
+            Hold volume (sets×sec)
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: SERIES.load }}
+            />
+            Physio load
+          </span>
+        </div>
+      )}
 
       {/* Three panels get a gap (.panelStack) plus an explicit divider
           element (.panelDivider) between them, so one panel's "0" doesn't
@@ -167,7 +175,7 @@ export function ProgressionChart({
               {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 50]}
               ticks={autoScaleYAxis ? undefined : [0, 25, 50]}
-              interval={0}
+              interval={compact ? "preserveStart" : 0}
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip
@@ -187,7 +195,7 @@ export function ProgressionChart({
               fill={SERIES.intensity}
               fillOpacity={0.22}
               connectNulls
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -199,7 +207,7 @@ export function ProgressionChart({
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -224,7 +232,11 @@ export function ProgressionChart({
             {/* scale="band" explicitly, matching Panel 1 — see the note
                 there for why every synced panel needs to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
+            <YAxis
+              {...CHART_Y_AXIS}
+              domain={[0, "auto"]}
+              interval={compact ? "preserveStart" : 0}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -235,7 +247,7 @@ export function ProgressionChart({
               name="Hold volume"
               fill={SERIES.holdVolume}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -267,7 +279,11 @@ export function ProgressionChart({
               tickLine={false}
               minTickGap={28}
             />
-            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
+            <YAxis
+              {...CHART_Y_AXIS}
+              domain={[0, "auto"]}
+              interval={compact ? "preserveStart" : 0}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -278,7 +294,7 @@ export function ProgressionChart({
               name="Physio load"
               fill={SERIES.load}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"

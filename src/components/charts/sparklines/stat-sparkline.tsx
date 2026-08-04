@@ -15,6 +15,7 @@ import { SparklineTooltipContent } from "./sparkline-tooltip";
 export function StatSparkline({
   values,
   color,
+  animate = true,
 }: {
   // Chronological, oldest to newest. `value` drives the bar's height (null
   // renders as zero); `display` is the already-formatted tooltip text
@@ -24,6 +25,9 @@ export function StatSparkline({
   // prop.
   values: { date: string; value: number | null; display: string }[];
   color: string;
+  // False in the Add-widget picker's preview thumbnails, where many tiles'
+  // sparklines would otherwise animate in at once right as the dialog opens.
+  animate?: boolean;
 }) {
   const data = values.map((d, i) => ({
     i,
@@ -40,7 +44,7 @@ export function StatSparkline({
           dataKey="v"
           radius={[4, 4, 1, 1]}
           activeBar={{ fillOpacity: 1 }}
-          isAnimationActive={true}
+          isAnimationActive={animate}
           animationDuration={200}
           animationBegin={0}
           animationEasing="linear"

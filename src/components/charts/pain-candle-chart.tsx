@@ -135,6 +135,7 @@ export function PainCandleChart({
   data,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
 }: {
   data: PainCandle[];
   // When true, the Y-axis scales to fit the visible data's own range
@@ -143,6 +144,11 @@ export function PainCandleChart({
   // When true, fill the parent's height instead of the fixed pixel height
   // used on /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: skips the legend row and lets the
+  // Y-axis drop ticks that don't fit instead of forcing every one (see
+  // interval below) — the box is too short to spare either, and the full
+  // chart is one click away on the real dashboard.
+  compact?: boolean;
 }) {
   if (data.length === 0) {
     return (
@@ -157,22 +163,24 @@ export function PainCandleChart({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: IMPROVED_COLOR }}
-          />
-          Improved (night &lt; morning)
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: WORSENED_COLOR }}
-          />
-          Worsened (night &gt; morning)
-        </span>
-      </div>
+      {!compact && (
+        <div className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: IMPROVED_COLOR }}
+            />
+            Improved (night &lt; morning)
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: WORSENED_COLOR }}
+            />
+            Worsened (night &gt; morning)
+          </span>
+        </div>
+      )}
       <ResponsiveContainer
         width="100%"
         height={fillHeight ? "100%" : 260}
@@ -195,7 +203,7 @@ export function PainCandleChart({
             {...CHART_Y_AXIS}
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            interval={0}
+            interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
             content={<CandleTooltip />}

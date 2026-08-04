@@ -41,6 +41,7 @@ export function SleepPainTimeline({
   data,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
 }: {
   data: SleepPainPoint[];
   // When true, the pain panel's Y-axis scales to fit the visible data's own
@@ -51,6 +52,11 @@ export function SleepPainTimeline({
   // used on /insights — see .fill in charts.module.css. The panels keep
   // their relative proportions via flexGrow weights matching those heights.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: skips the legend row and lets both
+  // panels' Y-axis drop ticks that don't fit instead of forcing every one
+  // (see interval below) — two stacked panels leave little room for either,
+  // and the full chart is one click away on the real dashboard.
+  compact?: boolean;
 }) {
   if (data.length === 0) {
     return <EmptyState message="No data yet" height={250} fill={fillHeight} />;
@@ -58,36 +64,38 @@ export function SleepPainTimeline({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendSwatch}
-            style={{ background: SERIES.sleep }}
-          />
-          Sleep (hours)
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendLine}
-            style={{ background: SERIES.morning }}
-          />
-          Morning
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendLine}
-            style={{ background: SERIES.daytime }}
-          />
-          Daytime
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendLine}
-            style={{ background: SERIES.night }}
-          />
-          Night
-        </span>
-      </div>
+      {!compact && (
+        <div className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: SERIES.sleep }}
+            />
+            Sleep (hours)
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendLine}
+              style={{ background: SERIES.morning }}
+            />
+            Morning
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendLine}
+              style={{ background: SERIES.daytime }}
+            />
+            Daytime
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendLine}
+              style={{ background: SERIES.night }}
+            />
+            Night
+          </span>
+        </div>
+      )}
 
       <div
         className={
@@ -115,7 +123,11 @@ export function SleepPainTimeline({
             {/* scale="band" explicitly, matching Panel 2's Line-only axis —
                 see the note there for why both panels need to agree. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
-            <YAxis {...CHART_Y_AXIS} domain={[0, "auto"]} interval={0} />
+            <YAxis
+              {...CHART_Y_AXIS}
+              domain={[0, "auto"]}
+              interval={compact ? "preserveStart" : 0}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
@@ -126,7 +138,7 @@ export function SleepPainTimeline({
               name="Sleep (hours)"
               fill={SERIES.sleep}
               radius={[3, 3, 0, 0]}
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -169,7 +181,7 @@ export function SleepPainTimeline({
               {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
               ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-              interval={0}
+              interval={compact ? "preserveStart" : 0}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -183,7 +195,7 @@ export function SleepPainTimeline({
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -195,7 +207,7 @@ export function SleepPainTimeline({
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"
@@ -207,7 +219,7 @@ export function SleepPainTimeline({
               strokeWidth={2}
               dot={false}
               connectNulls
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"

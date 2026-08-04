@@ -55,6 +55,7 @@ export function ProgressionChart({
   autoScaleYAxis = false,
   fillHeight = false,
   compact = false,
+  hideLegend = false,
 }: {
   data: ProgressionPoint[];
   // When true, the intensity panel's Y-axis scales to fit the visible
@@ -66,11 +67,18 @@ export function ProgressionChart({
   // used on /insights — see .fill in charts.module.css. The panels keep
   // their relative proportions via flexGrow weights matching those heights.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: skips the legend row and lets every
-  // panel's Y-axis drop ticks that don't fit instead of forcing every one
-  // (see interval below) — three stacked panels leave little room for
-  // either, and the full chart is one click away on the real dashboard.
+  // Add-widget picker preview mode: lets every panel's Y-axis drop ticks
+  // that don't fit instead of forcing every one (see interval below), and
+  // skips chart animation — three stacked panels leave little room, and
+  // animation on ~20 previews mounting at once is what made the picker
+  // feel slow.
   compact?: boolean;
+  // Independent of `compact` — trialled separately since three stacked
+  // panels are unreadable without knowing which color is which series. Set
+  // via WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather
+  // than tied to `compact`, so legend visibility can be toggled in preview
+  // without touching the interval/animation behavior above.
+  hideLegend?: boolean;
 }) {
   if (data.length === 0) {
     return (
@@ -106,7 +114,7 @@ export function ProgressionChart({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      {!compact && (
+      {!hideLegend && (
         <div className={styles.legend}>
           <span className={styles.legendItem}>
             <span

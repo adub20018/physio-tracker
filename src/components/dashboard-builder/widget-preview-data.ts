@@ -112,12 +112,19 @@ export const MOCK_CHART_DATA_BUNDLE = buildChartDataBundle(
   DEFAULT_FLARE_PAIN_THRESHOLD,
 );
 
+// Trial flag: whether preview thumbnails show each chart's legend. Doesn't
+// affect `compact`'s other behavior (Y-axis tick density, animation) — flip
+// this on its own to compare with/without while everything else stays put.
+const PREVIEW_HIDE_LEGENDS = false;
+
 // A render context for showing `widgetType` in the preview grid: the full
 // made-up history (rangeDays: Infinity, matching the "All" time-range
 // preset — see lib/time-range.ts), not editable, sized to fill whatever
-// box the picker puts it in. compact: true strips legends and r-value
-// captions — the thumbnail box is too small to spare the room, and that
-// detail is one click away on the real dashboard.
+// box the picker puts it in. compact: true drops Y-axis ticks that don't
+// fit and skips animation — the thumbnail box is too small to spare the
+// room, and that detail is one click away on the real dashboard. rList
+// (correlation r-value) captions are also stripped under compact, since
+// that's the same "not enough room" call as the axis ticks.
 export function mockRenderContext(widgetType: string): WidgetRenderContext {
   return {
     widgetId: `preview-${widgetType}`,
@@ -126,5 +133,6 @@ export function mockRenderContext(widgetType: string): WidgetRenderContext {
     autoScaleYAxis: false,
     fillHeight: true,
     compact: true,
+    hideLegend: PREVIEW_HIDE_LEGENDS,
   };
 }

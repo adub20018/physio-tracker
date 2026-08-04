@@ -77,12 +77,20 @@ export type WidgetRenderContext = {
   // of it. Undefined when not editing.
   editControls?: React.ReactNode;
   // True only in the Add-widget picker's thumbnails (see widget-preview.tsx
-  // / widget-preview-data.ts), whose fixed, small box has no room for
-  // anything but the graph itself. Strips legends and correlation/r-value
-  // captions — chrome that's genuinely useful on the real dashboard, just
-  // not in a thumbnail one click away from it. Undefined (falsy) everywhere
-  // else.
+  // / widget-preview-data.ts), whose fixed, small box has no room to spare:
+  // lets each chart's Y-axis drop ticks that don't fit instead of forcing
+  // every one, and skips animation (mounting ~20 previews at once with
+  // animation on is what made the picker feel slow). Undefined (falsy)
+  // everywhere else.
   compact?: boolean;
+  // Independent of `compact` — controls only the legend row on charts that
+  // have one. Split out separately because it's being trialled on its own:
+  // stacked (multi-panel) charts in particular are unreadable in preview
+  // without knowing which color is which series, but that doesn't mean the
+  // Y-axis/animation behavior above should change too. Toggle in
+  // mockRenderContext (widget-preview-data.ts). Undefined (falsy)
+  // everywhere else — the real dashboard always shows its legends.
+  hideLegend?: boolean;
 };
 
 // Grid-unit size bounds for one widget type, in the same units as x/y/w/h
@@ -339,6 +347,7 @@ function SleepVsPainWidget({
         autoScaleYAxis={ctx.autoScaleYAxis}
         fillHeight={ctx.fillHeight}
         compact={ctx.compact}
+        hideLegend={ctx.hideLegend}
       />
     </>
   );
@@ -529,6 +538,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -555,6 +565,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -579,6 +590,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -605,6 +617,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -806,6 +819,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />

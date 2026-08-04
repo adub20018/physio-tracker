@@ -6,6 +6,7 @@
 // parent and collapses without one.
 "use client";
 
+import { Skeleton } from "@primereact/ui/skeleton";
 import { isStackedChart, type WidgetDefinition } from "./widget-registry";
 import { MOCK_CHART_DATA_BUNDLE, mockRenderContext } from "./widget-preview-data";
 import styles from "./widget-preview.module.css";
@@ -16,9 +17,9 @@ export function WidgetPreview({
 }: {
   definition: WidgetDefinition;
   // True for the first frame after the dialog opens (see AddWidgetDialog):
-  // renders an empty pulsing placeholder instead of calling `render` at
-  // all, so mounting ~20+ real chart instances doesn't happen in the same
-  // paint as the dialog's own open transition.
+  // renders PrimeReact's own Skeleton instead of calling `render` at all,
+  // so mounting ~20+ real chart instances doesn't happen in the same paint
+  // as the dialog's own open transition.
   loading?: boolean;
 }) {
   // Bare widgets (stat tiles) are already a complete self-styled unit, so
@@ -35,7 +36,14 @@ export function WidgetPreview({
       : styles.previewChart;
 
   if (loading) {
-    return <div className={`${boxClass} ${styles.skeleton}`} />;
+    // width/height 100% fills whichever fixed-size box the definition maps
+    // to above — .previewBare's `> * { flex: 1 }` rule stretches it to fill
+    // that box's height too, same as the real content would.
+    return (
+      <div className={boxClass}>
+        <Skeleton width="100%" height="100%" />
+      </div>
+    );
   }
 
   const ctx = mockRenderContext(definition.type);

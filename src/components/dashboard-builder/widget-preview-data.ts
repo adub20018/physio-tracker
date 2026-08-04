@@ -102,7 +102,7 @@ function buildMockDays(): DomainDay[] {
 }
 
 const MOCK_DAYS = buildMockDays();
-const MOCK_TODAY = addDays(MOCK_START_DATE, MOCK_DAY_COUNT - 1);
+export const MOCK_TODAY = addDays(MOCK_START_DATE, MOCK_DAY_COUNT - 1);
 
 // Computed once at module load — buildChartDataBundle is pure and MOCK_DAYS
 // never changes, so there's nothing to recompute on render.
@@ -118,17 +118,25 @@ export const MOCK_CHART_DATA_BUNDLE = buildChartDataBundle(
 const PREVIEW_HIDE_LEGENDS = false;
 
 // A render context for showing `widgetType` in the preview grid: the full
-// made-up history (rangeDays: Infinity, matching the "All" time-range
-// preset — see lib/time-range.ts), not editable, sized to fill whatever
-// box the picker puts it in. compact: true drops Y-axis ticks that don't
-// fit and skips animation — the thumbnail box is too small to spare the
-// room, and that detail is one click away on the real dashboard. rList
-// (correlation r-value) captions are also stripped under compact, since
-// that's the same "not enough room" call as the axis ticks.
-export function mockRenderContext(widgetType: string): WidgetRenderContext {
+// history (rangeDays: Infinity, matching the "All" time-range preset — see
+// lib/time-range.ts), not editable, sized to fill whatever box the picker
+// puts it in. compact: true drops Y-axis ticks that don't fit and skips
+// animation — the thumbnail box is too small to spare the room, and that
+// detail is one click away on the real dashboard. rList (correlation
+// r-value) captions are also stripped under compact, since that's the same
+// "not enough room" call as the axis ticks.
+//
+// Shared by both preview sources (see add-widget-dialog.tsx): the mock
+// account and the signed-in user's own data differ only in which bundle
+// and `today` they're built from, not in how they're displayed — so this
+// takes `today` as a parameter rather than being mock-specific.
+export function previewRenderContext(
+  widgetType: string,
+  today: string,
+): WidgetRenderContext {
   return {
     widgetId: `preview-${widgetType}`,
-    today: MOCK_TODAY,
+    today,
     rangeDays: Infinity,
     autoScaleYAxis: false,
     fillHeight: true,

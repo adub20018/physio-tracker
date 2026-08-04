@@ -1,17 +1,20 @@
-// Edit-mode "Add widget" picker — a grid of live preview cards (rendered
-// against the fixed mock account in widget-preview-data.ts, since a new
-// account has no real history to preview against) for every widget type not
-// already on the dashboard, grouped by category. Follows ConfirmDialog's
-// Dialog.Root/Portal/Backdrop/Positioner/Popup structure (src/components/ui/
-// shared/confirm-dialog.tsx) but stays open after each pick, so several
-// widgets can be added in one pass rather than reopening the dialog each
-// time.
+// Edit-mode "Add widget" picker — a grid of live preview cards for every
+// widget type not already on the dashboard, grouped by category. Previews
+// render against the signed-in user's own data once there's enough of it
+// to be useful (MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS), falling back to the
+// fabricated mock account in widget-preview-data.ts for fresh/sparse
+// accounts, whose real charts would mostly just show empty states. Follows
+// ConfirmDialog's Dialog.Root/Portal/Backdrop/Positioner/Popup structure
+// (src/components/ui/shared/confirm-dialog.tsx) but stays open after each
+// pick, so several widgets can be added in one pass rather than reopening
+// the dialog each time.
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
 import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
 import { X } from "lucide-react";
+import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import {
   WIDGET_DEFINITIONS,
   isStackedChart,
@@ -19,6 +22,7 @@ import {
   type WidgetDefinition,
 } from "./widget-registry";
 import { WidgetPreview } from "./widget-preview";
+import { MOCK_CHART_DATA_BUNDLE, MOCK_TODAY } from "./widget-preview-data";
 import styles from "./add-widget-dialog.module.css";
 
 const CATEGORIES: WidgetCategory[] = [
@@ -37,10 +41,14 @@ function WidgetCard({
   definition,
   onAdd,
   loading,
+  bundle,
+  today,
 }: {
   definition: WidgetDefinition;
   onAdd: (widgetType: string) => void;
   loading: boolean;
+  bundle: ChartDataBundle;
+  today: string;
 }) {
   return (
     <div
@@ -55,7 +63,12 @@ function WidgetCard({
         }
       }}
     >
-      <WidgetPreview definition={definition} loading={loading} />
+      <WidgetPreview
+        definition={definition}
+        loading={loading}
+        bundle={bundle}
+        today={today}
+      />
       <span className={styles.cardLabel}>{definition.label}</span>
     </div>
   );
@@ -66,6 +79,9 @@ export function AddWidgetDialog({
   onOpenChange,
   existingTypes,
   onAdd,
+  realBundle,
+  realToday,
+  hasEnoughDataForPreviews,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -73,8 +89,20 @@ export function AddWidgetDialog({
   // than shown disabled, since a second identical chart isn't useful.
   existingTypes: Set<string>;
   onAdd: (widgetType: string) => void;
+  // The signed-in user's own data (same bundle the real dashboard renders
+  // from) and today's date — used for previews instead of the mock account
+  // once hasEnoughDataForPreviews is true. See
+  // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS for the threshold.
+  realBundle: ChartDataBundle;
+  realToday: string;
+  hasEnoughDataForPreviews: boolean;
 }) {
   const available = WIDGET_DEFINITIONS.filter((d) => !existingTypes.has(d.type));
+
+  // Resolved once — every card in the grid previews from the same source,
+  // real or mock, not a per-widget decision.
+  const previewBundle = hasEnoughDataForPreviews ? realBundle : MOCK_CHART_DATA_BUNDLE;
+  const previewToday = hasEnoughDataForPreviews ? realToday : MOCK_TODAY;
 
   // The picker renders 20+ live chart instances — mounting them all in one
   // commit is a single, uninterruptible block of JS long enough to stall
@@ -188,6 +216,8 @@ export function AddWidgetDialog({
                               definition={def}
                               onAdd={onAdd}
                               loading={!isPreviewReady(def.type)}
+                              bundle={previewBundle}
+                              today={previewToday}
                             />
                           ))}
                         </div>
@@ -204,6 +234,8 @@ export function AddWidgetDialog({
                                 definition={def}
                                 onAdd={onAdd}
                                 loading={!isPreviewReady(def.type)}
+                                bundle={previewBundle}
+                                today={previewToday}
                               />
                             ))}
                           </div>

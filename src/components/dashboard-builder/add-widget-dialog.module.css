@@ -40,13 +40,13 @@
    just whatever happens to fit. */
 .chartsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.6rem;
 }
 
@@ -55,7 +55,7 @@
     grid-template-columns: 1fr;
   }
   .statsGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -65,18 +65,20 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid var(--border);
+  border: var(--border-subtle);
   border-radius: 12px;
-  background: none;
+  background: var(--surface-sunken);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  opacity: 0.85;
 }
 
 .card:hover {
   background: var(--surface-sunken);
-  border-color: var(--faint);
+  border-color: var(--border);
+  opacity: 1;
 }
 
 .cardLabel {

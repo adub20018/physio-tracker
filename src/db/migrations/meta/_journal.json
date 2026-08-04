@@ -50,6 +50,13 @@
       "when": 1785629872738,
       "tag": "0006_even_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785828382029,
+      "tag": "0007_short_prima",
+      "breakpoints": true
     }
   ]
 }

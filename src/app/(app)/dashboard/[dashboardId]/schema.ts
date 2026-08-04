@@ -4,6 +4,7 @@
 // unknown types defensively), it isn't a security or data-integrity risk
 // worth duplicating the registry's type list into a server-safe module for.
 import { z } from "zod";
+import { TIME_RANGES } from "@/lib/time-range";
 
 export const dashboardWidgetInputSchema = z.object({
   widgetType: z.string().trim().min(1).max(60),
@@ -28,3 +29,7 @@ export const dashboardNameSchema = z
   .trim()
   .min(1, "Enter a name")
   .max(40, "Keep it under 40 characters");
+
+// A dashboard's persisted time-range selection — must be one of the
+// presets lib/time-range.ts defines, not an arbitrary string.
+export const dashboardTimeRangeSchema = z.enum(TIME_RANGES);

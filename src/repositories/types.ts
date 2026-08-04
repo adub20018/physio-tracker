@@ -6,6 +6,7 @@
 // Every data method takes a userId (the signed-in Neon Auth account's id)
 // and must scope its queries by it.
 import type { DailyLog, ExerciseEntry, NewDailyLog, NewExerciseEntry } from "@/db/schema";
+import type { TimeRange } from "@/lib/time-range";
 
 // A daily log together with the exercises performed that day — the shape most
 // of the UI works with.
@@ -61,6 +62,9 @@ export type Dashboard = {
   id: string;
   name: string;
   sortOrder: number;
+  // Persisted server-side (not localStorage) so the same range selection
+  // follows the user across devices/logins — see updateTimeRange below.
+  timeRange: TimeRange;
 };
 
 // One chart placed on a dashboard. widgetType is a key into the widget
@@ -100,6 +104,11 @@ export interface DashboardRepository {
   // belong to userId — callers should treat "not found" and "not yours" the
   // same way (404), so this doesn't need to distinguish them.
   rename(id: string, userId: string, name: string): Promise<void>;
+  // Updates just the persisted time-range selection — called whenever the
+  // user picks a different range from the dashboard's config popover, so
+  // it's remembered the next time this dashboard is opened on any device.
+  // Same ownership semantics as rename (no-ops if not this user's).
+  updateTimeRange(id: string, userId: string, timeRange: TimeRange): Promise<void>;
   // Removes a dashboard (and, via cascade, its widgets).
   delete(id: string, userId: string): Promise<void>;
   // Persists a new relative order for a user's dashboards (the switcher's

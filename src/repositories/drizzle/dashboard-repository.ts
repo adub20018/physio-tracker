@@ -12,6 +12,7 @@ import type {
   DashboardWithWidgets,
   NewDashboardWidgetInput,
 } from "@/repositories/types";
+import type { TimeRange } from "@/lib/time-range";
 import { DEFAULT_DASHBOARD_WIDGETS } from "@/repositories/default-dashboard-widgets";
 
 // The id given to the auto-seeded "Default" dashboard. Derived from the
@@ -33,24 +34,46 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       .from(dashboards)
       .where(eq(dashboards.userId, userId))
       .orderBy(asc(dashboards.sortOrder), asc(dashboards.createdAt));
-    return rows.map(({ id, name, sortOrder }) => ({ id, name, sortOrder }));
+    return rows.map(({ id, name, sortOrder, timeRange }) => ({
+      id,
+      name,
+      sortOrder,
+      timeRange,
+    }));
   }
 
   // Appended to the end of the user's list — sortOrder is always a
-  // contiguous 0..n-1 sequence, rewritten wholesale by reorder().
+  // contiguous 0..n-1 sequence, rewritten wholesale by reorder(). timeRange
+  // isn't passed to .values() — the column's own default ("7d") applies.
   async create(userId: string, name: string): Promise<Dashboard> {
     const existing = await this.listForUser(userId);
     const [row] = await db
       .insert(dashboards)
       .values({ userId, name, sortOrder: existing.length })
       .returning();
-    return { id: row.id, name: row.name, sortOrder: row.sortOrder };
+    return {
+      id: row.id,
+      name: row.name,
+      sortOrder: row.sortOrder,
+      timeRange: row.timeRange,
+    };
   }
 
   async rename(id: string, userId: string, name: string): Promise<void> {
     await db
       .update(dashboards)
       .set({ name })
+      .where(and(eq(dashboards.id, id), eq(dashboards.userId, userId)));
+  }
+
+  async updateTimeRange(
+    id: string,
+    userId: string,
+    timeRange: TimeRange,
+  ): Promise<void> {
+    await db
+      .update(dashboards)
+      .set({ timeRange })
       .where(and(eq(dashboards.id, id), eq(dashboards.userId, userId)));
   }
 
@@ -94,6 +117,7 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       id: row.id,
       name: row.name,
       sortOrder: row.sortOrder,
+      timeRange: row.timeRange,
       widgets: widgetRows.map((w) => ({
         id: w.id,
         widgetType: w.widgetType,
@@ -158,7 +182,7 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       // Lost the race — the winner's row exists now (and is seeding its own
       // widgets), so just use it.
       const after = await this.listForUser(userId);
-      return after[0] ?? { id, name: "Default", sortOrder: 0 };
+      return after[0] ?? { id, name: "Default", sortOrder: 0, timeRange: "7d" };
     }
 
     await this.saveWidgets(id, userId, DEFAULT_DASHBOARD_WIDGETS);
@@ -166,6 +190,7 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       id: inserted.id,
       name: inserted.name,
       sortOrder: inserted.sortOrder,
+      timeRange: inserted.timeRange,
     };
   }
 

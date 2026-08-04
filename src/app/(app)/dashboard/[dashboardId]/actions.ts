@@ -6,7 +6,11 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dashboardRepository } from "@/repositories";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
-import { saveDashboardLayoutSchema, dashboardNameSchema } from "./schema";
+import {
+  saveDashboardLayoutSchema,
+  dashboardNameSchema,
+  dashboardTimeRangeSchema,
+} from "./schema";
 
 export type SaveLayoutResult = { ok: true } | { ok: false; error: string };
 export type CreateDashboardResult =
@@ -27,6 +31,28 @@ export async function saveDashboardLayout(
 
   const user = await getCurrentUser();
   await dashboardRepository.saveWidgets(dashboardId, user.id, parsed.data);
+  revalidatePath(`/dashboard/${dashboardId}`);
+  return { ok: true };
+}
+
+// Persists the dashboard's selected time range — fired whenever the user
+// picks a different one from the config popover, so it's remembered the
+// next time this dashboard is opened, on any device. The caller updates its
+// own local state immediately for instant feedback (the range only affects
+// how the client slices data it already has, not what's fetched) and
+// doesn't need to await this or refresh afterward; revalidatePath here just
+// keeps the server's cached RSC payload from going stale for a later visit.
+export async function updateDashboardTimeRange(
+  dashboardId: string,
+  timeRange: string,
+): Promise<SaveLayoutResult> {
+  const parsed = dashboardTimeRangeSchema.safeParse(timeRange);
+  if (!parsed.success) {
+    return { ok: false, error: "That time range isn't valid." };
+  }
+
+  const user = await getCurrentUser();
+  await dashboardRepository.updateTimeRange(dashboardId, user.id, parsed.data);
   revalidatePath(`/dashboard/${dashboardId}`);
   return { ok: true };
 }

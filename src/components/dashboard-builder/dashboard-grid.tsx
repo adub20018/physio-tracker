@@ -27,8 +27,7 @@ import { Button } from "@primereact/ui/button";
 import { Message } from "@primereact/ui/message";
 import { LayoutDashboard, Pencil, Plus } from "lucide-react";
 import { useMediaQuery } from "@/lib/use-media-query";
-import { daysForRange } from "@/lib/time-range";
-import { usePersistedTimeRange } from "@/lib/use-persisted-time-range";
+import { daysForRange, type TimeRange } from "@/lib/time-range";
 import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
@@ -36,7 +35,10 @@ import { WIDGET_REGISTRY, type WidgetDefinition } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
-import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
+import {
+  saveDashboardLayout,
+  updateDashboardTimeRange,
+} from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
 import { absoluteStrategy } from "react-grid-layout/core";
 
@@ -161,6 +163,7 @@ export function DashboardGrid({
   bundle,
   today,
   autoScaleYAxis,
+  initialRange,
 }: {
   dashboardId: string;
   dashboardName: string;
@@ -168,6 +171,10 @@ export function DashboardGrid({
   bundle: ChartDataBundle;
   today: string;
   autoScaleYAxis: boolean;
+  // The dashboard's persisted range (src/db/schema.ts's dashboards.timeRange)
+  // — loaded server-side, so the very first paint already shows the range
+  // this dashboard was last left on, on any device, no flash of the default.
+  initialRange: TimeRange;
 }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   // measureBeforeMount: without it useContainerWidth starts `mounted` true
@@ -184,12 +191,31 @@ export function DashboardGrid({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // Keyed per dashboard: each is its own view of a period, so switching
-  // dashboards shouldn't drag the last one's range along with it.
-  const [range, setRange] = usePersistedTimeRange(
-    `physimate:dashboard-range:${dashboardId}`,
-  );
+  // Seeded from the server (dashboards.timeRange) rather than localStorage
+  // — plain useState, not an effect-driven correction, since initialRange
+  // is already a real server-rendered value with no SSR/client mismatch to
+  // reconcile. Switching to a different dashboard remounts this component
+  // (dashboardId is part of the route), so there's no stale-range carryover
+  // between dashboards to worry about either.
+  const [range, setRangeState] = useState<TimeRange>(initialRange);
   const rangeDays = daysForRange(range);
+
+  // Updates local state immediately (the range only changes how the client
+  // slices data it already has — see rangeDays below — so there's nothing
+  // to wait on), then persists it in the background. Not wrapped in the
+  // edit-mode `startTransition` above: that one's `isPending` drives the
+  // Save/Cancel buttons, and a range change happening to be in flight at
+  // the same moment shouldn't make those look like they're saving too.
+  function handleRangeChange(next: TimeRange) {
+    setRangeState(next);
+    updateDashboardTimeRange(dashboardId, next).then((result) => {
+      if (!result.ok) {
+        console.error("Failed to save dashboard time range:", result.error);
+      }
+    }, (err: unknown) => {
+      console.error("Failed to save dashboard time range:", err);
+    });
+  }
 
   const [isEditing, setIsEditing] = useState(false);
   const [savedWidgets, setSavedWidgets] = useState<DashboardWidget[]>(widgets);
@@ -405,7 +431,7 @@ export function DashboardGrid({
             dashboardId={dashboardId}
             dashboardName={dashboardName}
             range={range}
-            onRangeChange={setRange}
+            onRangeChange={handleRangeChange}
             // A reset replaces the saved widgets, so any edit draft still
             // open is now stale — drop it rather than let a later Save
             // write the pre-reset layout straight back.

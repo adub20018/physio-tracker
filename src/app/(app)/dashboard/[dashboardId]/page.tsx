@@ -59,6 +59,7 @@ export default async function DashboardViewPage({
         bundle={bundle}
         today={today}
         autoScaleYAxis={chartAutoScaleYAxis}
+        initialRange={dashboard.timeRange}
       />
     </main>
   );

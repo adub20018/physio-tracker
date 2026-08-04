@@ -1,0 +1,1 @@
+ALTER TABLE "dashboards" ADD COLUMN "time_range" text DEFAULT '7d' NOT NULL;

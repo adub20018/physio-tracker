@@ -118,6 +118,14 @@ export const dashboards = pgTable("dashboards", {
   userId: uuid("user_id").notNull(),
   name: text("name").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
+  // Persisted time-range selection (see lib/time-range.ts's TIME_RANGES for
+  // the source of truth on valid values — kept in sync by hand here, same
+  // as exerciseEntries.unit's enum above) — synced across devices so a
+  // range picked on one device is still selected the next time this
+  // dashboard is opened anywhere else, rather than resetting every session.
+  timeRange: text("time_range", { enum: ["7d", "1m", "3m", "1y", "all"] })
+    .notNull()
+    .default("7d"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

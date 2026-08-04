@@ -11,6 +11,7 @@
 
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { SparklineTooltipContent } from "./sparkline-tooltip";
+import { useChartTooltipSuppression } from "../use-chart-tooltip-suppression";
 
 export function StatSparkline({
   values,
@@ -29,6 +30,8 @@ export function StatSparkline({
   // sparklines would otherwise animate in at once right as the dialog opens.
   animate?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   const data = values.map((d, i) => ({
     i,
     date: d.date,
@@ -38,8 +41,16 @@ export function StatSparkline({
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-        <Tooltip content={<SparklineTooltipContent />} cursor={false} />
+      <BarChart
+        data={data}
+        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+        onClick={onChartClick}
+      >
+        <Tooltip
+          content={<SparklineTooltipContent />}
+          cursor={false}
+          active={tooltipSuppressed ? false : undefined}
+        />
         <Bar
           dataKey="v"
           radius={[4, 4, 1, 1]}

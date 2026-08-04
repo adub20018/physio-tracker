@@ -24,6 +24,7 @@ import {
   shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 // One day's sleep paired with that SAME day's pain readings.
@@ -66,6 +67,8 @@ export function SleepPainTimeline({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (data.length === 0) {
     return <EmptyState message="No data yet" height={250} fill={fillHeight} />;
   }
@@ -125,6 +128,7 @@ export function SleepPainTimeline({
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -140,6 +144,7 @@ export function SleepPainTimeline({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ fill: "rgba(255,255,255,0.04)" }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Bar
               dataKey="sleepHours"
@@ -167,6 +172,7 @@ export function SleepPainTimeline({
           <ComposedChart
             data={data}
             syncId={SYNC_ID}
+            onClick={onChartClick}
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -195,6 +201,7 @@ export function SleepPainTimeline({
               contentStyle={TOOLTIP_STYLE}
               labelStyle={{ color: "var(--muted)" }}
               cursor={{ stroke: CHART_CHROME.axisLine }}
+              active={tooltipSuppressed ? false : undefined}
             />
             <Line
               dataKey="painMorning"

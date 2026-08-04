@@ -23,6 +23,7 @@ import {
   shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 // One day on the timeline, precomputed by the caller (domain functions).
@@ -105,6 +106,8 @@ export function PainTimeline({
   // animation behavior above.
   hideLegend?: boolean;
 }) {
+  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+
   if (data.length === 0) {
     return (
       <EmptyState message="No pain data yet" height={280} fill={fillHeight} />
@@ -147,6 +150,7 @@ export function PainTimeline({
       >
         <ComposedChart
           data={data}
+          onClick={onChartClick}
           margin={{ top: 6, right: 12, bottom: 0, left: -18 }}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -167,6 +171,7 @@ export function PainTimeline({
           <Tooltip
             content={<PainTooltipContent />}
             cursor={{ stroke: CHART_CHROME.axisLine }}
+            active={tooltipSuppressed ? false : undefined}
           />
           {/* Raw readings: thin, slightly transparent, gaps preserved */}
           {LINES.map((l) => (

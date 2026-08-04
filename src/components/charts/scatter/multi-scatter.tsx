@@ -36,6 +36,8 @@ export function MultiScatter({
   yLabel,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
+  hideLegend = false,
 }: {
   series: ScatterSeries[];
   xLabel: string;
@@ -46,6 +48,17 @@ export function MultiScatter({
   // When true, fill the parent's height instead of the fixed pixel height
   // used on /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
+  // fit instead of forcing every one (see interval below), and skips chart
+  // animation — the box is too short to spare the room, and animation on
+  // ~20 previews mounting at once is what made the picker feel slow.
+  compact?: boolean;
+  // Independent of `compact` — trialled separately since 3 series sharing
+  // one plot are unreadable without knowing which color is which. Set via
+  // WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather than
+  // tied to `compact`, so legend visibility can be toggled in preview
+  // without touching the interval/animation behavior above.
+  hideLegend?: boolean;
 }) {
   if (series.every((s) => s.points.length === 0)) {
     return <EmptyState message="No data yet" height={280} fill={fillHeight} />;
@@ -53,17 +66,19 @@ export function MultiScatter({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      <div className={styles.legend}>
-        {series.map((s) => (
-          <span key={s.key} className={styles.legendItem}>
-            <span
-              className={styles.legendDot}
-              style={{ background: s.color }}
-            />
-            {s.label}
-          </span>
-        ))}
-      </div>
+      {!hideLegend && (
+        <div className={styles.legend}>
+          {series.map((s) => (
+            <span key={s.key} className={styles.legendItem}>
+              <span
+                className={styles.legendDot}
+                style={{ background: s.color }}
+              />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )}
       <ResponsiveContainer
         width="100%"
         height={fillHeight ? "100%" : 260}
@@ -94,7 +109,7 @@ export function MultiScatter({
             type="number"
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            interval={0}
+            interval={compact ? "preserveStart" : 0}
             label={{
               value: yLabel,
               angle: -90,
@@ -122,7 +137,7 @@ export function MultiScatter({
               name={s.label}
               fill={s.color}
               fillOpacity={0.75}
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={150}
               animationDuration={300}
               animationEasing="linear"

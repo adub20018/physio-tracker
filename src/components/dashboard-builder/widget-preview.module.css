@@ -1,0 +1,52 @@
+/* Each preview shape gets its own fixed height — chart content and
+   StatTile's sparkline both size via height:100%/flex against this box,
+   exactly like the real dashboard grid cell does for them (see
+   .fillCard/.fillBare in widget-shell.module.css), just at a fixed
+   thumbnail size instead of whatever react-grid-layout gives them.
+   pointer-events: none turns off Recharts tooltips and StatTile's
+   InfoTooltip trigger — these are inert thumbnails, not interactive
+   charts. */
+.previewChart {
+  height: 10rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+  padding: 0.6rem 0.7rem 0.4rem;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* Double/triple stacked charts (see isStackedChart in widget-registry.tsx)
+   need real room — 2-3 panels squeezed into .previewChart's height
+   overlapped and became unreadable. Rendered in their own picker section
+   (add-widget-dialog.tsx) so they don't sit in a shared grid row forcing
+   shorter cards to match this height. */
+.previewChartStacked {
+  height: 18rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+  padding: 0.6rem 0.7rem 0.4rem;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* Noticeably shorter than .previewChart — stat tiles really are that much
+   smaller on the real dashboard (STAT_TILE_BOUNDS locks them to 7 grid
+   rows), and previewing them at chart size would be misleading about how
+   much room they actually take up. */
+.previewBare {
+  height: 8rem;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.previewBare > * {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+}

@@ -1,14 +1,24 @@
-// Edit-mode "Add widget" picker — lists every widget type not already on
-// the dashboard, grouped by category. Follows ConfirmDialog's Dialog.Root/
-// Portal/Backdrop/Positioner/Popup structure (src/components/ui/shared/
-// confirm-dialog.tsx) but stays open after each pick, so several widgets
-// can be added in one pass rather than reopening the dialog each time.
+// Edit-mode "Add widget" picker — a grid of live preview cards (rendered
+// against the fixed mock account in widget-preview-data.ts, since a new
+// account has no real history to preview against) for every widget type not
+// already on the dashboard, grouped by category. Follows ConfirmDialog's
+// Dialog.Root/Portal/Backdrop/Positioner/Popup structure (src/components/ui/
+// shared/confirm-dialog.tsx) but stays open after each pick, so several
+// widgets can be added in one pass rather than reopening the dialog each
+// time.
 "use client";
 
+import { startTransition, useEffect, useState } from "react";
 import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
 import { X } from "lucide-react";
-import { WIDGET_DEFINITIONS, type WidgetCategory } from "./widget-registry";
+import {
+  WIDGET_DEFINITIONS,
+  isStackedChart,
+  type WidgetCategory,
+  type WidgetDefinition,
+} from "./widget-registry";
+import { WidgetPreview } from "./widget-preview";
 import styles from "./add-widget-dialog.module.css";
 
 const CATEGORIES: WidgetCategory[] = [
@@ -16,6 +26,40 @@ const CATEGORIES: WidgetCategory[] = [
   "Dashboard charts",
   "Insights charts",
 ];
+
+// One clickable preview card. A plain <button> here would nest StatTile's
+// own InfoTooltip trigger button inside it — invalid HTML (buttons can't
+// nest) that React flags as a hydration error. A div with button semantics
+// avoids the nesting while staying clickable and keyboard-operable;
+// widget-preview.module.css also sets pointer-events: none on the preview
+// itself, so the inner tooltip trigger is inert.
+function WidgetCard({
+  definition,
+  onAdd,
+  loading,
+}: {
+  definition: WidgetDefinition;
+  onAdd: (widgetType: string) => void;
+  loading: boolean;
+}) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      className={styles.card}
+      onClick={() => onAdd(definition.type)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onAdd(definition.type);
+        }
+      }}
+    >
+      <WidgetPreview definition={definition} loading={loading} />
+      <span className={styles.cardLabel}>{definition.label}</span>
+    </div>
+  );
+}
 
 export function AddWidgetDialog({
   open,
@@ -31,6 +75,58 @@ export function AddWidgetDialog({
   onAdd: (widgetType: string) => void;
 }) {
   const available = WIDGET_DEFINITIONS.filter((d) => !existingTypes.has(d.type));
+
+  // The picker renders 20+ live chart instances — mounting them all in one
+  // commit is a single, uninterruptible block of JS long enough to stall
+  // the backdrop's own fade-in (they share the same main thread), so the
+  // dim only appeared to show up once every chart had finished mounting.
+  // Marking the swap as a startTransition wasn't enough on its own — React
+  // only yields mid-transition when something else needs the thread, and
+  // with nothing else competing it just ran the whole ~20-chart render in
+  // one go anyway.
+  //
+  // What actually fixes it is keeping every individual commit small:
+  // reveal a handful of previews per animation frame instead of all at
+  // once, so the browser gets a real paint between each batch — including
+  // the frame where the backdrop's own transition is playing.
+  const REVEAL_BATCH_SIZE = 4;
+  const [readyCount, setReadyCount] = useState(0);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    let frameId = 0;
+
+    function revealNextBatch(count: number) {
+      frameId = requestAnimationFrame(() => {
+        if (cancelled) return;
+        const next = Math.min(count + REVEAL_BATCH_SIZE, available.length);
+        startTransition(() => setReadyCount(next));
+        if (next < available.length) {
+          revealNextBatch(next);
+        }
+      });
+    }
+    // One frame's head start lets the dialog's own open-transition frame
+    // land before the first batch starts mounting.
+    frameId = requestAnimationFrame(() => revealNextBatch(0));
+
+    // Runs when `open` flips back to false (or on unmount) — resets so the
+    // next open starts from skeletons again instead of skipping straight
+    // to the already-revealed count from last time.
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+      setReadyCount(0);
+    };
+  }, [open, available.length]);
+
+  // Reveal order doesn't need to match visual (category/grid) order — it
+  // only needs to grow a little each frame — so a simple index into
+  // `available` is enough to decide whether a given widget has its batch
+  // turn yet.
+  const revealOrder = new Map(available.map((d, i) => [d.type, i]));
+  const isPreviewReady = (type: string) =>
+    (revealOrder.get(type) ?? available.length) < readyCount;
 
   return (
     <Dialog.Root
@@ -60,27 +156,59 @@ export function AddWidgetDialog({
             <Dialog.Content className={styles.content}>
               {available.length === 0 ? (
                 <p className={styles.empty}>
-                  Every available widget is already on this dashboard.
+                  Every available widget is already on this dashboard
                 </p>
               ) : (
                 CATEGORIES.map((category) => {
                   const items = available.filter((d) => d.category === category);
                   if (items.length === 0) return null;
+
+                  // Stacked (multi-panel) charts get their own, taller
+                  // preview box (widget-preview.module.css) — kept in a
+                  // separate grid rather than mixed in with single-panel
+                  // charts so their extra height doesn't force every card
+                  // in the same row to match it.
+                  const singleItems = items.filter((d) => !isStackedChart(d));
+                  const stackedItems = items.filter(isStackedChart);
+
                   return (
                     <div key={category} className={styles.group}>
                       <h3 className={styles.groupTitle}>{category}</h3>
-                      <div className={styles.rows}>
-                        {items.map((def) => (
-                          <button
-                            key={def.type}
-                            type="button"
-                            className={styles.row}
-                            onClick={() => onAdd(def.type)}
-                          >
-                            {def.label}
-                          </button>
-                        ))}
-                      </div>
+                      {singleItems.length > 0 && (
+                        <div
+                          className={
+                            category === "Stat tiles"
+                              ? styles.statsGrid
+                              : styles.chartsGrid
+                          }
+                        >
+                          {singleItems.map((def) => (
+                            <WidgetCard
+                              key={def.type}
+                              definition={def}
+                              onAdd={onAdd}
+                              loading={!isPreviewReady(def.type)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {stackedItems.length > 0 && (
+                        <>
+                          <h4 className={styles.subGroupTitle}>
+                            Multi-panel charts
+                          </h4>
+                          <div className={styles.chartsGrid}>
+                            {stackedItems.map((def) => (
+                              <WidgetCard
+                                key={def.type}
+                                definition={def}
+                                onAdd={onAdd}
+                                loading={!isPreviewReady(def.type)}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 })

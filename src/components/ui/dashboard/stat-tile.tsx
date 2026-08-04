@@ -61,6 +61,10 @@ export type StatTileProps = {
   // between viewing and editing; the badge's only job (the metric hint) is
   // of no use while you're rearranging anyway.
   actions?: React.ReactNode;
+  // False in the Add-widget picker's preview thumbnails, where several
+  // tiles' sparklines would otherwise animate in at once right as the
+  // dialog opens.
+  animate?: boolean;
 };
 
 export function StatTile({
@@ -77,6 +81,7 @@ export function StatTile({
   sparklineValues,
   sparklineVariant = "bar",
   actions,
+  animate = true,
 }: StatTileProps) {
   const badgeStyle = {
     background: `color-mix(in srgb, ${accentColor} 14%, transparent)`,
@@ -135,11 +140,19 @@ export function StatTile({
       {sparklineValues &&
         (sparklineVariant === "area" ? (
           <div className={styles.sparkline}>
-            <StatSparklineArea values={sparklineValues} color={accentColor} />
+            <StatSparklineArea
+              values={sparklineValues}
+              color={accentColor}
+              animate={animate}
+            />
           </div>
         ) : (
           <div className={styles.sparkline}>
-            <StatSparkline values={sparklineValues} color={accentColor} />
+            <StatSparkline
+              values={sparklineValues}
+              color={accentColor}
+              animate={animate}
+            />
           </div>
         ))}
     </div>

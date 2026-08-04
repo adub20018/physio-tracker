@@ -1,6 +1,6 @@
 .popup {
-  width: min(28rem, calc(100vw - 2rem));
-  max-height: min(32rem, calc(100vh - 4rem));
+  width: min(56rem, calc(100vw - 2rem));
+  max-height: min(38rem, calc(100vh - 4rem));
 }
 
 .content {
@@ -8,7 +8,7 @@
 }
 
 .group + .group {
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .groupTitle {
@@ -17,31 +17,73 @@
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--faint);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.6rem;
 }
 
-.rows {
+/* Sits between the single-panel grid and the taller stacked-chart grid
+   within a category — quieter than .groupTitle since it's a subdivision of
+   the category above it, not a new one. */
+.subGroupTitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  margin: 1rem 0 0.6rem;
+}
+
+/* Charts need real width to read (stacked panels, axis labels), so they get
+   a fixed 3 columns; stat tiles are a fraction of a chart's footprint on
+   the real dashboard, so previewing them at the same card width would be
+   misleading about their actual size — 4 narrower columns instead. Fixed
+   counts rather than auto-fill so that size difference is deliberate, not
+   just whatever happens to fit. */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+@media (max-width: 34rem) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-}
-
-.row {
-  display: flex;
-  align-items: center;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
+  padding: 0.6rem;
+  border: var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-sunken);
   color: inherit;
-  font-size: 0.9rem;
+  font: inherit;
   text-align: left;
   cursor: pointer;
+  opacity: 0.85;
 }
 
-.row:hover {
+.card:hover {
   background: var(--surface-sunken);
+  border-color: var(--border);
+  opacity: 1;
+}
+
+.cardLabel {
+  font-size: 0.85rem;
+  padding: 0 0.1rem;
 }
 
 .empty {

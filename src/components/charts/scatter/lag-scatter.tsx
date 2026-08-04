@@ -32,6 +32,7 @@ export function LagScatter({
   yLabel,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
 }: {
   points: PairedPoint[];
   xLabel: string;
@@ -42,6 +43,11 @@ export function LagScatter({
   // When true, fill the parent's height instead of the fixed pixel height
   // used on /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
+  // fit instead of forcing every one (see interval below) — the box is too
+  // short to spare the room, and the full chart is one click away on the
+  // real dashboard.
+  compact?: boolean;
 }) {
   if (points.length === 0) {
     return <EmptyState message="No data yet" height={240} fill={fillHeight} />;
@@ -78,7 +84,7 @@ export function LagScatter({
           type="number"
           domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
           ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-          interval={0}
+          interval={compact ? "preserveStart" : 0}
           label={{
             value: yLabel,
             angle: -90,
@@ -103,7 +109,7 @@ export function LagScatter({
           data={points}
           fill={SERIES.rollingAvg}
           fillOpacity={0.75}
-          isAnimationActive={true}
+          isAnimationActive={!compact}
           animationDuration={300}
           animationBegin={0}
           animationEasing="linear"

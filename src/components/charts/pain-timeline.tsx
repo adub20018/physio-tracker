@@ -82,6 +82,8 @@ export function PainTimeline({
   data,
   autoScaleYAxis = false,
   fillHeight = false,
+  compact = false,
+  hideLegend = false,
 }: {
   data: PainTimelinePoint[];
   // When true, the Y-axis scales to fit the visible data's own max instead
@@ -90,6 +92,18 @@ export function PainTimeline({
   // When true, fill the parent's height instead of the fixed pixel height
   // used on /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
+  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
+  // fit instead of forcing every one (see interval below), and skips chart
+  // animation — the box is too short to spare the room, and animation on
+  // ~20 previews mounting at once is what made the picker feel slow.
+  compact?: boolean;
+  // Independent of `compact` — trialled separately since some previews
+  // (stacked charts especially) are unreadable without knowing which color
+  // is which series. Set via WidgetRenderContext.hideLegend (see
+  // widget-preview-data.ts) rather than tied to `compact`, so legend
+  // visibility can be toggled in preview without touching the interval/
+  // animation behavior above.
+  hideLegend?: boolean;
 }) {
   if (data.length === 0) {
     return (
@@ -99,31 +113,33 @@ export function PainTimeline({
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
-      <div className={styles.legend}>
-        {LINES.map((l) => (
-          <span key={l.key} className={styles.legendItem}>
+      {!hideLegend && (
+        <div className={styles.legend}>
+          {LINES.map((l) => (
+            <span key={l.key} className={styles.legendItem}>
+              <span
+                className={styles.legendLine}
+                style={{ background: l.color, opacity: 0.7 }}
+              />
+              {l.label}
+            </span>
+          ))}
+          <span className={styles.legendItem}>
             <span
               className={styles.legendLine}
-              style={{ background: l.color, opacity: 0.7 }}
+              style={{ background: SERIES.rollingAvg }}
             />
-            {l.label}
+            7-day average
           </span>
-        ))}
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendLine}
-            style={{ background: SERIES.rollingAvg }}
-          />
-          7-day average
-        </span>
-        <span className={styles.legendItem}>
-          <span
-            className={styles.legendDot}
-            style={{ background: FLARE_COLOR }}
-          />
-          Flare (≥3)
-        </span>
-      </div>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendDot}
+              style={{ background: FLARE_COLOR }}
+            />
+            Flare (≥3)
+          </span>
+        </div>
+      )}
       <ResponsiveContainer
         width="100%"
         height={fillHeight ? "100%" : 260}
@@ -146,7 +162,7 @@ export function PainTimeline({
             {...CHART_Y_AXIS}
             domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
             ticks={autoScaleYAxis ? undefined : [0, 2.5, 5, 7.5, 10]}
-            interval={0}
+            interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
             content={<PainTooltipContent />}
@@ -162,7 +178,7 @@ export function PainTimeline({
               strokeWidth={1.5}
               strokeOpacity={0.55}
               dot={false}
-              isAnimationActive={true}
+              isAnimationActive={!compact}
               animationBegin={0}
               animationDuration={300}
               animationEasing="linear"
@@ -176,7 +192,7 @@ export function PainTimeline({
             stroke={SERIES.rollingAvg}
             strokeWidth={2.5}
             dot={false}
-            isAnimationActive={true}
+            isAnimationActive={!compact}
             animationBegin={0}
             animationDuration={300}
             animationEasing="linear"
@@ -191,7 +207,7 @@ export function PainTimeline({
             stroke="none"
             dot={{ r: 4, fill: FLARE_COLOR, strokeWidth: 0 }}
             activeDot={{ r: 5, fill: FLARE_COLOR, strokeWidth: 0 }}
-            isAnimationActive={true}
+            isAnimationActive={!compact}
             animationBegin={0}
             animationDuration={300}
             animationEasing="linear"

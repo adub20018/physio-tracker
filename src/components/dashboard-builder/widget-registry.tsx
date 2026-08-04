@@ -76,6 +76,21 @@ export type WidgetRenderContext = {
   // header instead, which keeps their height the same in edit mode as out
   // of it. Undefined when not editing.
   editControls?: React.ReactNode;
+  // True only in the Add-widget picker's thumbnails (see widget-preview.tsx
+  // / widget-preview-data.ts), whose fixed, small box has no room to spare:
+  // lets each chart's Y-axis drop ticks that don't fit instead of forcing
+  // every one, and skips animation (mounting ~20 previews at once with
+  // animation on is what made the picker feel slow). Undefined (falsy)
+  // everywhere else.
+  compact?: boolean;
+  // Independent of `compact` — controls only the legend row on charts that
+  // have one. Split out separately because it's being trialled on its own:
+  // stacked (multi-panel) charts in particular are unreadable in preview
+  // without knowing which color is which series, but that doesn't mean the
+  // Y-axis/animation behavior above should change too. Toggle in
+  // mockRenderContext (widget-preview-data.ts). Undefined (falsy)
+  // everywhere else — the real dashboard always shows its legends.
+  hideLegend?: boolean;
 };
 
 // Grid-unit size bounds for one widget type, in the same units as x/y/w/h
@@ -214,6 +229,20 @@ const MOBILE_MULTI_SCATTER_CHART_BOUNDS: WidgetSizeBounds = {
   maxH: 22,
 };
 
+// Whether a widget renders multiple stacked chart panels (see the
+// DOUBLE_/TRIPLE_STACKED_CHART_BOUNDS constants above) rather than one.
+// Reference-checked against those two shared bounds objects rather than a
+// separate per-widget flag, so this can't drift out of sync with the bounds
+// a widget actually declares. Used by the Add-widget picker to give these
+// widgets a taller preview — squeezed into a single-panel-sized box, 2-3
+// stacked panels overlap and become unreadable.
+export function isStackedChart(definition: WidgetDefinition): boolean {
+  return (
+    definition.bounds === DOUBLE_STACKED_CHART_BOUNDS ||
+    definition.bounds === TRIPLE_STACKED_CHART_BOUNDS
+  );
+}
+
 // Shared range-filtering wrapper for every non-stat-tile, non-heatmap
 // widget: owns one widget's independent persisted range selection, filters
 // its full-history data down to that range, and renders the picker above
@@ -236,7 +265,7 @@ function RangedChart<T extends { date: string }>({
   );
   return (
     <>
-      {renderCaption?.(data)}
+      {!ctx.compact && renderCaption?.(data)}
       {renderChart(data)}
     </>
   );
@@ -284,7 +313,7 @@ function SleepVsPainWidget({
 
   return (
     <>
-      {(morningLine || daytimeLine || nightLine) && (
+      {!ctx.compact && (morningLine || daytimeLine || nightLine) && (
         <ul className={styles.rList}>
           {morningLine && (
             <li style={{ color: SERIES.morning }}>Morning: {morningLine}</li>
@@ -317,6 +346,8 @@ function SleepVsPainWidget({
         yLabel="Pain"
         autoScaleYAxis={ctx.autoScaleYAxis}
         fillHeight={ctx.fillHeight}
+        compact={ctx.compact}
+        hideLegend={ctx.hideLegend}
       />
     </>
   );
@@ -357,6 +388,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           sparklineValues={bundle.painSparkline}
           sparklineVariant="area"
           actions={ctx.editControls}
+          animate={!ctx.compact}
         />
       );
     },
@@ -398,6 +430,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           accentColor={SERIES.steps}
           sparklineValues={bundle.stepsSparkline}
           actions={ctx.editControls}
+          animate={!ctx.compact}
         />
       );
     },
@@ -432,6 +465,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           accentColor={SERIES.sleep}
           sparklineValues={bundle.sleepSparkline}
           actions={ctx.editControls}
+          animate={!ctx.compact}
         />
       );
     },
@@ -478,6 +512,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           sparklineValues={bundle.physioLoadSparkline}
           sparklineVariant="area"
           actions={ctx.editControls}
+          animate={!ctx.compact}
         />
       );
     },
@@ -502,6 +537,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -511,9 +548,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-load-vs-pain",
     label: "Load vs next-day pain",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 18 },
+    // h matches TRIPLE_STACKED_CHART_BOUNDS.minH (20) — below that, the
+    // widget spawns already squashed and only reads correctly once resized.
+    defaultSize: { w: 12, h: 20 },
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
-    mobileDefaultSize: { w: 2, h: 18 },
+    mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
     render: (bundle, ctx) => (
@@ -525,6 +564,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -548,6 +589,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -557,9 +600,11 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-physio-progression",
     label: "Physio progression",
     category: "Dashboard charts",
-    defaultSize: { w: 12, h: 18 },
+    // h matches TRIPLE_STACKED_CHART_BOUNDS.minH (20) — below that, the
+    // widget spawns already squashed and only reads correctly once resized.
+    defaultSize: { w: 12, h: 20 },
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
-    mobileDefaultSize: { w: 2, h: 18 },
+    mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
     render: (bundle, ctx) => (
@@ -571,6 +616,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />
@@ -612,6 +659,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Next-morning pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -638,6 +686,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Peak next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -664,6 +713,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Average next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -690,6 +740,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Next-morning pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -716,6 +767,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Peak next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -742,6 +794,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             yLabel="Average next-day pain"
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
           />
         )}
       />
@@ -765,6 +818,8 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
             fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
           />
         )}
       />

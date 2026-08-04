@@ -39,7 +39,6 @@ import { DashboardConfig } from "./dashboard-config";
 import { saveDashboardLayout } from "@/app/(app)/dashboard/[dashboardId]/actions";
 import styles from "./dashboard-grid.module.css";
 import { absoluteStrategy } from "react-grid-layout/core";
-import { EmptyDashboardState } from "../ui/shared/empty-dashboard-state";
 
 // Matches the tablet breakpoint used elsewhere in the app's own CSS for
 // switching from a stacked to a grid-like layout.
@@ -90,49 +89,69 @@ function placementOf(
 // pairs with the next half-width one, anything full-width takes its own
 // row. Only used for widgets whose mobileY is null — once a layout has
 // been saved on mobile, the stored values win.
-function assignMobilePositions(
+function fillMissingMobilePositions(
   widgets: DashboardWidget[],
-  placements: Map<string, Placement>,
-): void {
-  let y = 0;
-  let xCursor = 0;
+): Map<string, Placement> {
+  const placements = new Map<string, Placement>();
+
   for (const widget of [...widgets].sort((a, b) => a.y - b.y || a.x - b.x)) {
-    const placement = placements.get(widget.id);
-    if (!placement) continue;
+    const definition = WIDGET_REGISTRY[widget.widgetType];
+
     if (widget.mobileY != null) {
-      // Already arranged on mobile — respect it, and keep packing below it.
-      y = Math.max(y, placement.y + placement.h);
-      xCursor = 0;
+      placements.set(widget.id, {
+        x: widget.mobileX!,
+        y: widget.mobileY!,
+        w: widget.mobileW!,
+        h: widget.mobileH!,
+      });
       continue;
     }
-    if (placement.w >= MOBILE_COLS) {
-      if (xCursor > 0) {
-        y += 1;
-        xCursor = 0;
-      }
-      placement.x = 0;
-      placement.y = y;
-      y += placement.h;
-    } else {
-      placement.x = xCursor;
-      placement.y = y;
-      xCursor += placement.w;
-      if (xCursor >= MOBILE_COLS) {
-        y += placement.h;
-        xCursor = 0;
-      }
-    }
+
+    const position = findNextPosition(
+      widgets.filter((w) => placements.has(w.id)),
+      definition.mobileDefaultSize.w,
+      definition.mobileDefaultSize.h,
+      MOBILE_COLS,
+      (w) => placements.get(w.id)!,
+    );
+
+    placements.set(widget.id, {
+      ...position,
+      w: definition.mobileDefaultSize.w,
+      h: definition.mobileDefaultSize.h,
+    });
   }
+
+  return placements;
 }
 
-function nextY(widgets: DashboardWidget[], isDesktop: boolean): number {
-  return widgets.reduce(
-    (max, w) =>
-      isDesktop
-        ? Math.max(max, w.y + w.h)
-        : Math.max(max, (w.mobileY ?? 0) + (w.mobileH ?? 0)),
-    0,
-  );
+function findNextPosition(
+  widgets: DashboardWidget[],
+  w: number,
+  h: number,
+  cols: number,
+  getPlacement: (widget: DashboardWidget) => Placement,
+): { x: number; y: number } {
+  const occupied = widgets.map(getPlacement);
+
+  let y = 0;
+
+  while (true) {
+    for (let x = 0; x <= cols - w; x++) {
+      const overlaps = occupied.some(
+        (item) =>
+          x < item.x + item.w &&
+          x + w > item.x &&
+          y < item.y + item.h &&
+          y + h > item.y,
+      );
+
+      if (!overlaps) {
+        return { x, y };
+      }
+    }
+    y++;
+  }
 }
 
 export function DashboardGrid({
@@ -232,21 +251,51 @@ export function DashboardGrid({
   function addWidget(widgetType: string) {
     const definition = WIDGET_REGISTRY[widgetType];
     if (!definition) return;
-    setDraft((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        widgetType,
-        x: 0,
-        y: nextY(prev, true),
-        w: definition.defaultSize.w,
-        h: definition.defaultSize.h,
-        mobileX: 0,
-        mobileY: nextY(prev, false),
-        mobileW: definition.mobileDefaultSize.w,
-        mobileH: definition.mobileDefaultSize.h,
-      },
-    ]);
+    setDraft((prev) => {
+      const desktopPosition = findNextPosition(
+        prev,
+        definition.defaultSize.w,
+        definition.defaultSize.h,
+        DESKTOP_COLS,
+        (widget) => ({
+          x: widget.x,
+          y: widget.y,
+          w: widget.w,
+          h: widget.h,
+        }),
+      );
+
+      const mobilePosition = findNextPosition(
+        prev,
+        definition.mobileDefaultSize.w,
+        definition.mobileDefaultSize.h,
+        MOBILE_COLS,
+        (widget) => ({
+          x: widget.mobileX ?? 0,
+          y: widget.mobileY ?? 0,
+          w: widget.mobileW ?? definition.mobileDefaultSize.w,
+          h: widget.mobileH ?? definition.mobileDefaultSize.h,
+        }),
+      );
+
+      return [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          widgetType,
+
+          x: desktopPosition.x,
+          y: desktopPosition.y,
+          w: definition.defaultSize.w,
+          h: definition.defaultSize.h,
+
+          mobileX: mobilePosition.x,
+          mobileY: mobilePosition.y,
+          mobileW: definition.mobileDefaultSize.w,
+          mobileH: definition.mobileDefaultSize.h,
+        },
+      ];
+    });
   }
 
   function removeWidget(id: string) {
@@ -276,13 +325,14 @@ export function DashboardGrid({
 
   // Resolve every widget's placement for the breakpoint on screen, filling
   // in any widget that has no mobile position saved yet.
-  const placements = new Map<string, Placement>(
-    known.map((w) => [
-      w.id,
-      placementOf(w, WIDGET_REGISTRY[w.widgetType], isDesktop),
-    ]),
-  );
-  if (!isDesktop) assignMobilePositions(known, placements);
+  const placements = isDesktop
+    ? new Map<string, Placement>(
+        known.map((w) => [
+          w.id,
+          placementOf(w, WIDGET_REGISTRY[w.widgetType], true),
+        ]),
+      )
+    : fillMissingMobilePositions(known);
 
   // Each item carries its widget type's own size bounds for this breakpoint,
   // so react-grid-layout clamps the resize live rather than letting a chart

@@ -187,6 +187,8 @@ export function PainCandleChart({
         <ComposedChart
           data={points}
           onClick={onChartClick}
+          onTouchStart={onChartClick}
+          onMouseDown={onChartClick}
           accessibilityLayer={false}
           margin={{ top: 8, right: 12, bottom: 4, left: -18 }}
         >

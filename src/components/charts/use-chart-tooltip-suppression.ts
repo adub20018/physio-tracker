@@ -87,6 +87,11 @@ function clearRechartsHoverState(container: HTMLElement | null) {
   });
 }
 
+// A tap on a bar can itself trigger a spurious `scroll` event a moment later (its
+// active-state transition briefly re-layers the DOM) — within this window after a
+// tap, a scroll signal is treated as that side effect, not real page scrolling.
+const INTERACTION_GRACE_MS = 400;
+
 // One call per chart component (not per panel): attach containerRef to <ResponsiveContainer>
 // for a single panel, or the wrapping <div> (e.g. .panelStack) for multi-panel so it reaches every panel.
 export function useChartTooltipSuppression<
@@ -99,21 +104,15 @@ export function useChartTooltipSuppression<
   const containerRef = useRef<T | null>(null);
   const isPageScrolling = useIsPageScrolling();
   const [needsFreshTap, setNeedsFreshTap] = useState(false);
-  const [prevIsPageScrolling, setPrevIsPageScrolling] = useState(isPageScrolling);
+  const lastInteractionRef = useRef(0);
 
-  // "Adjust state when a prop changes" during render (React's documented
-  // pattern), not an effect — needsFreshTap has its own lifecycle.
-  if (isPageScrolling !== prevIsPageScrolling) {
-    setPrevIsPageScrolling(isPageScrolling);
-    if (isPageScrolling) {
-      setNeedsFreshTap(true);
-    }
-  }
-
+  // Reading lastInteractionRef needs an effect, not render — a ref isn't render-pure.
+  // Only reacts to scrolling actually starting; deps ensure it only reruns on change.
   useEffect(() => {
-    if (isPageScrolling) {
-      clearRechartsHoverState(containerRef.current);
-    }
+    if (!isPageScrolling) return;
+    if (Date.now() - lastInteractionRef.current < INTERACTION_GRACE_MS) return;
+    setNeedsFreshTap(true);
+    clearRechartsHoverState(containerRef.current);
   }, [isPageScrolling]);
 
   useEffect(() => {
@@ -132,11 +131,18 @@ export function useChartTooltipSuppression<
     };
   }, []);
 
+  // Fires on touchstart/mousedown/click (earliest signal). Also clears every synced
+  // panel's own hover state — recharts prefers a panel's own state over a syncId
+  // broadcast, so without this an untouched sibling panel freezes on its last tap.
+  const resetNeedsFreshTap = () => {
+    lastInteractionRef.current = Date.now();
+    setNeedsFreshTap(false);
+    clearRechartsHoverState(containerRef.current);
+  };
+
   return {
     suppressed: isPageScrolling || needsFreshTap,
-    // Browsers only fire click after a tap, not a drag — reuses recharts'
-    // own tap-vs-drag distinction.
-    onChartClick: () => setNeedsFreshTap(false),
+    onChartClick: resetNeedsFreshTap,
     containerRef,
   };
 }

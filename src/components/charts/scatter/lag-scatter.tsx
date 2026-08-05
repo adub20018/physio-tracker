@@ -62,6 +62,8 @@ export function LagScatter({
       <ScatterChart
         margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
         onClick={onChartClick}
+        onTouchStart={onChartClick}
+        onMouseDown={onChartClick}
         accessibilityLayer={false}
       >
         <CartesianGrid stroke={CHART_CHROME.grid} />

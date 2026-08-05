@@ -1,45 +1,52 @@
 // Works around a real gap in recharts v3's touch handling: a mouse-driven
-// tooltip clears correctly on `mouseleave`, but a touch-driven one has no
-// equivalent clearing path at all (confirmed by reading
-// node_modules/recharts/es6/state/touchEventsMiddleware.js — its handler
-// only ever *sets* the active tooltip index on touchmove, never clears
-// it). So on mobile, touching a data point activates its tooltip, and if
-// that touch turns into a scroll (the finger drags to pan the page), the
-// touchmove events either stop reaching the chart or the browser fires no
-// event recharts listens for at all — the tooltip is left permanently
-// "active" in recharts' internal state, and stays stuck showing the
-// last-touched point.
+// tooltip clears correctly on `mouseleave` (which dispatches a
+// `mouseLeaveChart()` Redux action, clearing `itemInteraction.hover.active`
+// / `axisInteraction.hover.active` — see node_modules/recharts/es6/state/
+// tooltipSlice.js), but a touch-driven one has no equivalent path at all:
+// `touchEventsMiddleware.js` only ever *sets* that same hover state on
+// touchmove, never clears it, and there's no `touchcancel`/`touchend`
+// handler wired to clear it either. So on mobile, touching a data point
+// activates its tooltip, and if that touch turns into a scroll, or the user
+// simply taps away afterward, nothing ever tells recharts the interaction
+// ended — the tooltip (and, since `<Bar activeBar>`/Line's active dot read
+// that exact same hover state via `selectActiveTooltipIndex`, the
+// highlighted bar/dot too) stays stuck showing the last-touched point.
 //
-// The fix uses recharts' own documented, version-stable escape hatch:
-// <Tooltip active={false}> forces the tooltip closed at render time
-// regardless of what stale interaction state recharts is still holding
-// internally. The tricky part is knowing WHEN it's safe to stop
-// overriding and trust recharts' own state again — this override never
-// actually clears recharts' internal state, it only hides the render, so
-// the moment the override is lifted, whatever stale state recharts still
-// has would reappear.
+// The fix has two parts, both dispatched together whenever a chart should
+// be dismissed (the page starts scrolling, or a tap lands outside this
+// chart's own container):
 //
-// An earlier version of this hook un-suppressed globally on the next
-// touchstart/mousemove anywhere on the page. That was wrong: since
-// recharts' stale state is never cleared, un-suppressing GLOBALLY let a
-// tap on a completely unrelated chart (or even a non-chart element)
-// reactivate a DIFFERENT chart's stuck tooltip — the exact "it just keeps
-// popping up, even off the chart" symptom. The only trustworthy signal
-// that a chart's own state is fresh again is a genuine, deliberate tap ON
-// THAT SPECIFIC CHART — which is also the only thing that gives recharts a
-// new, currently-relevant value to render in the first place. So
-// suppression is now tracked per chart instance, not globally.
+// 1. `<Tooltip active={false}>` — a documented, render-only override that
+//    forces the tooltip's own popup closed regardless of Redux state. Kept
+//    as a guaranteed visual fix for the popup specifically, independent of
+//    whether the dispatch below is picked up.
+// 2. Dispatching a real `mouseout` DOM event (bubbles: true, relatedTarget
+//    outside the chart) on the chart's `.recharts-wrapper` element. This
+//    actually clears the underlying Redux hover state via recharts' own
+//    `mouseLeaveChart()` reducer — which (1) alone can't do, since it's
+//    local to the Tooltip component and never dispatches anything — so
+//    this is what clears the stuck Bar/Line highlight too. Native
+//    `mouseleave` doesn't work here: React 17+ implements its
+//    onMouseEnter/onMouseLeave synthetic events on top of native
+//    mouseover/mouseout, not native mouseenter/mouseleave.
+//
+// A third, separate bug: recharts' accessibility layer (on by default)
+// makes every chart's root SVG natively focusable (tabIndex=0), so tapping
+// it paints the browser's default focus ring — nothing to do with Redux at
+// all. Each chart passes `accessibilityLayer={false}` to turn this off
+// (see the chart components using this hook).
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
 // --- Global "is the page currently (or was just) mid-scroll" signal ---
-// This part IS shared across every chart: a scroll happening anywhere is a
-// legitimate reason to hide every visible tooltip, regardless of which
-// chart it's over. Auto-clears a short debounce after scrolling stops —
-// safe to do blindly here, since clearing this global flag does NOT by
-// itself make any chart trust recharts' state again (see per-chart state
-// below); it only stops treating brand-new interactions as "mid-scroll."
+// Shared across every chart: a scroll happening anywhere is a legitimate
+// reason to dismiss every chart's tooltip, regardless of which one it's
+// over. Auto-clears a short debounce after scrolling stops; safe to do
+// blindly, since (unlike the old, flawed version of this hook) clearing
+// this flag doesn't by itself make anything reappear — dismissal now
+// actually clears each chart's underlying state via the dispatch above,
+// it doesn't just hide a render.
 let isScrolling = false;
 const scrollListeners = new Set<() => void>();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -53,15 +60,13 @@ function setIsScrolling(next: boolean) {
 function handleScrollActivity() {
   setIsScrolling(true);
   if (debounceTimer != null) clearTimeout(debounceTimer);
-  // 150ms of no further scroll/touchmove activity = scrolling has settled.
   debounceTimer = setTimeout(() => setIsScrolling(false), 150);
 }
 
-let globalListenersAttached = false;
-function ensureGlobalListeners() {
-  if (globalListenersAttached) return;
-  globalListenersAttached = true;
-
+let scrollListenersAttached = false;
+function ensureScrollListeners() {
+  if (scrollListenersAttached) return;
+  scrollListenersAttached = true;
   // capture: true — the native `scroll` event doesn't bubble, so a
   // listener on `document` only hears it at all if attached for the
   // capture phase (which does see events dispatched on any descendant,
@@ -80,50 +85,135 @@ function ensureGlobalListeners() {
   });
 }
 
-function subscribe(onStoreChange: () => void): () => void {
-  ensureGlobalListeners();
+function subscribeScrolling(onStoreChange: () => void): () => void {
+  ensureScrollListeners();
   scrollListeners.add(onStoreChange);
   return () => scrollListeners.delete(onStoreChange);
 }
-
-function getSnapshot(): boolean {
+function getScrollingSnapshot(): boolean {
   return isScrolling;
 }
-
-function getServerSnapshot(): boolean {
+function getScrollingServerSnapshot(): boolean {
   return false;
 }
-
 function useIsPageScrolling(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useSyncExternalStore(
+    subscribeScrolling,
+    getScrollingSnapshot,
+    getScrollingServerSnapshot,
+  );
 }
 
-// --- Per-chart suppression state ---
+// --- Global "dismiss any chart whose container wasn't tapped" ---
+// Every mounted chart registers its own container + dismiss callback here.
+// On any click anywhere, whichever charts' containers DON'T contain the
+// click target get dismissed — this is what handles "tap chart, tap away"
+// with no scroll involved at all, which the scroll signal above never
+// covers on its own.
+type Registration = { container: () => HTMLElement | null; dismiss: () => void };
+const registry = new Set<Registration>();
+
+let clickListenerAttached = false;
+function ensureClickListener() {
+  if (clickListenerAttached) return;
+  clickListenerAttached = true;
+  document.addEventListener("click", (e) => {
+    const target = e.target as Node | null;
+    registry.forEach((entry) => {
+      const el = entry.container();
+      if (el && target && !el.contains(target)) {
+        entry.dismiss();
+      }
+    });
+  });
+}
+
+// Actually clears recharts' own Redux hover state (see file header) — for
+// every `.recharts-wrapper` found inside the container, dispatches a real,
+// bubbling mouseout with a relatedTarget outside the chart, matching what a
+// genuine mouse-leaving-the-chart gesture looks like to recharts' own
+// listeners. querySelectorAll rather than querySelector on purpose: a
+// multi-panel chart (see load-vs-symptoms.tsx etc.) has one fully separate
+// recharts instance — and one fully separate stuck-hover-state bug — per
+// panel, all sharing a syncId that only broadcasts the active index, not
+// the underlying state; clearing just one panel would leave the others'
+// own activeBar/active-dot highlighting still stuck. Single-panel charts
+// just have one wrapper, so this finds exactly one either way.
+function clearRechartsHoverState(container: HTMLElement | null) {
+  if (!container) return;
+  container.querySelectorAll<HTMLElement>(".recharts-wrapper").forEach((wrapper) => {
+    wrapper.dispatchEvent(
+      new MouseEvent("mouseout", {
+        bubbles: true,
+        cancelable: true,
+        relatedTarget: document.body,
+      }),
+    );
+  });
+}
+
 // One call per chart component (not per panel — a multi-panel chart shares
-// one call, applied to every panel's Tooltip and every panel's onClick, so
-// a tap on any panel un-suppresses the whole synced chart).
-//
-// `suppressed` should be true if the page is scrolling right now, OR if it
-// was scrolling at some point since this chart last received a genuine
-// tap (tracked via needsFreshTap). "Adjusting state when a prop changes"
-// during render (comparing against a stored previous value), per React's
-// own documented pattern for this — not an effect, which would call
-// setState after an extra commit for no benefit here and trips the
-// project's set-state-in-effect lint rule for no real reason.
-export function useChartTooltipSuppression(): {
+// one call, applied to every panel's Tooltip/onClick, so a tap on any
+// panel un-suppresses the whole synced chart). Only one `containerRef` is
+// returned: for a single-panel chart, attach it directly to
+// <ResponsiveContainer ref={containerRef}>; for a multi-panel chart,
+// attach it instead to the plain <div> wrapping every panel (e.g.
+// .panelStack), so clearRechartsHoverState's querySelectorAll reaches
+// every panel's own `.recharts-wrapper`, not just one.
+export function useChartTooltipSuppression<
+  T extends HTMLElement = HTMLDivElement,
+>(): {
   suppressed: boolean;
   onChartClick: () => void;
+  containerRef: RefObject<T | null>;
 } {
+  const containerRef = useRef<T | null>(null);
   const isPageScrolling = useIsPageScrolling();
   const [needsFreshTap, setNeedsFreshTap] = useState(false);
   const [prevIsPageScrolling, setPrevIsPageScrolling] = useState(isPageScrolling);
 
+  // "Adjusting state when a prop changes" during render (React's own
+  // documented pattern for this — comparing against a stored previous
+  // value) rather than an effect, since needsFreshTap has its own
+  // independent lifecycle (also toggled by onChartClick and the
+  // click-outside registry below) that can't be simply derived. The actual
+  // DOM dispatch is kept out of this block deliberately — render should
+  // stay pure, and StrictMode double-invokes render bodies in development,
+  // which would double-dispatch a side effect living here.
   if (isPageScrolling !== prevIsPageScrolling) {
     setPrevIsPageScrolling(isPageScrolling);
     if (isPageScrolling) {
       setNeedsFreshTap(true);
     }
   }
+
+  // The actual DOM dispatch, tied to the same transition, but run as a
+  // proper effect instead of inline during render.
+  useEffect(() => {
+    if (isPageScrolling) {
+      clearRechartsHoverState(containerRef.current);
+    }
+  }, [isPageScrolling]);
+
+  // Registering a DOM-event subscription is exactly what useEffect is for;
+  // the dismiss callback it registers runs later, asynchronously, in
+  // response to a real click — this isn't the "setState synchronously in
+  // an effect body" pattern the project's lint rule flags, and unlike a
+  // lazy-ref-init approach, this properly de-registers on unmount.
+  useEffect(() => {
+    ensureClickListener();
+    const entry: Registration = {
+      container: () => containerRef.current,
+      dismiss: () => {
+        setNeedsFreshTap(true);
+        clearRechartsHoverState(containerRef.current);
+      },
+    };
+    registry.add(entry);
+    return () => {
+      registry.delete(entry);
+    };
+  }, []);
 
   return {
     // Pass to <Tooltip active={suppressed ? false : undefined}>.
@@ -134,5 +224,7 @@ export function useChartTooltipSuppression(): {
     // here. Firing anywhere within this chart is enough; it doesn't need
     // to land on a specific data point.
     onChartClick: () => setNeedsFreshTap(false),
+    // Attach to one <ResponsiveContainer ref={containerRef}> per chart.
+    containerRef,
   };
 }

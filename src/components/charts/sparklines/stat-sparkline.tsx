@@ -30,7 +30,11 @@ export function StatSparkline({
   // sparklines would otherwise animate in at once right as the dialog opens.
   animate?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   const data = values.map((d, i) => ({
     i,
@@ -40,11 +44,12 @@ export function StatSparkline({
   }));
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer ref={containerRef} width="100%" height="100%">
       <BarChart
         data={data}
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
         onClick={onChartClick}
+        accessibilityLayer={false}
       >
         <Tooltip
           content={<SparklineTooltipContent />}

@@ -50,7 +50,11 @@ export function LagScatter({
   // real dashboard.
   compact?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (points.length === 0) {
     return <EmptyState message="No data yet" height={240} fill={fillHeight} />;
@@ -58,6 +62,7 @@ export function LagScatter({
 
   return (
     <ResponsiveContainer
+      ref={containerRef}
       width="100%"
       height={fillHeight ? "100%" : 240}
       className={fillHeight ? styles.fillChart : undefined}
@@ -65,6 +70,7 @@ export function LagScatter({
       <ScatterChart
         margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
         onClick={onChartClick}
+        accessibilityLayer={false}
       >
         <CartesianGrid stroke={CHART_CHROME.grid} />
         <XAxis

@@ -157,7 +157,11 @@ export function PainCandleChart({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (data.length === 0) {
     return (
@@ -191,6 +195,7 @@ export function PainCandleChart({
         </div>
       )}
       <ResponsiveContainer
+        ref={containerRef}
         width="100%"
         height={fillHeight ? "100%" : 260}
         className={fillHeight ? styles.fillChart : undefined}
@@ -198,6 +203,7 @@ export function PainCandleChart({
         <ComposedChart
           data={points}
           onClick={onChartClick}
+          accessibilityLayer={false}
           margin={{ top: 8, right: 12, bottom: 4, left: -18 }}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />

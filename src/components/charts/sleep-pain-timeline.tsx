@@ -16,10 +16,11 @@ import {
   CHART_CHROME,
   CHART_Y_AXIS,
   SERIES,
+  STACKED_PANEL_HEIGHT,
   TOOLTIP_STYLE,
-  shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { StackedPanelXAxis } from "./stacked-panel-xaxis";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
@@ -62,7 +63,7 @@ export function SleepPainTimeline({
   } = useChartTooltipSuppression();
 
   if (data.length === 0) {
-    return <EmptyState message="No data yet" height={250} fill={fillHeight} />;
+    return <EmptyState message="No data yet" height={294} fill={fillHeight} />;
   }
 
   return (
@@ -113,8 +114,8 @@ export function SleepPainTimeline({
             drops the 0 tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={data}
@@ -123,7 +124,7 @@ export function SleepPainTimeline({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             {/* scale="band" explicitly, matching Panel 2's Line-only axis (see note there). */}
@@ -158,8 +159,8 @@ export function SleepPainTimeline({
             immediate waking reading. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 130}
-          style={fillHeight ? { flex: 130, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={data}
@@ -168,20 +169,12 @@ export function SleepPainTimeline({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band": this Line-only panel would otherwise get "point" scale while
-                Panel 1 (which has a Bar) gets "band", desyncing the hover cursor at the edges. */}
-            <XAxis
-              dataKey="date"
-              scale="band"
-              tickFormatter={shortDate}
-              tick={CHART_CHROME.tick}
-              axisLine={{ stroke: CHART_CHROME.axisLine }}
-              tickLine={false}
-              minTickGap={28}
-            />
+            {/* scale="band": otherwise gets "point" scale vs Panel 1's "band", desyncing the
+                cursor. Ticks render in StackedPanelXAxis below, not on this panel. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
@@ -232,6 +225,8 @@ export function SleepPainTimeline({
             />
           </ComposedChart>
         </ResponsiveContainer>
+
+        <StackedPanelXAxis data={data} />
       </div>
     </div>
   );

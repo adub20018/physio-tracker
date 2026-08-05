@@ -149,3 +149,11 @@ h1 {
 .p-inputtext:enabled.p-invalid:focus {
   border-color: var(--p-inputtext-invalid-border-color);
 }
+
+/* Default tap-highlight/focus outline on a tapped chart shape was blocking the
+   tap from reaching recharts' own tooltip activation. */
+.recharts-wrapper,
+.recharts-wrapper * {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}

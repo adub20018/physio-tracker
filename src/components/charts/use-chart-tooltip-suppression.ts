@@ -25,13 +25,9 @@ let scrollListenersAttached = false;
 function ensureScrollListeners() {
   if (scrollListenersAttached) return;
   scrollListenersAttached = true;
-  // capture: true — `scroll` doesn't bubble, so this is the only way to
-  // catch scrolling in nested containers, not just the window.
+  // `scroll` only, not `touchmove` — touchmove jitter from a normal tap was
+  // being misread as scrolling. capture: true since `scroll` doesn't bubble.
   document.addEventListener("scroll", handleScrollActivity, {
-    capture: true,
-    passive: true,
-  });
-  document.addEventListener("touchmove", handleScrollActivity, {
     capture: true,
     passive: true,
   });
@@ -124,8 +120,9 @@ export function useChartTooltipSuppression<
     ensureClickListener();
     const entry: Registration = {
       container: () => containerRef.current,
+      // Only clears this chart's recharts state — arming needsFreshTap here
+      // used to suppress every OTHER mounted chart too, not just this one.
       dismiss: () => {
-        setNeedsFreshTap(true);
         clearRechartsHoverState(containerRef.current);
       },
     };

@@ -141,6 +141,8 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            onTouchStart={onChartClick}
+            onMouseDown={onChartClick}
             accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
@@ -183,6 +185,8 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            onTouchStart={onChartClick}
+            onMouseDown={onChartClick}
             accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
@@ -226,6 +230,8 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            onTouchStart={onChartClick}
+            onMouseDown={onChartClick}
             accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >

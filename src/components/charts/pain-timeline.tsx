@@ -145,6 +145,8 @@ export function PainTimeline({
         <ComposedChart
           data={data}
           onClick={onChartClick}
+          onTouchStart={onChartClick}
+          onMouseDown={onChartClick}
           accessibilityLayer={false}
           margin={{ top: 6, right: 12, bottom: 0, left: -18 }}
         >

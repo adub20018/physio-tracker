@@ -1,8 +1,5 @@
-// Converts one parsed spreadsheet row into the repository's input shape.
-// Same spreadsheet format as PLAN.md §1 — column names and quirks (e.g.
-// "2/10" pain strings) are handled by the pure domain parsers; this just
-// maps a raw sheet row onto DailyLogInput, which the domain layer can't
-// depend on directly (domain/ imports nothing — see PLAN.md §5).
+// Converts one parsed spreadsheet row (PLAN.md §1 format) into the repository's input shape.
+// Quirks like "2/10" pain strings are handled by the pure domain parsers this just maps into DailyLogInput.
 import type { DailyLogInput } from "@/repositories";
 import {
   deriveActivityTags,

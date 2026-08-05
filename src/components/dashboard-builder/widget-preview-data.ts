@@ -1,14 +1,5 @@
-// Fabricated data for the Add-widget picker's live previews. A new account
-// has little or no logged history, so every widget would render its empty
-// state in the picker — not useful for judging what a chart looks like.
-// Instead every preview renders against this fixed, made-up "example
-// account": 60 days of steps/pain/sleep/exercises with a gentle recovery
-// trend, a couple of flare spikes, and rest days, run through the exact
-// same buildChartDataBundle every real dashboard uses.
-//
-// Deterministic on purpose — hand-built from sine waves, not Math.random()
-// — so the preview grid renders identically every time rather than
-// reshuffling on each visit, and needs no seeded-RNG dependency.
+// Fabricated data for the Add-widget picker's live previews (60 days of steps/pain/sleep/exercises,
+// run through the same buildChartDataBundle real dashboards use), built from sine waves so it's deterministic.
 import type { DomainDay, DomainExercise } from "@/domain/types";
 import { buildChartDataBundle } from "@/domain/dashboard-bundle";
 import { addDays } from "@/domain/lag";
@@ -38,11 +29,8 @@ function wave(i: number, period: number, amplitude: number, phase = 0): number {
   return amplitude * Math.sin((i / period) * 2 * Math.PI + phase);
 }
 
-// Builds the 60-day fake history once. A slow recovery trend (pain drifts
-// down, exercise intensity drifts up) plus periodic flare spikes and rest
-// days, so every chart type has something to show — including the ones
-// that only mean anything with variation, like the candlestick and the
-// correlation scatters.
+// Builds the 60-day fake history: a slow recovery trend plus periodic flare spikes and rest
+// days, so charts needing variation (candlestick, scatters) have something to show.
 function buildMockDays(): DomainDay[] {
   const days: DomainDay[] = [];
 
@@ -52,12 +40,8 @@ function buildMockDays(): DomainDay[] {
     const isFlareDay = i % 17 === 8;
     const isRestDay = i % 4 === 3;
 
-    // 2.8 → 0.8 across the window: mild and clearly under the flare
-    // threshold (3) past the first week or two, so a flare day reads as a
-    // real exception against a calm baseline. (An earlier version started
-    // this at 4.5 → 1.3, which kept the +0.4 daytime offset above 3 for
-    // roughly the first month — measured at 41 of 60 days flagged as
-    // flares, the opposite of the intended "periodic spike" story.)
+    // 2.8 → 0.8: stays under the flare threshold (3) past the first couple
+    // weeks, so flare days read as real exceptions against a calm baseline.
     const basePain = 2.8 - recovery * 2;
     const flareBump = isFlareDay ? 3 : 0;
     const painMorning = roundPain(basePain + wave(i, 6, 0.4) + flareBump * 0.6);
@@ -70,8 +54,7 @@ function buildMockDays(): DomainDay[] {
       ? Math.round(clamp(2500 + wave(i, 10, 400), 1000, 4000))
       : Math.round(clamp(7500 + wave(i, 9, 1800) + recovery * 1500, 3000, 14000));
 
-    // Worse pain days correlate with worse sleep, so the sleep-vs-pain
-    // preview actually shows a relationship rather than a random scatter.
+    // Correlated with pain so the sleep-vs-pain preview shows a relationship.
     const sleepHours = Number(
       clamp(7.4 - basePain * 0.15 + wave(i, 5, 0.5, 1), 4.5, 9).toFixed(1),
     );
@@ -112,24 +95,12 @@ export const MOCK_CHART_DATA_BUNDLE = buildChartDataBundle(
   DEFAULT_FLARE_PAIN_THRESHOLD,
 );
 
-// Trial flag: whether preview thumbnails show each chart's legend. Doesn't
-// affect `compact`'s other behavior (Y-axis tick density, animation) — flip
-// this on its own to compare with/without while everything else stays put.
+// Trial flag: whether preview thumbnails show each chart's legend, independent of `compact`'s
+// other behavior (Y-axis tick density, animation) — flip alone to compare with/without.
 const PREVIEW_HIDE_LEGENDS = false;
 
-// A render context for showing `widgetType` in the preview grid: the full
-// history (rangeDays: Infinity, matching the "All" time-range preset — see
-// lib/time-range.ts), not editable, sized to fill whatever box the picker
-// puts it in. compact: true drops Y-axis ticks that don't fit and skips
-// animation — the thumbnail box is too small to spare the room, and that
-// detail is one click away on the real dashboard. rList (correlation
-// r-value) captions are also stripped under compact, since that's the same
-// "not enough room" call as the axis ticks.
-//
-// Shared by both preview sources (see add-widget-dialog.tsx): the mock
-// account and the signed-in user's own data differ only in which bundle
-// and `today` they're built from, not in how they're displayed — so this
-// takes `today` as a parameter rather than being mock-specific.
+// Render context for a preview thumbnail: full history, not editable, compact (drops Y-axis
+// ticks/animation/r-value captions — no room at thumbnail size). `today` is a param since mock/real previews share this.
 export function previewRenderContext(
   widgetType: string,
   today: string,

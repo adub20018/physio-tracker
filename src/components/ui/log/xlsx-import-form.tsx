@@ -1,8 +1,5 @@
-// Two-step spreadsheet import: preview parses the file and classifies rows
-// as new vs. overwriting an already-logged day without writing anything;
-// the user then confirms (optionally including overwrites) before any data
-// actually changes. Mirrors the old CLI script's confirm-before-overwrite
-// behavior (AGENTS.md data-safety rule) as an in-app flow instead.
+// Two-step spreadsheet import UI: preview classifies rows as new/overwrite
+// without writing; the user confirms before anything changes (mirrors the old CLI's confirm-before-overwrite, per AGENTS.md).
 "use client";
 
 import { useRef, useState, useTransition } from "react";

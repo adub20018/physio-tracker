@@ -1,6 +1,5 @@
-// Instant loading state for /log/activity — see the dashboard's loading.tsx
-// for why this file exists. Shaped like the real form (steps/sleep fields
-// + activity-type chips + Save) so the swap-in doesn't jump the layout.
+// Loading skeleton for /log/activity, shaped like the real form (fields +
+// chips + Save). See dashboard's loading.tsx for why this exists.
 import { Skeleton } from "@primereact/ui/skeleton";
 import { LogSectionHeaderSkeleton } from "@/components/ui/log/log-section-header-skeleton";
 import styles from "@/components/ui/log/log-shared.module.css";

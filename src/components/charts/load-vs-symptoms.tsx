@@ -1,10 +1,5 @@
-// Load vs symptoms — answers "what did I do before it flared?". Three small
-// panels stacked on a shared, hover-synchronized x-axis: daily steps, physio
-// load (intensity-weighted — see domain/load.ts), and the NEXT day's
-// morning/daytime/night pain (load today, symptoms tomorrow — tendon
-// response lags ~24h, and can show up in any of the next day's readings,
-// not just the first one taken). Deliberately not one dual-axis chart: the
-// measures live on different scales, so each gets its own panel and axis.
+// Load vs symptoms — "what did I do before it flared?" Three panels (steps, physio load, next-day
+// pain) share an x-axis since load today maps to tomorrow's symptoms (~24h tendon lag); separate axes since scales differ.
 "use client";
 
 import {
@@ -55,13 +50,8 @@ function PanelXAxis({ hidden }: { hidden: boolean }) {
   return (
     <XAxis
       dataKey="date"
-      // Recharts auto-picks "band" scale for a panel with a Bar (which needs
-      // bandwidth to size the bar) and "point" scale otherwise — since the
-      // steps/load panels have Bars but this synced panel is Line-only, left
-      // on auto they'd get different scales. Band and point scales agree
-      // near the middle of the domain but diverge toward the edges, which is
-      // exactly the "hover cursor drifts off the line at the ends" bug.
-      // Forcing band scale here too keeps every synced panel identical.
+      // Force band scale — on auto this Line-only panel gets "point" scale while Bar panels
+      // get "band", diverging near domain edges and drifting the synced hover cursor off the line.
       scale="band"
       tickFormatter={shortDate}
       tick={CHART_CHROME.tick}
@@ -82,26 +72,17 @@ export function LoadVsSymptoms({
   hideLegend = false,
 }: {
   data: LoadVsSymptomsPoint[];
-  // When true, the next-day-pain panel's Y-axis scales to fit the visible
-  // data's own max instead of the fixed 0–10 pain scale (Account →
-  // Preferences). The steps/physio load panels above already auto-scale
-  // unconditionally.
+  // When true, the next-day-pain panel's Y-axis scales to the visible data's own max
+  // instead of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel heights
-  // used on /insights — see .fill in charts.module.css. The panels keep
-  // their relative proportions via flexGrow weights matching those heights.
+  // When true, fill the parent's height instead of the fixed pixel heights used on
+  // /insights (see .fill in charts.module.css); panels keep relative proportions via flexGrow.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets every panel's Y-axis drop ticks
-  // that don't fit instead of forcing every one (see interval below), and
-  // skips chart animation — three stacked panels leave little room, and
-  // animation on ~20 previews mounting at once is what made the picker
-  // feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately since three stacked
-  // panels are unreadable without knowing which color is which series. Set
-  // via WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather
-  // than tied to `compact`, so legend visibility can be toggled in preview
-  // without touching the interval/animation behavior above.
+  // Independent of `compact` (set via WidgetRenderContext.hideLegend) so legend visibility
+  // can be toggled in preview without touching compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {
@@ -156,9 +137,8 @@ export function LoadVsSymptoms({
         </div>
       )}
 
-      {/* Three panels get a gap (.panelStack) plus an explicit divider
-          element (.panelDivider) between them, so a panel's "0" tick
-          doesn't read as touching the next panel's top. */}
+      {/* Explicit divider between panels so a panel's "0" tick doesn't read as touching
+          the next panel's top. */}
       <div
         ref={containerRef}
         className={
@@ -168,9 +148,8 @@ export function LoadVsSymptoms({
         }
       >
         {/* Panel 1: steps */}
-        {/* bottom margin > 0: with a hidden x-axis there's no reserved space
-            below the 0 gridline, so the "0" tick label gets clipped by the
-            container edge without it. */}
+        {/* bottom margin > 0: with a hidden x-axis there's no reserved space below the 0
+            gridline, so the "0" tick label would get clipped without it. */}
         <ResponsiveContainer
           width="100%"
           height={fillHeight ? "100%" : 110}
@@ -254,8 +233,7 @@ export function LoadVsSymptoms({
 
         <div className={styles.panelDivider} />
 
-        {/* Panel 3: next-day pain (the symptom response), all three
-            readings — load can show up at any point in the next day, not
+        {/* Panel 3: next-day pain — load can show up at any point in the next day, not
             just the first reading taken. */}
         <ResponsiveContainer
           width="100%"

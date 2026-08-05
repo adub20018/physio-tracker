@@ -1,9 +1,5 @@
-// /dashboard — resolves to the signed-in user's first dashboard by
-// sortOrder (typically "Default"), creating one seeded with today's
-// starting layout if they don't have any yet (first visit, or every
-// dashboard was deleted — see dashboardRepository.getOrCreateDefault).
-// The actual rendering lives at /dashboard/[dashboardId] now; this segment
-// only ever redirects.
+// /dashboard — redirects to the user's first dashboard by sortOrder,
+// creating a seeded default if none exist yet. Actual rendering lives at /dashboard/[dashboardId].
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dashboardRepository } from "@/repositories";

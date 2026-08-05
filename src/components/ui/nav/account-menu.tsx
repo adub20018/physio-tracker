@@ -1,40 +1,5 @@
-// Account identity for the nav: an initials avatar. AccountMenu is the
-// desktop dropdown (opens a Menu with name/email + sign-out) shown next to
-// the top-bar links; AccountSummary is a plain, non-interactive footer row
-// for the mobile drawer, which already has its own "Logout" item in the
-// nav list, so it only needs to show who's signed in, not another way to
-// sign out. Menu.Trigger is a headless, unstyled <button> re-exported
-// straight from the primitive layer (no PrimeReact button chrome) — left
-// bare, the browser's native button appearance (grey background, border)
-// would show through around the circular avatar, so it's reset via
-// .trigger below.
-//
-// Menu.Root is controlled (open/onOpenChange), and every Link-composed item
-// closes it explicitly on click. Necessary because AppNav (and this menu
-// inside it) lives in the shared (app) layout, which doesn't remount across
-// a client-side navigation — as={Link} composition means Link owns click
-// handling, so the item's own onSelect never fires (same finding as the
-// mobile drawer in app-nav.tsx) and the menu's default close-on-select never
-// kicks in. Left uncontrolled, the popup stayed open (just off in a corner)
-// after navigating, and its outside-click dismiss layer swallowed the very
-// next click anywhere on the newly-loaded page instead of passing it
-// through — the reported "first click after visiting an account page does
-// nothing" bug.
-//
-// closeOnSelect={false} on the same items fixes a second, separate bug:
-// PrimeReact's Menu.Item runs its select/close logic on mousedown, not
-// click, and — only for items rendered inside Menu.Portal, which these are —
-// that mousedown handler calls the popover's setOpen(false) synchronously,
-// unmounting the portal (the very <a> mid-click) before the browser's click
-// event fires. Link's own router.push() lives in its click handler, so if
-// React finishes the unmount first, navigation never happens — an
-// intermittent "clicked a menu item, nothing happened" race, since it
-// depends on whether the unmount wins the race against the click event.
-// closeOnSelect={false} skips that mousedown-triggered close entirely,
-// leaving the onClick handlers below (which fire safely after Link's own
-// navigation, on the same click event) as the only thing that closes the
-// menu. Not needed in app-nav.tsx's mobile drawer: those items aren't
-// inside a Menu.Portal, so they never hit this code path.
+// Account identity for the nav (desktop dropdown vs. mobile drawer footer row). Menu.Root is
+// controlled; closeOnSelect={false} works around a PrimeReact Menu.Portal mousedown/click race — see AGENTS.md's PrimeReact gotchas for the full story.
 "use client";
 
 import { useState } from "react";
@@ -101,9 +66,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
               </Menu.Group>
               <Menu.Separator />
               <Menu.Group>
-                {/* Not onSelect: Link owns click handling once composed in,
-                    so the item's own onSelect never fires — this needs to
-                    close the menu itself. */}
+                {/* onClick, not onSelect — see file header. */}
                 <Menu.Item
                   as={Link}
                   href="/account/profile"
@@ -143,7 +106,7 @@ export function AccountMenu({ user }: { user: AccountUser }) {
               </Menu.Group>
               <Menu.Separator />
               <Menu.Group>
-                {/* Not a Link, so its own onSelect fires normally. */}
+                {/* Not a Link — onSelect works normally here. */}
                 <Menu.Item onSelect={logout}>
                   <SignOut />
                   Logout
@@ -157,10 +120,8 @@ export function AccountMenu({ user }: { user: AccountUser }) {
   );
 }
 
-// Static identity row for the mobile drawer's footer — avatar, name, and
-// email only, no popup. The drawer's nav list already has its own "Logout"
-// item, so a second click-to-reveal menu here would just re-show the same
-// two lines of text with no new action behind it.
+// Static identity row for the mobile drawer's footer — no popup needed
+// since the drawer's nav list already has its own "Logout" item.
 export function AccountSummary({ user }: { user: AccountUser }) {
   return (
     <div className={styles.summary}>

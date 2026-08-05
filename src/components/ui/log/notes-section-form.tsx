@@ -1,6 +1,5 @@
 // The Notes section's own small form — general notes for one date. Saves
-// through its own action and returns to the /log overview, leaving every
-// other section's data untouched.
+// through its own action and returns to the /log overview.
 "use client";
 
 import { useState, useTransition } from "react";

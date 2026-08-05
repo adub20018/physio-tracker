@@ -1,12 +1,5 @@
-// Tiny inline bar chart for a dashboard stat tile — the last N days' raw
-// values behind the averaged headline number, so the number reads as "the
-// average of THIS shape" rather than a black box. No axes/gridlines: it's a
-// glance-level shape, not a chart to interrogate at rest. Every bar sits at
-// a faded tint of the tile's own color; hovering one brings just that bar
-// to full color (via activeBar) and shows its value/date — no separate grey
-// cursor overlay, since the bar recoloring is already the hover feedback.
-// See StatSparklineArea for the line/area-fill variant used where a
-// continuous trend reads better than discrete daily bars.
+// Tiny inline bar chart behind a dashboard stat tile's headline number. No axes/gridlines
+// (glance-level only); hover recolors the bar itself. See StatSparklineArea for the line/area variant.
 "use client";
 
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip } from "recharts";
@@ -18,16 +11,11 @@ export function StatSparkline({
   color,
   animate = true,
 }: {
-  // Chronological, oldest to newest. `value` drives the bar's height (null
-  // renders as zero); `display` is the already-formatted tooltip text
-  // ("2,414 steps", "Not logged", …) — formatted server-side by the
-  // caller, same as StatTile's own value/delta props, since a function
-  // can't be passed from the server page into this client component as a
-  // prop.
+  // Chronological, oldest to newest; null value renders as zero.
+  // `display` is pre-formatted server-side since a function can't cross the server/client prop boundary.
   values: { date: string; value: number | null; display: string }[];
   color: string;
-  // False in the Add-widget picker's preview thumbnails, where many tiles'
-  // sparklines would otherwise animate in at once right as the dialog opens.
+  // False in the Add-widget picker's preview thumbnails, to avoid many tiles animating in at once.
   animate?: boolean;
 }) {
   const {

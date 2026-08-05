@@ -79,9 +79,9 @@ See [PLAN.md](PLAN.md) for what is being built. The rules below govern _how_ it 
 - **Each concern behind its own interface.** UI never touches Drizzle directly; charts hide
   Recharts behind our own props; PrimeReact usage is composed in `components/ui/` where a
   wrapper makes sense. Swapping any library should touch one folder.
-- **Comment every code block.** Each file, component, function, and non-trivial logic block
-  gets a comment at the top explaining its purpose and what it does. Write for a reader
-  approaching the codebase fresh.
+- **Keep comments short.** 1-2 lines, only where the code itself doesn't already make the
+  intent clear (a non-obvious workaround, a real constraint, a "why," not a "what"). Don't
+  narrate what well-named code already shows, and don't write multi-paragraph explanations.
 - **Domain functions are pure and unit-tested.** All derived metrics (rolling averages,
   physio load, flare detection, correlations) live in `domain/` with tests; no DB or
   browser needed to test them.

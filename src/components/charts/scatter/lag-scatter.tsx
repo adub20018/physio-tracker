@@ -1,10 +1,5 @@
-// Lag scatter — one dot per day pairing two numeric series (x, y). Despite
-// the name, it's generic: used for genuinely lagged pairs (steps vs NEXT
-// morning's pain) and for same-day pairs (sleep vs THAT day's morning pain)
-// alike — the caller decides what x/y mean via the points it passes in. The
-// correlation coefficient and sample size are shown beside the title area by
-// the caller; this component draws just the plot. Single series → no legend
-// (the title names it); hover tooltip per dot.
+// Lag scatter — one dot per day pairing two numeric series. Generic despite the name: used for
+// both lagged pairs (steps vs next morning's pain) and same-day pairs; the caller decides what x/y mean.
 "use client";
 
 import {
@@ -44,10 +39,7 @@ export function LagScatter({
   // When true, fill the parent's height instead of the fixed pixel height
   // used on /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
-  // fit instead of forcing every one (see interval below) — the box is too
-  // short to spare the room, and the full chart is one click away on the
-  // real dashboard.
+  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't fit (box is too short to spare the room).
   compact?: boolean;
 }) {
   const {

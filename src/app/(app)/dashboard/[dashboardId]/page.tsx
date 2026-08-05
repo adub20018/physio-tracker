@@ -1,11 +1,5 @@
-// /dashboard/[dashboardId] — one user's saved dashboard (PLAN.md §3, the
-// customizable-dashboard system). Server component: loads the dashboard's
-// widget layout, computes every chart's data via the shared
-// buildChartDataBundle (domain/dashboard-bundle.ts), and hands both to
-// <DashboardGrid> for rendering. 404s if the dashboard doesn't exist or
-// doesn't belong to the signed-in user — getWithWidgets returns null for
-// both cases identically, since a caller shouldn't be able to distinguish
-// "not found" from "not yours" for someone else's dashboard id.
+// /dashboard/[dashboardId] — one user's saved dashboard (PLAN.md §3).
+// 404s if missing or not caller's; getWithWidgets returns null for both, indistinguishably.
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/auth/get-current-user";
 import {

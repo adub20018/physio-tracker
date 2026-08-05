@@ -1,12 +1,5 @@
-// Client-side provider stack for the whole app, mounted once in the root
-// layout. This is the only place that knows how PrimeReact is configured —
-// theme preset, SSR style injection, license — so swapping or reconfiguring
-// the UI kit happens here, not in the layout or pages (PLAN.md §5).
-//
-// PrimeReact v11 styled mode on Next.js needs three things (per the official
-// Next.js guide): a theme preset, a PrimeReactStyleSheet that collects
-// component CSS during server rendering (flushed into the HTML via
-// useServerInsertedHTML), and a PrimeUI license key.
+// Client-side provider stack for the whole app, mounted once in the root layout — the only
+// place that knows how PrimeReact is configured (theme, SSR styling, license; PLAN.md §5).
 "use client";
 
 import { PrimeReactProvider, PrimeReactStyleSheet } from "@primereact/core";
@@ -14,16 +7,8 @@ import { useServerInsertedHTML } from "next/navigation";
 import { definePreset } from "@primeuix/themes";
 import Aura from "@primeuix/themes/aura";
 
-// ─── Try out color schemes here ──────────────────────────────────────────
-// Change this one word and save — the app hot-reloads with the new scheme.
-// Everything follows automatically: PrimeReact components read the theme
-// tokens, and the app's own CSS variables (globals.css) alias them.
-// (Exception by design: pain severity colors stay lime/amber/red.)
-//
-// Built-in palettes: "emerald" | "green" | "lime" | "teal" | "cyan" | "sky"
-//   | "blue" | "indigo" | "violet" | "purple" | "fuchsia" | "pink" | "rose"
-//   | "red" | "orange" | "amber" | "yellow"
-// Special: "noir" — monochrome, primary becomes white-on-black.
+// Try a color scheme: change this word and save (hot-reloads via globals.css's CSS-var aliases;
+// pain severity colors stay fixed). Palettes: emerald/green/lime/teal/cyan/sky/blue/indigo/violet/purple/fuchsia/pink/rose/red/orange/amber/yellow, or "noir" (monochrome).
 const COLOR_SCHEME: string = "emerald";
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -34,9 +19,8 @@ function paletteRef(name: string): Record<number, string> {
   return Object.fromEntries(SHADES.map((s) => [s, `{${name}.${s}}`]));
 }
 
-// Noir maps primary onto the surface (neutral) scale and inverts the
-// primary/highlight tokens so buttons and accents render white-on-black —
-// the standard Noir recipe from the Prime theming docs.
+// Noir maps primary onto the surface (neutral) scale and inverts primary/highlight tokens
+// so buttons and accents render white-on-black — the standard Prime theming docs recipe.
 const preset =
   COLOR_SCHEME === "noir"
     ? definePreset(Aura, {
@@ -95,8 +79,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       // .app-dark is set on <html> permanently — the app commits to dark.
       theme={{ preset, options: { darkModeSelector: ".app-dark" } }}
       stylesheet={styledStyleSheet}
-      // Free Community license key (see AGENTS.md); public by nature — it
-      // ships to the browser in any PrimeReact app.
+      // Free Community license key (see AGENTS.md); public by nature — ships to the browser.
       license={process.env.NEXT_PUBLIC_PRIMEUI_LICENSE_KEY}
     >
       {children}

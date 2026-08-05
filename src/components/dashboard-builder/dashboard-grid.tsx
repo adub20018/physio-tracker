@@ -1,18 +1,5 @@
-// Renders one dashboard's widgets, and owns its edit mode. Both desktop and
-// mobile use react-grid-layout — the underlying react-draggable and
-// react-resizable handle touch as well as mouse, so the same
-// press-and-drag / pull-the-corner gestures work on a phone.
-//
-// What differs is the grid itself, not the interaction: 12 columns on
-// desktop, 2 on a phone, and a separate stored placement per widget for
-// each. A width that reads well across 12 columns is meaningless across 2,
-// so arranging one breakpoint deliberately leaves the other alone.
-//
-// Edit mode holds a local working copy (`draft`) of the widget list,
-// snapshotted from the server-loaded `widgets` prop when editing starts.
-// Save persists it via a Server Action and refreshes; Cancel just drops the
-// draft and goes back to reading `widgets` directly — no effect needed to
-// keep the two in sync, since only one of them is ever read at a time.
+// Renders one dashboard's widgets and owns its edit mode. Desktop (12 cols) and mobile (2 cols)
+// store independent placements per widget; edit mode works on a local `draft` copy until Save/Cancel.
 "use client";
 
 import { useState, useTransition } from "react";
@@ -42,29 +29,20 @@ import {
 import styles from "./dashboard-grid.module.css";
 import { absoluteStrategy } from "react-grid-layout/core";
 
-// Matches the tablet breakpoint used elsewhere in the app's own CSS for
-// switching from a stacked to a grid-like layout.
+// Matches the tablet breakpoint used elsewhere in the app's CSS.
 const DESKTOP_QUERY = "(min-width: 44rem)";
 
-// A widget spanning h rows is h*ROW_HEIGHT + (h-1)*verticalMargin tall, so
-// one row step is ROW_HEIGHT + verticalMargin = 20px. Deliberately fine:
-// the vertical gutter has to stay wide enough to separate cards (12px),
-// and since it's charged per row step, a *large* row height is what makes
-// resizing coarse. Small rows + that gutter give 20px granularity while
-// still letting a stat tile land on its natural ~120px content height
-// (h=7 → 128px) instead of being forced to a much taller multiple.
+// One row step = ROW_HEIGHT + verticalMargin = 20px — fine-grained on
+// purpose so resizing isn't coarse.
 const ROW_HEIGHT = 8;
 const GRID_MARGIN: [number, number] = [12, 12];
 
 const DESKTOP_COLS = 12;
-// Two columns on a phone: enough for stat tiles to sit 2-up, and coarse
-// enough that no widget can be dragged to a width that isn't readable.
+// 2 columns: stat tiles sit 2-up, coarse enough to stay readable.
 const MOBILE_COLS = 2;
 const MOBILE_MARGIN: [number, number] = [12, 12];
 
-// The two layouts are stored per widget and arranged independently — a size
-// that reads well across 12 desktop columns means nothing across 2. These
-// pick whichever set of fields the current breakpoint edits.
+// Placement fields for whichever breakpoint is currently being edited.
 type Placement = { x: number; y: number; w: number; h: number };
 
 function placementOf(
@@ -75,9 +53,7 @@ function placementOf(
   if (isDesktop) {
     return { x: widget.x, y: widget.y, w: widget.w, h: widget.h };
   }
-  // Mobile coordinates are null until the user actually rearranges there,
-  // so fall back to the widget's default mobile size at a position derived
-  // from its desktop order (assignMobilePositions fills in y/x).
+  // Null until the user rearranges on mobile — fall back to default size.
   return {
     x: widget.mobileX ?? 0,
     y: widget.mobileY ?? 0,
@@ -86,11 +62,8 @@ function placementOf(
   };
 }
 
-// Gives any widget still missing a mobile position one, by walking the
-// desktop reading order and packing left-to-right: a half-width widget
-// pairs with the next half-width one, anything full-width takes its own
-// row. Only used for widgets whose mobileY is null — once a layout has
-// been saved on mobile, the stored values win.
+// Packs widgets missing a mobile position left-to-right in desktop reading
+// order; saved mobile positions always win.
 function fillMissingMobilePositions(
   widgets: DashboardWidget[],
 ): Map<string, Placement> {
@@ -172,46 +145,26 @@ export function DashboardGrid({
   bundle: ChartDataBundle;
   today: string;
   autoScaleYAxis: boolean;
-  // The dashboard's persisted range (src/db/schema.ts's dashboards.timeRange)
-  // — loaded server-side, so the very first paint already shows the range
-  // this dashboard was last left on, on any device, no flash of the default.
+  // Server-loaded (dashboards.timeRange) so the first paint is correct.
   initialRange: TimeRange;
-  // Whether the account has enough logged history for the Add-widget
-  // picker to preview from it directly — see
-  // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS. False falls back
-  // to the mock account there.
+  // See domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS — false falls
+  // back to the mock account in the Add-widget picker.
   hasEnoughDataForPreviews: boolean;
 }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  // measureBeforeMount: without it useContainerWidth starts `mounted` true
-  // while `width` is still its hardcoded 1280px default, so the very first
-  // paint lays the grid out at 1280 regardless of the real container width
-  // — inside this page's 64rem column that puts full-width widgets a couple
-  // of hundred pixels off the right edge. Passing it makes `mounted` stay
-  // false until a real measurement exists, which is what the {mounted && …}
-  // gate below is for (and what react-grid-layout's own README recommends
-  // for server-rendered pages).
+  // measureBeforeMount avoids laying out at the 1280px default before the
+  // real container width is known.
   const { width, containerRef, mounted } = useContainerWidth({
     measureBeforeMount: true,
   });
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // Seeded from the server (dashboards.timeRange) rather than localStorage
-  // — plain useState, not an effect-driven correction, since initialRange
-  // is already a real server-rendered value with no SSR/client mismatch to
-  // reconcile. Switching to a different dashboard remounts this component
-  // (dashboardId is part of the route), so there's no stale-range carryover
-  // between dashboards to worry about either.
   const [range, setRangeState] = useState<TimeRange>(initialRange);
   const rangeDays = daysForRange(range);
 
-  // Updates local state immediately (the range only changes how the client
-  // slices data it already has — see rangeDays below — so there's nothing
-  // to wait on), then persists it in the background. Not wrapped in the
-  // edit-mode `startTransition` above: that one's `isPending` drives the
-  // Save/Cancel buttons, and a range change happening to be in flight at
-  // the same moment shouldn't make those look like they're saving too.
+  // Updates locally right away, persists in the background — not wrapped
+  // in the edit-mode transition above so it doesn't drive the Save button.
   function handleRangeChange(next: TimeRange) {
     setRangeState(next);
     updateDashboardTimeRange(dashboardId, next).then((result) => {
@@ -230,9 +183,7 @@ export function DashboardGrid({
   const [error, setError] = useState<string | null>(null);
 
   const active = isEditing ? draft : savedWidgets;
-  // Drop any widget whose type isn't (or is no longer) in the registry —
-  // keeps `layout` and the rendered children in exact 1:1 correspondence,
-  // which react-grid-layout expects.
+  // Drop unknown widget types so `layout` and rendered children stay 1:1.
   const known = active.filter((w) => WIDGET_REGISTRY[w.widgetType]);
   const isEmpty = known.length === 0;
   const existingTypes = new Set(known.map((w) => w.widgetType));
@@ -250,8 +201,7 @@ export function DashboardGrid({
 
   function handleSave() {
     setError(null);
-    // Both layouts go back every time: whichever breakpoint was being
-    // edited updated its own fields, and the other's ride along untouched.
+    // Both breakpoints' fields go back every time; only one was edited.
     const payload: NewDashboardWidgetInput[] = draft.map(
       ({ widgetType, x, y, w, h, mobileX, mobileY, mobileW, mobileH }) => ({
         widgetType,
@@ -277,9 +227,7 @@ export function DashboardGrid({
     });
   }
 
-  // Seeds a placement for BOTH breakpoints, not just the one being edited —
-  // otherwise a widget added on a phone would have no desktop position (and
-  // vice versa) and would land on top of something over there.
+  // Seeds a placement for both breakpoints, not just the one being edited.
   function addWidget(widgetType: string) {
     const definition = WIDGET_REGISTRY[widgetType];
     if (!definition) return;
@@ -334,9 +282,7 @@ export function DashboardGrid({
     setDraft((prev) => prev.filter((w) => w.id !== id));
   }
 
-  // Writes only the breakpoint currently on screen, leaving the other
-  // layout's stored coordinates alone — that separation is the whole point
-  // of keeping two of them.
+  // Writes only the breakpoint on screen; the other stays untouched.
   function handleLayoutChange(layout: Layout) {
     setDraft((prev) =>
       prev.map((w) => {
@@ -355,8 +301,7 @@ export function DashboardGrid({
     );
   }
 
-  // Resolve every widget's placement for the breakpoint on screen, filling
-  // in any widget that has no mobile position saved yet.
+  // Placement for every widget on the current breakpoint.
   const placements = isDesktop
     ? new Map<string, Placement>(
         known.map((w) => [
@@ -366,10 +311,7 @@ export function DashboardGrid({
       )
     : fillMissingMobilePositions(known);
 
-  // Each item carries its widget type's own size bounds for this breakpoint,
-  // so react-grid-layout clamps the resize live rather than letting a chart
-  // be dragged down to an unreadable sliver or a stat tile be squeezed
-  // below the height its wrapped content needs.
+  // Bounds per item so react-grid-layout clamps resize drags live.
   const layout: Layout = known.map((w) => {
     const definition = WIDGET_REGISTRY[w.widgetType];
     const bounds = isDesktop ? definition.bounds : definition.mobileBounds;
@@ -438,9 +380,7 @@ export function DashboardGrid({
             dashboardName={dashboardName}
             range={range}
             onRangeChange={handleRangeChange}
-            // A reset replaces the saved widgets, so any edit draft still
-            // open is now stale — drop it rather than let a later Save
-            // write the pre-reset layout straight back.
+            // Drop any open edit draft — it's stale after a reset.
             onReset={(widgets) => {
               setSavedWidgets(widgets);
               setDraft(widgets);
@@ -458,11 +398,7 @@ export function DashboardGrid({
         </Message.Root>
       )}
 
-      {/* The measured container is rendered unconditionally. Its effect
-          bails out if its ref isn't attached yet and only re-runs when
-          `measureWidth` changes identity — so if this div only appeared
-          once some other state flipped, nothing would ever measure it and
-          `mounted` would stay false forever, rendering nothing at all. */}
+      {/* Rendered unconditionally so useContainerWidth's ref always attaches. */}
       <div
         ref={containerRef}
         className={
@@ -495,7 +431,7 @@ export function DashboardGrid({
         ) : (
           mounted && (
             <ReactGridLayout
-              positionStrategy={absoluteStrategy} // Safari incorrectly positions portal tooltips when grid items use transform positioning. Absolute positioning fixes this
+              positionStrategy={absoluteStrategy} // fixes Safari portal tooltip positioning
               layout={layout}
               width={width}
               gridConfig={{
@@ -504,11 +440,6 @@ export function DashboardGrid({
                 margin: isDesktop ? GRID_MARGIN : MOBILE_MARGIN,
                 containerPadding: [0, 0],
               }}
-              // react-draggable/react-resizable (which react-grid-layout is
-              // built on) handle touch as well as mouse, so the same
-              // press-the-handle-and-drag and pull-the-corner gestures work
-              // on a phone — the handles just need touch-action: none so the
-              // browser scrolls the page instead of stealing the gesture.
               dragConfig={{ enabled: isEditing, handle: "[data-drag-handle]" }}
               resizeConfig={{ enabled: isEditing }}
               onLayoutChange={handleLayoutChange}

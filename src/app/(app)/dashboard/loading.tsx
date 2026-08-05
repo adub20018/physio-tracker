@@ -1,15 +1,5 @@
-// Instant loading state for /dashboard. Next.js wraps page.tsx in this
-// folder in a Suspense boundary automatically — shown the moment navigation
-// starts, swapped for the real page once its data resolves. Shape roughly
-// matches the real page (stat tile row + chart cards) so there's minimal
-// layout shift on the swap.
-//
-// Deliberately lives in its own dashboard/ segment, not alongside the
-// shared (app)/layout.tsx — a loading.tsx co-located with a layout wraps
-// every nested route below it too, so when it lived at (app)/loading.tsx,
-// navigating to ANY other route for the first time (before that route's own
-// loading.tsx chunk had loaded) would flash THIS skeleton first. Being
-// nested here means it only ever applies to /dashboard.
+// Instant loading state for /dashboard, auto-wrapped in Suspense by Next.
+// Lives here (not (app)/layout.tsx) so it doesn't flash on nav to every route.
 import { CardSkeleton, StatTileSkeleton } from "@/components/ui/shared/card-skeleton";
 import { Skeleton } from "@primereact/ui/skeleton";
 import styles from "@/components/ui/dashboard/dashboard.module.css";

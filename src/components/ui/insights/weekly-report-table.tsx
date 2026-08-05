@@ -1,7 +1,5 @@
-// Weekly report card (client): one PrimeReact DataTable row per calendar
-// week — days logged, average pain with week-over-week delta, steps, physio
-// volume, flare count. Sortable by week (newest first by default).
-// Receives display-ready rows from the server page.
+// Weekly report card: one DataTable row per calendar week. Sortable by
+// week (newest first). Receives display-ready rows from the server page.
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";

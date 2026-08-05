@@ -1,10 +1,5 @@
-// Line + gradient-fill variant of the dashboard stat-tile sparkline — used
-// where a continuous trend reads better than discrete daily bars (average
-// pain, physio load), same idea as the full "Pain over time" chart's own
-// rolling-average line. See StatSparkline for the bar variant (steps,
-// sleep) and its own rationale; this shares the same tooltip/hover model,
-// just a different shape: the area fill under the line is the "look here"
-// signal instead of a highlighted bar.
+// Line + gradient-fill variant of the stat-tile sparkline, for continuous trends (avg pain,
+// physio load) vs discrete bars. See StatSparkline for the bar variant; shares tooltip/hover model.
 "use client";
 
 import { useId } from "react";
@@ -17,16 +12,12 @@ export function StatSparklineArea({
   color,
   animate = true,
 }: {
-  // Chronological, oldest to newest. `value` drives the line's height
-  // (null renders as zero); `display` is the already-formatted tooltip
-  // text ("2.9/10 pain", "Not logged", …) — formatted server-side by the
-  // caller, same as StatTile's own value/delta props, since a function
-  // can't be passed from the server page into this client component as a
-  // prop.
+  // Chronological, oldest to newest; `value` drives height (null renders as zero). `display`
+  // is pre-formatted server-side since a function can't be passed from the server page as a prop.
   values: { date: string; value: number | null; display: string }[];
   color: string;
-  // False in the Add-widget picker's preview thumbnails, where many tiles'
-  // sparklines would otherwise animate in at once right as the dialog opens.
+  // False in the Add-widget picker's preview thumbnails, where many sparklines would
+  // otherwise animate in at once right as the dialog opens.
   animate?: boolean;
 }) {
   const {
@@ -42,10 +33,8 @@ export function StatSparklineArea({
     v: d.value ?? 0,
   }));
 
-  // A stable but unique id per mounted instance: two of these can render on
-  // the same page (Pain and Physio Load both use this variant), and SVG
-  // gradient ids are global to the document — a hardcoded id would make the
-  // second instance silently reuse the first one's gradient definition.
+  // Unique per instance: two of these can render on the same page, and SVG gradient ids
+  // are global to the document — a hardcoded id would make the second reuse the first's gradient.
   const gradientId = `stat-sparkline-area-${useId()}`;
 
   return (

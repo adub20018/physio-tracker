@@ -1,8 +1,5 @@
-// Server actions for the in-app spreadsheet import. Two steps, matching the
-// AGENTS.md data-safety rule (no bulk overwrite without explicit
-// confirmation): preview parses the file and classifies each row as new or
-// an overwrite of an already-logged day, without writing anything; confirm
-// takes that same parsed data back and writes only what the user approved.
+// Spreadsheet import actions: preview classifies rows as new/overwrite without writing;
+// confirm writes only what the user approved (AGENTS.md: no bulk overwrite without confirmation).
 "use server";
 
 import * as XLSX from "xlsx";
@@ -64,9 +61,8 @@ export async function previewXlsxImport(file: File): Promise<PreviewResult> {
 
 export type ConfirmResult = { ok: true; imported: number };
 
-// `parsed` is exactly what previewXlsxImport returned — the client never
-// re-uploads the file, just sends the already-parsed rows back alongside
-// which overwrite dates (if any) the user opted into.
+// `parsed` is exactly what previewXlsxImport returned — the client resends
+// the parsed rows plus which overwrite dates it opted into, not the file.
 export async function confirmXlsxImport(
   parsed: DailyLogInput[],
   includeOverwrites: boolean,

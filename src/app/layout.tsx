@@ -1,14 +1,5 @@
-// Root layout: HTML shell, the app's typographic voices, global styles,
-// and the app-wide provider stack (PrimeReact theme). Shared by both the
-// authenticated app and the auth pages, since both use styled PrimeReact
-// components and the same dark theme — but neither the nav nor any
-// user-fetching lives here. The nav only makes sense on authenticated
-// routes and lives in (app)/layout.tsx instead; (auth)/layout.tsx has its
-// own minimal chrome. See PLAN.md §5.
-//
-// Type system: Instrument Sans (sleek modern grotesque) for both display
-// (headings) and body/UI — weight and size carry the hierarchy instead of a
-// separate serif — plus IBM Plex Mono for data.
+// Root layout: HTML shell, global styles, and provider stack — shared by both the authenticated
+// app and auth pages (both use styled PrimeReact + the dark theme). Nav lives in (app)/layout.tsx instead.
 import type { Metadata } from "next";
 import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";

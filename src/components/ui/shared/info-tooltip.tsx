@@ -1,30 +1,5 @@
-// A hover-tooltip trigger — defaults to a small "?" affordance for metric
-// names whose meaning or formula isn't obvious from the label alone (e.g.
-// "Physio load" vs "Hold volume"), but the trigger content is swappable:
-// pass `children` to attach this same hover behavior to an existing visual
-// instead (e.g. a stat tile's own icon badge), rather than gluing a
-// separate "?" affordance beside it. Wraps PrimeReact's Tooltip (compound
-// Root/Trigger/Popup) with a real vector icon rather than a hand-drawn
-// circle + text glyph by default, so it stays a perfect circle and the
-// glyph is always centered regardless of viewport width. openDelay is
-// shortened from the library's 600ms default so it reads as responding to
-// hover, not requiring a deliberate click-and-wait.
-//
-// Touch devices get a different interaction entirely: PrimeReact's Tooltip
-// is hover/focus-only (see its headless useTooltip — the only trigger
-// listeners are pointerenter/pointerleave/focus/blur), and touch has no
-// real hover. Holding a finger down to trigger it races the browser's own
-// long-press text-selection gesture, which is what wins in practice —
-// exactly the "I have to hold down and it just highlights the card's
-// text" bug this was built to fix. On a coarse pointer (touch-primary —
-// `(pointer: coarse)`, not touch *capability*, so a touchscreen laptop
-// with a mouse still gets normal hover), the trigger's own tap toggles
-// the tooltip via a controlled `open`, instead of relying on hover at
-// all. Tapping elsewhere still closes it — for free, via the same
-// document-pointerdown dismissal the library already runs internally
-// whenever the tooltip is open, controlled or not; nothing extra needed
-// here for that half. Desktop leaves `open` uncontrolled so the library's
-// own hover/focus handling runs exactly as before.
+// Hover-tooltip with a "?" icon (or custom `children`). Touch holds race the browser's
+// long-press text-selection, so touch uses tap-to-toggle via a controlled `open`; desktop stays uncontrolled.
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
@@ -40,9 +15,8 @@ function subscribeCoarsePointer(callback: () => void) {
 function getCoarsePointerSnapshot() {
   return window.matchMedia("(pointer: coarse)").matches;
 }
-// Matches the server's render (no real pointer to query) so hydration
-// doesn't warn about a mismatch — corrected client-side on mount, same as
-// any other browser-only media query.
+// Matches the server's render (no pointer to query) to avoid a hydration mismatch;
+// corrected client-side on mount like any other browser-only media query.
 function getCoarsePointerServerSnapshot() {
   return false;
 }
@@ -66,9 +40,8 @@ export function InfoTooltip({
   label?: string;
   // Trigger content — defaults to the "?" icon.
   children?: React.ReactNode;
-  // Class for the trigger button — defaults to the "?" badge's own
-  // reset/sizing. Override when wrapping a differently sized/styled
-  // trigger that brings its own layout (e.g. a stat tile's icon badge).
+  // Class for the trigger button — defaults to the "?" badge's own reset/sizing.
+  // Override when wrapping a differently sized/styled trigger (e.g. a stat tile's icon badge).
   triggerClassName?: string;
   triggerStyle?: React.CSSProperties;
 }) {
@@ -86,10 +59,8 @@ export function InfoTooltip({
       <Tooltip.Trigger
         type="button"
         className={triggerClassName}
-        // Baseline touch-safety merged under any caller-supplied style
-        // (e.g. StatTile's own badge styling replaces triggerClassName
-        // entirely) — always applied, not just for the default "?" badge,
-        // since every InfoTooltip usage needs the same long-press fix.
+        // Baseline touch-safety (long-press fix) merged under any caller-supplied style —
+        // applied unconditionally since every InfoTooltip usage needs it, not just the default badge.
         style={{
           WebkitTouchCallout: "none",
           WebkitUserSelect: "none",

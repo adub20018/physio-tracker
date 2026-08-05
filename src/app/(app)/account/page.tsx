@@ -1,6 +1,5 @@
-// /account — settings home: a simple list of tappable tiles linking to each
-// settings area. Keeps every setting on its own page (PLAN.md-style
-// separation) rather than one long form.
+// /account — settings home: tappable tiles linking to each settings area,
+// rather than one long form.
 import Link from "next/link";
 import { UserEdit } from "@primeicons/react/user-edit";
 import { SlidersH } from "@primeicons/react/sliders-h";

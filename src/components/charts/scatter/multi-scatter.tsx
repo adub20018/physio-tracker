@@ -1,8 +1,5 @@
-// Multi-series scatter — several (x, y) series sharing one axis pair, each
-// with its own color and legend entry. Used where one input might affect
-// several outcomes at once (e.g. sleep vs morning/daytime/night pain) and
-// seeing them together, on one plot, answers the question better than three
-// separate charts would.
+// Multi-series scatter — several (x, y) series on one axis pair, each with its own color/legend.
+// Used where one input affects several outcomes at once (e.g. sleep vs morning/daytime/night pain).
 "use client";
 
 import {
@@ -43,22 +40,17 @@ export function MultiScatter({
   series: ScatterSeries[];
   xLabel: string;
   yLabel: string;
-  // When true, the Y-axis scales to fit the visible data's own max instead
-  // of the fixed 0–10 pain scale (Account → Preferences).
+  // When true, the Y-axis scales to the visible data's own max instead of the fixed
+  // 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel height
-  // used on /insights — see .fill in charts.module.css.
+  // When true, fill the parent's height instead of the fixed pixel height used on
+  // /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
-  // fit instead of forcing every one (see interval below), and skips chart
-  // animation — the box is too short to spare the room, and animation on
-  // ~20 previews mounting at once is what made the picker feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately since 3 series sharing
-  // one plot are unreadable without knowing which color is which. Set via
-  // WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather than
-  // tied to `compact`, so legend visibility can be toggled in preview
-  // without touching the interval/animation behavior above.
+  // Independent of `compact` (set via WidgetRenderContext.hideLegend) so legend visibility
+  // can be toggled in preview without touching compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {

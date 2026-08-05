@@ -1,6 +1,5 @@
-// Instant loading state for /insights — see the dashboard's loading.tsx for
-// why this file exists. Shape matches the three correlation cards plus the
-// flare review and weekly report sections below them.
+// Loading skeleton for /insights, matching the correlation cards plus the
+// flare review and weekly report sections. See dashboard's loading.tsx.
 import { CardSkeleton } from "@/components/ui/shared/card-skeleton";
 import { Skeleton } from "@primereact/ui/skeleton";
 

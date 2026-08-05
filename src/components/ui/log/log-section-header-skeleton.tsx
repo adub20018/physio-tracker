@@ -1,6 +1,5 @@
-// Shimmering placeholder shaped like LogSectionHeader (back link + title +
-// active date) — shared by every /log section page's loading.tsx (Pain,
-// Activity, Physio, Notes, Review), since they all use the same header.
+// Shimmering placeholder shaped like LogSectionHeader, shared by every
+// /log section page's loading.tsx since they all use the same header.
 import { Skeleton } from "@primereact/ui/skeleton";
 import styles from "./log-section-header.module.css";
 

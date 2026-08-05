@@ -1,8 +1,5 @@
-// A password input with a show/hide toggle. PrimeReact v11's InputPassword
-// has no built-in toggle-icon prop (unlike v10's Password component) — the
-// docs' own "Toggle Mask" example composes it by hand with IconField +
-// controlled mask state, which is what this wraps so every password field
-// in the app doesn't repeat that boilerplate.
+// Password input with show/hide toggle. PrimeReact v11's InputPassword has
+// no built-in toggle prop (unlike v10) — wraps the docs' IconField + mask-state pattern so it isn't repeated per field.
 "use client";
 
 import { useState } from "react";

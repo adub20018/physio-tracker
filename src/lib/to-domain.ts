@@ -1,6 +1,5 @@
 // Bridge between the repository layer's row shapes and the domain layer's
-// pure input types. domain/ imports nothing, so this adapter lives outside
-// it; every page that feeds domain functions goes through here.
+// pure input types. domain/ imports nothing, so this adapter lives outside it.
 import type { DailyLogWithExercises } from "@/repositories";
 import type { DomainDay } from "@/domain/types";
 

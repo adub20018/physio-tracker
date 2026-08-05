@@ -1,5 +1,4 @@
-// Composition root for the repository layer: the rest of the app imports its
-// repositories from here, typed as the interfaces. Swapping storage backends
+// Composition root for the repository layer. Swapping storage backends
 // means changing which implementation is instantiated in this one file.
 import type {
   DailyLogRepository,

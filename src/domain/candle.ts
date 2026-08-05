@@ -1,8 +1,5 @@
-// A pain "candle" for one day, in the same OHLC terms as a stock
-// candlestick: Open = morning pain, High/Low = the day's highest/lowest
-// reading, Close = night pain (the last reading before bed) — visualizing
-// how pain actually moved across the day, not just where it started and
-// ended.
+// A pain "candle" for one day, OHLC-style: Open = morning pain, High/Low = the day's
+// highest/lowest reading, Close = night pain.
 import type { DomainDay } from "./types";
 import { dailyPainPeak, dailyPainMin } from "./aggregate";
 
@@ -16,10 +13,8 @@ export type PainCandle = {
 
 export type PainCandleTrend = "improved" | "worsened" | "unchanged";
 
-// Only days with both a morning AND a night reading become a candle — a
-// body needs both ends, and a high/low without one is a guess, not data.
-// High/low are then guaranteed non-null too: they're the max/min of the
-// same three readings that already include those two.
+// Only days with both a morning AND a night reading become a candle (high/low then
+// guaranteed non-null too, since they're the max/min of the same three readings).
 export function dailyPainCandles(days: DomainDay[]): PainCandle[] {
   return days
     .filter(
@@ -35,9 +30,7 @@ export function dailyPainCandles(days: DomainDay[]): PainCandle[] {
     }));
 }
 
-// Lower pain is always the improvement here (unlike steps/sleep, where
-// "up" is good) — night pain below morning pain means the day got better;
-// above means it got worse.
+// Lower pain is always the improvement here (unlike steps/sleep, where "up" is good).
 export function painCandleTrend(
   candle: Pick<PainCandle, "open" | "close">,
 ): PainCandleTrend {

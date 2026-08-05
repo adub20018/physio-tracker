@@ -1,12 +1,5 @@
-// The dashboard name in the page header, doubling as a switcher: clicking
-// it lists the user's dashboards and navigates to whichever is picked, with
-// a "New dashboard" row at the bottom.
-//
-// Every Menu.Item composed as a Link carries closeOnSelect={false} plus its
-// own onClick to close — see AGENTS.md's PrimeReact notes: inside a
-// Menu.Portal the item's default close runs on mousedown, which can unmount
-// the <a> before the browser's click fires and silently swallow the
-// navigation.
+// The dashboard name in the page header, doubling as a switcher. Menu.Item-as-Link entries use
+// closeOnSelect={false} + explicit onClick, since Menu.Portal's default close fires on mousedown and can unmount the <a> before click (see AGENTS.md).
 "use client";
 
 import { useState, useTransition } from "react";

@@ -1,9 +1,5 @@
-// Sleep & pain over time — an alternative view to the sleep-vs-pain scatter:
-// sleep hours as bars, morning/daytime/night pain as three lines, on a
-// shared, hover-synchronized x-axis. Deliberately SAME-DAY, not lagged:
-// sleep hours logged on a date are the hours slept the night before waking
-// up that day, so they already precede that day's readings (unlike
-// steps/physio load, whose effect on the tendon shows up the NEXT morning).
+// Sleep & pain over time — sleep hours as bars, pain as lines, shared x-axis. Same-day (not
+// lagged) since sleep precedes that day's readings, unlike steps/physio load's next-day effect.
 "use client";
 
 import {
@@ -46,25 +42,17 @@ export function SleepPainTimeline({
   hideLegend = false,
 }: {
   data: SleepPainPoint[];
-  // When true, the pain panel's Y-axis scales to fit the visible data's own
-  // max instead of the fixed 0–10 pain scale (Account → Preferences). The
-  // sleep panel above already auto-scales unconditionally.
+  // When true, the pain panel's Y-axis scales to the visible data's own max instead of
+  // the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel heights
-  // used on /insights — see .fill in charts.module.css. The panels keep
-  // their relative proportions via flexGrow weights matching those heights.
+  // When true, fill the parent's height instead of the fixed pixel heights used on
+  // /insights (see .fill in charts.module.css); panels keep relative proportions via flexGrow.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets both panels' Y-axis drop ticks
-  // that don't fit instead of forcing every one (see interval below), and
-  // skips chart animation — two stacked panels leave little room, and
-  // animation on ~20 previews mounting at once is what made the picker
-  // feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately since two stacked
-  // panels are unreadable without knowing which color is which series. Set
-  // via WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather
-  // than tied to `compact`, so legend visibility can be toggled in preview
-  // without touching the interval/animation behavior above.
+  // Independent of `compact` (set via WidgetRenderContext.hideLegend) so legend visibility
+  // can be toggled in preview without touching compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {
@@ -121,10 +109,8 @@ export function SleepPainTimeline({
         }
       >
         {/* Panel 1: sleep hours */}
-        {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
-            reserved space below the 0 gridline, and Recharts otherwise drops
-            the 0 tick's <text> entirely on panels like this one — both
-            lessons learned on the Load vs symptoms chart. */}
+        {/* bottom margin > 0 + interval={0}: with a hidden x-axis, Recharts otherwise
+            drops the 0 tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer
           width="100%"
           height={fillHeight ? "100%" : 110}
@@ -138,8 +124,7 @@ export function SleepPainTimeline({
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band" explicitly, matching Panel 2's Line-only axis —
-                see the note there for why both panels need to agree. */}
+            {/* scale="band" explicitly, matching Panel 2's Line-only axis (see note there). */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               {...CHART_Y_AXIS}
@@ -167,9 +152,8 @@ export function SleepPainTimeline({
 
         <div className={styles.panelDivider} />
 
-        {/* Panel 2: morning/daytime/night pain, all three — sleep may not
-            just affect the immediate waking reading, so all of the day's
-            readings are shown against the same night's sleep. */}
+        {/* Panel 2: all three pain readings — sleep may affect more than just the
+            immediate waking reading. */}
         <ResponsiveContainer
           width="100%"
           height={fillHeight ? "100%" : 130}
@@ -183,12 +167,8 @@ export function SleepPainTimeline({
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band": this panel is Line-only, so Recharts would
-                otherwise auto-pick "point" scale here vs "band" on Panel 1
-                (which has a Bar) — the two scales agree near the middle of
-                the domain but diverge toward the edges, which desyncs the
-                hover cursor from the line there. Forcing both to band keeps
-                them identical. */}
+            {/* scale="band": this Line-only panel would otherwise get "point" scale while
+                Panel 1 (which has a Bar) gets "band", desyncing the hover cursor at the edges. */}
             <XAxis
               dataKey="date"
               scale="band"

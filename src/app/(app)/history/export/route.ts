@@ -1,6 +1,5 @@
-// GET /history/export — downloads every logged day as CSV (data safety:
-// the data is never locked in; PLAN.md §3). One row per day, exercises
-// summarized into a single readable column.
+// GET /history/export — downloads every logged day as CSV so data is
+// never locked in. One row per day, exercises summarized into one column.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { summarizeExercises } from "@/lib/format";

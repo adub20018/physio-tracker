@@ -1,6 +1,5 @@
 // A generic "are you sure" modal for destructive actions — used by the
-// Privacy page's Delete all data / Delete account buttons, and reusable
-// wherever else a confirmed destructive action is needed later.
+// Privacy page's Delete all data / Delete account buttons, reusable elsewhere.
 "use client";
 
 import { Dialog } from "@primereact/ui/dialog";
@@ -16,9 +15,8 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  // In-progress text for the confirm button. Defaults to the delete
-  // wording this dialog was first built for; anything that isn't a
-  // deletion (e.g. resetting a dashboard layout) passes its own.
+  // In-progress text for the confirm button; defaults to delete wording,
+  // non-deletion actions (e.g. resetting a layout) pass their own.
   pendingLabel = "Deleting…",
   onConfirm,
   isPending,

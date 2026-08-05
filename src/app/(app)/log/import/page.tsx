@@ -1,7 +1,5 @@
-// /log/import — upload a spreadsheet in the same format as PLAN.md §1's
-// tracking sheet and import it into the signed-in user's own account.
-// Replaces the old single-user CLI script (scripts/import-xlsx.ts) so
-// anyone can bring their own history in, not just the original owner.
+// /log/import — upload a tracking spreadsheet into the signed-in user's
+// own account. Replaces the old single-user CLI script (scripts/import-xlsx.ts).
 import Link from "next/link";
 import { ChevronLeft } from "@primeicons/react/chevron-left";
 import { XlsxImportForm } from "@/components/ui/log/xlsx-import-form";

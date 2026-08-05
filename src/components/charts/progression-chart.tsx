@@ -1,11 +1,5 @@
-// Progression chart — shows the rehab program itself advancing: the physio
-// intensity range (min–max % load) as a band with its midpoint line, hold
-// volume (sets × seconds, unweighted) and Physio load (intensity-weighted)
-// as separate aligned panels. Hold volume and Physio load can diverge — e.g.
-// longer holds at lower intensity raise hold volume while Physio load
-// falls — so both are shown rather than just one, which would otherwise
-// misrepresent how the program is actually progressing. Progress here is
-// progress even when pain plateaus (PLAN.md §3).
+// Progression chart — intensity range (min-max % load) as a band, plus hold volume and physio
+// load as separate panels since the two can diverge (e.g. longer holds, lower intensity) (PLAN.md §3).
 "use client";
 
 import {
@@ -59,26 +53,17 @@ export function ProgressionChart({
   hideLegend = false,
 }: {
   data: ProgressionPoint[];
-  // When true, the intensity panel's Y-axis scales to fit the visible
-  // data's own max instead of the fixed 0–50% range (Account →
-  // Preferences). The hold-volume/physio-load panels below already
-  // auto-scale unconditionally.
+  // When true, the intensity panel's Y-axis scales to the visible data's own max instead
+  // of the fixed 0–50% range (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel heights
-  // used on /insights — see .fill in charts.module.css. The panels keep
-  // their relative proportions via flexGrow weights matching those heights.
+  // When true, fill the parent's height instead of the fixed pixel heights used on
+  // /insights (see .fill in charts.module.css); panels keep relative proportions via flexGrow.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets every panel's Y-axis drop ticks
-  // that don't fit instead of forcing every one (see interval below), and
-  // skips chart animation — three stacked panels leave little room, and
-  // animation on ~20 previews mounting at once is what made the picker
-  // feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately since three stacked
-  // panels are unreadable without knowing which color is which series. Set
-  // via WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather
-  // than tied to `compact`, so legend visibility can be toggled in preview
-  // without touching the interval/animation behavior above.
+  // Independent of `compact` (set via WidgetRenderContext.hideLegend) so legend visibility
+  // can be toggled in preview without touching compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {
@@ -154,9 +139,8 @@ export function ProgressionChart({
         </div>
       )}
 
-      {/* Three panels get a gap (.panelStack) plus an explicit divider
-          element (.panelDivider) between them, so one panel's "0" doesn't
-          read as touching the panel below it. */}
+      {/* Explicit divider between panels so one panel's "0" doesn't read as touching
+          the panel below it. */}
       <div
         ref={containerRef}
         className={
@@ -166,9 +150,8 @@ export function ProgressionChart({
         }
       >
         {/* Panel 1: intensity band */}
-        {/* bottom margin > 0 + interval={0}: with a hidden x-axis there's no
-            reserved space below the 0 gridline, and Recharts otherwise drops
-            the 0% tick's <text> entirely on panels like this one. */}
+        {/* bottom margin > 0 + interval={0}: with a hidden x-axis, Recharts otherwise
+            drops the 0% tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer
           width="100%"
           height={fillHeight ? "100%" : 110}
@@ -182,12 +165,8 @@ export function ProgressionChart({
             margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band": this panel is Area+Line only (no Bar), so
-                Recharts would otherwise auto-pick "point" scale here vs
-                "band" on the Bar panels below — the two scales agree near
-                the middle of the domain but diverge toward the edges,
-                desyncing the synced hover cursor there. Forcing every
-                panel to band keeps them all identical. */}
+            {/* scale="band": this Area+Line-only panel would otherwise get "point" scale
+                while the Bar panels below get "band", desyncing the hover cursor at the edges. */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               {...CHART_Y_AXIS}
@@ -250,8 +229,7 @@ export function ProgressionChart({
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band" explicitly, matching Panel 1 — see the note
-                there for why every synced panel needs to agree. */}
+            {/* scale="band" explicitly, matching Panel 1 (keeps synced panels' scales identical). */}
             <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               {...CHART_Y_AXIS}

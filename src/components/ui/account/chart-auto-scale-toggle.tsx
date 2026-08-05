@@ -1,7 +1,5 @@
 // Chart auto-scale toggle for /account/preferences. Saves immediately on
-// change — unlike AppConfigForm's flare-threshold field, a switch reads as
-// an instant on/off action, not something that needs a separate "Save"
-// click to take effect.
+// change, unlike AppConfigForm's field — a switch reads as an instant action.
 "use client";
 
 import { useState, useTransition } from "react";

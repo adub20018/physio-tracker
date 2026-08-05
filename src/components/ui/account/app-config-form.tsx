@@ -1,7 +1,5 @@
 // App Settings form for /account/preferences. Currently just the flare
-// threshold, but the form/action split (one field here, one server action
-// per setting) is meant to extend cleanly as more configurable settings
-// are added.
+// threshold; one server action per setting so it extends cleanly.
 "use client";
 
 import { useState, useTransition } from "react";

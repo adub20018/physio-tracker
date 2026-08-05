@@ -1,6 +1,5 @@
-// The Activity section's own small form — steps, sleep, and activity tags
-// for one date. Saves through its own action and returns to the /log
-// overview, leaving every other section's data untouched.
+// The Activity section's own form — steps, sleep, and activity tags for
+// one date. Saves and returns to the /log overview.
 "use client";
 
 import { useState, useTransition } from "react";

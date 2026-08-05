@@ -1,12 +1,5 @@
-// Stat tile: headline number + compact delta on one line, a colored label
-// beneath naming it, an icon badge marking which metric it is, and a 7-day
-// sparkline showing the raw values the average was computed from — so the
-// number reads as "the average of this shape" rather than a black box.
-// Label, icon badge, and sparkline all share one accentColor, so the whole
-// tile reads as one metric at a glance (matching that metric's color in its
-// own full chart elsewhere). Direction-aware coloring: for pain, going DOWN
-// is good; for steps and volume, going UP is good — the tile is told which
-// via `deltaIsGood`.
+// Stat tile: headline number + delta, label, icon badge, and sparkline, all sharing one
+// accentColor. Direction-aware coloring via `deltaIsGood`, since "up" is good for some metrics (steps) and bad for others (pain).
 import { TrendingUp } from "lucide-react";
 
 import { TrendingDown } from "lucide-react";
@@ -20,50 +13,31 @@ export type StatTileProps = {
   // Preformatted value ("1.2", "1,540", "—") — formatting is the caller's job.
   value: string;
   unit?: string;
-  // Delta vs the previous period, already formatted ("0.4", "12%") — no
-  // sign: direction is conveyed by the caret icon instead (deltaDirection).
+  // Preformatted delta ("0.4", "12%"), no sign — direction is the caret icon.
   delta?: string | null;
-  // Arithmetic direction the number moved, independent of whether that's
-  // good or bad (e.g. pain falling is "down" but still shown in the good
-  // color) — drives which caret icon renders.
+  // Arithmetic direction moved (independent of good/bad); drives the caret icon.
   deltaDirection?: "up" | "down" | null;
-  // Whether an increase is good ("up") or bad ("down"); styles the delta.
+  // Whether an increase is good or bad; styles the delta color.
   deltaIsGood?: boolean | null;
-  // What the delta is compared against ("vs previous month") — the caller
-  // knows the comparison window, since it depends on the selected time range.
+  // What the delta is compared against ("vs previous month").
   deltaLabel?: string;
-  // Optional formula/definition shown when the icon badge is hovered — for
-  // numbers whose meaning isn't obvious from the label alone.
+  // Optional formula/definition shown when the icon badge is hovered.
   hint?: string;
   // Badge icon naming which metric this is.
   icon: React.ReactNode;
-  // This tile's identity color — the label text, icon badge, and sparkline
-  // bars all use it. Should match this metric's color in its own full
-  // chart elsewhere (chart-theme.ts's SERIES), so a tile and its chart
-  // always mean the same thing at a glance.
+  // This tile's identity color — label, badge, and sparkline all use it;
+  // should match this metric's color in its own full chart (chart-theme.ts).
   accentColor: string;
-  // The last 7 days' raw values the headline average was computed from,
-  // oldest first. `value` drives each bar's height (null for unlogged
-  // days); `display` is the already-formatted tooltip text ("2.9/10", "Not
-  // logged", …) — formatted by the caller, same as this component's own
-  // value/delta props, since a function can't be passed from the server
-  // page down into StatSparkline (a client component) as a prop. Omit to
-  // render without a sparkline (e.g. a tile with no meaningful daily series).
+  // Last 7 days' raw values behind the headline average, oldest first.
+  // `display` is caller-formatted tooltip text; omit for no sparkline.
   sparklineValues?: { date: string; value: number | null; display: string }[];
-  // "bar" (default): discrete daily bars, most recent one highlighted —
-  // reads well for counted quantities (steps, sleep hours). "area": a line
-  // with the space beneath it filled, for metrics where a continuous trend
-  // reads better than discrete days (average pain, physio load).
+  // "bar" (default): discrete daily bars. "area": filled line, for metrics
+  // where a continuous trend reads better (average pain, physio load).
   sparklineVariant?: "bar" | "area";
-  // Controls that take the icon badge's place in the header row — the
-  // dashboard's edit-mode drag/remove buttons. They swap for the badge
-  // rather than sitting above the tile so the tile's height doesn't change
-  // between viewing and editing; the badge's only job (the metric hint) is
-  // of no use while you're rearranging anyway.
+  // Dashboard edit-mode drag/remove controls — swap for the icon badge so
+  // tile height doesn't change between viewing and editing.
   actions?: React.ReactNode;
-  // False in the Add-widget picker's preview thumbnails, where several
-  // tiles' sparklines would otherwise animate in at once right as the
-  // dialog opens.
+  // False in the Add-widget picker so sparklines don't all animate at once.
   animate?: boolean;
 };
 

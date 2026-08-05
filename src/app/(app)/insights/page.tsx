@@ -1,14 +1,5 @@
-// /insights — the correlation explorer (PLAN.md §3): lag scatter plots with
-// Pearson r, the flare-up review with its "days before" context, and the
-// weekly report card. Server component: loads logs, pulls the scatter/
-// candlestick series from the shared buildChartDataBundle (domain/
-// dashboard-bundle.ts), computes Flare review + Weekly report locally
-// (not part of the shared bundle — see its own comment), and hands
-// display-ready data to client components. The correlation scatter
-// sections render via <InsightsCharts>, a client component that owns the
-// time-range picker's state and does its own (cheap, in-memory) filtering
-// — Flare review and the Weekly report card are range-independent and
-// render directly here. "Sleep & pain over time" moved to the dashboard.
+// /insights — correlation explorer (PLAN.md §3): lag scatter, flare review, weekly report.
+// Scatter data comes from buildChartDataBundle; flare/weekly are computed locally (range-independent).
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
@@ -70,11 +61,8 @@ export default async function InsightsPage() {
   const logByDate = new Map(logs.map((l) => [l.date, l]));
   const today = await todayIso();
 
-  // Every derived series any dashboard/insights chart could need, computed
-  // once — see domain/dashboard-bundle.ts. This page only uses the
-  // scatter/candlestick slices; Flare review and the Weekly report card
-  // below aren't part of the shared bundle (not in the v1 widget catalog),
-  // so their computation stays local to this page.
+  // See domain/dashboard-bundle.ts. This page only uses the scatter/candlestick slices;
+  // Flare review and the Weekly report card below aren't part of the shared bundle.
   const {
     fullStepsPoints,
     fullVolumePoints,

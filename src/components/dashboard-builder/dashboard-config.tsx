@@ -1,11 +1,5 @@
-// The dashboard's settings popover — the gear button at the top right of a
-// dashboard. Everything that acts on THIS dashboard lives here: the time
-// range its charts read from, renaming it, restoring the default layout,
-// and deleting it. Moving between dashboards and creating new ones is the
-// switcher's job instead (dashboard-switcher.tsx, in the page header).
-//
-// Reset and delete both destroy something, so each goes through a
-// confirmation rather than firing straight off a click.
+// The dashboard's settings popover (gear button): time range, rename, reset layout, delete.
+// Moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
 "use client";
 
 import { useState, useTransition } from "react";

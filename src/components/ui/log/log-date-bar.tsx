@@ -1,18 +1,5 @@
-// The one place the active log date is changeable — the overview page.
-// Every section page and the review page just display this same date as a
-// plain label (LogSectionHeader) and navigate with it in the URL.
-//
-// Also owns the pending state for that date change and swaps `children`
-// (the server-rendered tiles for the *previous* date) for a skeleton while
-// the new date's page is loading. This can't be left to the route's own
-// loading.tsx: changing the date is a searchParam-only navigation on the
-// same route, and Next's router wraps navigations in a React transition —
-// once a Suspense boundary has already shown real content, React keeps
-// showing that (now-stale) content through a transition instead of
-// reverting to the fallback, which is exactly why the page looked frozen
-// for however long the new date took to load. Owning `isPending` here (via
-// useTransition, wrapping the same router.push already used) is the
-// documented way to get an explicit pending UI for exactly this case.
+// The one place the active log date is changeable. Owns pending state via useTransition instead
+// of loading.tsx, since a searchParam-only nav on the same route keeps stale Suspense content instead of reverting to the fallback.
 "use client";
 
 import { useTransition } from "react";

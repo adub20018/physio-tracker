@@ -1,8 +1,5 @@
-// Sign-in form. Validates every field locally before ever calling the auth
-// server — all violations show at once, each with its own red border and
-// message. A rejected email/password can't be attributed to one field, so
-// credentialError marks both fields invalid with one shared message under
-// password, matching the sign-up page's per-field error styling.
+// Sign-in form with local validation before hitting the auth server. A rejected
+// credential can't be attributed to one field, so credentialError marks both invalid.
 "use client";
 
 import { useState } from "react";

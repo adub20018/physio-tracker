@@ -2,9 +2,8 @@
 // load can be charted against symptoms (PLAN.md §2).
 import type { DomainDay, DomainExercise } from "./types";
 
-// Volume of one exercise entry = sets × duration(or reps) × mean intensity
-// fraction. Intensity defaults to 1 (i.e. raw sets×duration) when it was
-// not recorded, so early unrecorded sessions still register as load.
+// Volume of one exercise = sets × duration(or reps) × mean intensity
+// fraction; intensity defaults to 1 (raw sets×duration) when unrecorded.
 export function exerciseVolume(ex: DomainExercise): number {
   const { intensityMin: min, intensityMax: max } = ex;
   const meanIntensity =

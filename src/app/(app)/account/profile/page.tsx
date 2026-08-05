@@ -1,7 +1,5 @@
-// /account/profile — your name and email. No repository or server action
-// here: Better Auth's own client exposes updateUser() as a core endpoint,
-// so this talks to it directly (this isn't app data, PLAN.md §5's
-// repository rule doesn't apply).
+// /account/profile — your name and email. No repository here: Better
+// Auth's client exposes updateUser() directly, since this isn't app data.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { EditProfileForm } from "@/components/ui/account/edit-profile-form";
 

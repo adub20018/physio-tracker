@@ -1,25 +1,14 @@
-// The starting layout seeded for every user's first ("Default") dashboard,
-// and what "Reset to default dashboard" restores: 4 stat tiles across the
-// top, then Pain over time, Load vs next-day pain, Physio progression, and
-// the calendar heatmap, each full width.
-//
-// widgetType strings match src/components/dashboard-builder/widget-registry.tsx's
-// `type` keys by convention, not by import — repositories/ doesn't import
-// from components/ (PLAN.md §5's one-way dependency rule), and a widget
-// type is fundamentally just a string key either side can agree on.
+// Seed layout for a user's first dashboard and what "Reset to default" restores. widgetType
+// matches widget-registry.tsx's `type` keys by convention (repositories/ can't import components/, PLAN.md §5).
 import type { NewDashboardWidgetInput } from "./types";
 
-// Grid units: 12 columns, and the row height/margin set in dashboard-grid.tsx
-// (one row step is 20px). TILE_H matches the stat tile's locked height in
-// widget-registry.tsx's STAT_TILE_BOUNDS — 128px, its natural content size.
+// Grid units: 12 columns, row height/margin set in dashboard-grid.tsx (one row = 20px).
+// TILE_H matches the stat tile's locked height in widget-registry.tsx's STAT_TILE_BOUNDS (128px).
 const TILE_H = 7;
 const CHART_H = 18;
 
-// The phone grid is 2 columns with the same row step as desktop — see
-// MOBILE_COLS in dashboard-grid.tsx. Stat tiles take one column each so
-// they sit 2x2; charts span both, since a plot at half a phone's width
-// isn't readable. Tiles are 9 rows (168px) rather than desktop's 7 (128px)
-// because at half width the value/delta line wraps and needs the room.
+// Phone grid is 2 columns (MOBILE_COLS in dashboard-grid.tsx); stat tiles sit 2x2, charts
+// span both. Tiles are 9 rows vs desktop's 7 since at half width the value/delta line wraps.
 const M_TILE_W = 1;
 const M_TILE_H = 9;
 const M_CHART_W = 2;

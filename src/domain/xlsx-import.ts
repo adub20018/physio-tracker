@@ -1,17 +1,12 @@
-// Pure parsing helpers for spreadsheet import. Each function converts one
-// quirky spreadsheet cell format into the structured shape the database
-// stores. Zero dependencies (domain/ imports nothing — see PLAN.md §5), so
-// they're usable from the in-app import flow without pulling in Drizzle
-// or the repository layer.
+// Pure parsing helpers for spreadsheet import — each converts one quirky spreadsheet cell
+// format into the structured shape the database stores. Zero dependencies (PLAN.md §5).
 
-// Tags derived from the spreadsheet's activity notes (see PLAN.md §1) — a
-// plain string, same as ActivityTag in db/schema, but domain/ doesn't
-// import from db/ even for a type alias.
+// Tags derived from the spreadsheet's activity notes (PLAN.md §1) — same shape as
+// ActivityTag in db/schema, but domain/ doesn't import from db/ even for a type alias.
 export type ActivityTag = string;
 
-// Pain cell → number 0–10, or null. Accepts "2/10", "4.5/10", plain numbers,
-// and numeric strings ("2", "1.5") so the import works whether or not the
-// spreadsheet has been converted away from the "/10" format.
+// Pain cell → number 0–10, or null. Accepts "2/10", "4.5/10", plain numbers, and numeric
+// strings, so import works whether or not the sheet uses the "/10" format.
 export function parsePain(value: unknown): number | null {
   if (value == null || value === "") return null;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
@@ -22,9 +17,8 @@ export function parsePain(value: unknown): number | null {
   return num >= 0 && num <= 10 ? num : null;
 }
 
-// "3x15" → [{sets: 3, duration: 15}]; "3x20, 1x30" → two groups. Each group
-// becomes its own ExerciseEntry so mixed-duration days (e.g. a longer test
-// hold) are preserved exactly.
+// "3x15" → [{sets: 3, duration: 15}]; "3x20, 1x30" → two groups. Each group becomes its
+// own ExerciseEntry so mixed-duration days (e.g. a longer test hold) are preserved exactly.
 export function parseSetGroups(value: unknown): { sets: number; duration: number }[] {
   if (value == null || value === "") return [];
   const groups: { sets: number; duration: number }[] = [];
@@ -35,9 +29,8 @@ export function parseSetGroups(value: unknown): { sets: number; duration: number
   return groups;
 }
 
-// "Light-Medium (20-25% weight)" → {min: 20, max: 25}; "Medium (25%)" →
-// {min: 25, max: 25}. The label (Light/Medium) is redundant with the numbers
-// and is not stored. Returns null when no percentage is present.
+// "Light-Medium (20-25% weight)" → {min: 20, max: 25}; "Medium (25%)" → {min: 25, max: 25}.
+// The label is redundant with the numbers and isn't stored; null when no percentage is present.
 export function parseIntensity(value: unknown): { min: number; max: number } | null {
   if (value == null || value === "") return null;
   const match = String(value).match(/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*%/);
@@ -47,9 +40,8 @@ export function parseIntensity(value: unknown): { min: number; max: number } | n
   return { min, max };
 }
 
-// Activity notes → structured tags by keyword ("Gym + physio + walking at
-// cafe" → gym, physio, walking). "phy" catches the "phyio" typo present in
-// the source data. The original text is preserved separately as notes.
+// Activity notes → structured tags by keyword ("Gym + physio + walking" → gym, physio,
+// walking). "phy" catches the "phyio" typo in the source data; original text kept as notes.
 export function deriveActivityTags(value: unknown): ActivityTag[] {
   if (value == null || value === "") return [];
   const text = String(value).toLowerCase();
@@ -94,9 +86,8 @@ export function parseSteps(value: unknown): number | null {
   return Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
 }
 
-// Sleep-hours cell → number 0–24, or null. A plain decimal (e.g. 9.5) —
-// unlike pain, there's no "/10" suffix and no 0–10 clamp, since a full
-// night's sleep commonly exceeds 10 hours.
+// Sleep-hours cell → number 0–24, or null. Unlike pain, no "/10" suffix and no 0–10 clamp,
+// since a full night's sleep commonly exceeds 10 hours.
 export function parseSleepHours(value: unknown): number | null {
   if (value == null || value === "") return null;
   if (typeof value === "number") {

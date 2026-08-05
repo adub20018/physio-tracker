@@ -1,7 +1,5 @@
 // /history — the full journal of every logged day (the spreadsheet view,
-// kept but calmed down). Server component: fetches logs through the
-// repository, flattens them into display-ready rows, and hands them to the
-// client-side HistoryTable.
+// calmed down). Fetches logs, flattens them into display rows for HistoryTable.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { HistoryTable, type HistoryRow } from "@/components/ui/history/history-table";
@@ -43,8 +41,7 @@ export default async function HistoryPage() {
           <h1>History</h1>
           <p className="subtitle">
             {/* Template literal, not text + {expr} — see page.tsx's dashboard
-                subtitle for why the plain version silently loses the space
-                after the number. */}
+                subtitle for why the plain version silently drops the space after the number. */}
             {`${rows.length} logged days · click a row's arrow for notes and detail`}
           </p>
         </div>

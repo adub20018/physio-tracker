@@ -1,8 +1,5 @@
-// Shared header for every /log section page (Pain, Activity, Physio,
-// Notes) and the review page: a link back to the overview, the section
-// title, and the active date shown as a plain label — the date itself is
-// only ever changed from the overview (PLAN.md-style single source of
-// truth for "which day am I working on").
+// Shared header for every /log section page and the review page. Date is
+// display-only here; it's only ever changed from the overview.
 import Link from "next/link";
 import { ChevronLeft } from "@primeicons/react/chevron-left";
 import { shortDateLabel } from "@/lib/format";

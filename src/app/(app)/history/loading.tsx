@@ -1,6 +1,5 @@
-// Instant loading state for /history — see the dashboard's loading.tsx for
-// why this file exists. A handful of row-shaped bars stand in for the
-// table, wrapped in the same card shape the real table renders inside.
+// Loading skeleton for /history — row-shaped bars in the same card shape
+// the real table renders inside. See dashboard's loading.tsx.
 import { CardSkeleton } from "@/components/ui/shared/card-skeleton";
 import { Skeleton } from "@primereact/ui/skeleton";
 

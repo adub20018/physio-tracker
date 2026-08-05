@@ -1,6 +1,5 @@
-// Drizzle/libSQL implementation of DailyLogRepository.
-// All queries are scoped by userId (multi-user ready) and this file is the
-// only place daily-log SQL lives — the rest of the app sees the interface.
+// Drizzle/libSQL implementation of DailyLogRepository. All queries are scoped by userId
+// (multi-user ready); this is the only place daily-log SQL lives — the rest of the app sees the interface.
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { dailyLogs, exerciseEntries, type ExerciseEntry } from "@/db/schema";
@@ -12,8 +11,7 @@ import type {
 
 export class DrizzleDailyLogRepository implements DailyLogRepository {
   // All logs for a user, oldest first, with exercises attached.
-  // Two queries (logs, then that user's exercises via join), grouped in
-  // memory — at personal scale (hundreds of rows) this is simple and fast.
+  // Two queries grouped in memory — fine at personal scale (hundreds of rows).
   async listAll(userId: string): Promise<DailyLogWithExercises[]> {
     const logs = await db
       .select()

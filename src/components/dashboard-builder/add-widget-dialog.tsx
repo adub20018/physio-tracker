@@ -1,13 +1,5 @@
-// Edit-mode "Add widget" picker — a grid of live preview cards for every
-// widget type not already on the dashboard, grouped by category. Previews
-// render against the signed-in user's own data once there's enough of it
-// to be useful (MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS), falling back to the
-// fabricated mock account in widget-preview-data.ts for fresh/sparse
-// accounts, whose real charts would mostly just show empty states. Follows
-// ConfirmDialog's Dialog.Root/Portal/Backdrop/Positioner/Popup structure
-// (src/components/ui/shared/confirm-dialog.tsx) but stays open after each
-// pick, so several widgets can be added in one pass rather than reopening
-// the dialog each time.
+// Edit-mode "Add widget" picker: grid of live preview cards, grouped by category. Previews use
+// the signed-in user's own data once there's enough (MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS), else a mock account.
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
@@ -31,12 +23,8 @@ const CATEGORIES: WidgetCategory[] = [
   "Insights charts",
 ];
 
-// One clickable preview card. A plain <button> here would nest StatTile's
-// own InfoTooltip trigger button inside it — invalid HTML (buttons can't
-// nest) that React flags as a hydration error. A div with button semantics
-// avoids the nesting while staying clickable and keyboard-operable;
-// widget-preview.module.css also sets pointer-events: none on the preview
-// itself, so the inner tooltip trigger is inert.
+// A div, not <button> — StatTile's own InfoTooltip trigger is a button,
+// and nesting buttons is invalid HTML.
 function WidgetCard({
   definition,
   onAdd,
@@ -85,38 +73,23 @@ export function AddWidgetDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // Widget types already on the dashboard — hidden from the picker rather
-  // than shown disabled, since a second identical chart isn't useful.
+  // Widget types already on the dashboard — hidden, not shown disabled.
   existingTypes: Set<string>;
   onAdd: (widgetType: string) => void;
-  // The signed-in user's own data (same bundle the real dashboard renders
-  // from) and today's date — used for previews instead of the mock account
-  // once hasEnoughDataForPreviews is true. See
-  // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS for the threshold.
+  // Used for previews once hasEnoughDataForPreviews is true (see
+  // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS).
   realBundle: ChartDataBundle;
   realToday: string;
   hasEnoughDataForPreviews: boolean;
 }) {
   const available = WIDGET_DEFINITIONS.filter((d) => !existingTypes.has(d.type));
 
-  // Resolved once — every card in the grid previews from the same source,
-  // real or mock, not a per-widget decision.
+  // Resolved once for the whole grid, not per widget.
   const previewBundle = hasEnoughDataForPreviews ? realBundle : MOCK_CHART_DATA_BUNDLE;
   const previewToday = hasEnoughDataForPreviews ? realToday : MOCK_TODAY;
 
-  // The picker renders 20+ live chart instances — mounting them all in one
-  // commit is a single, uninterruptible block of JS long enough to stall
-  // the backdrop's own fade-in (they share the same main thread), so the
-  // dim only appeared to show up once every chart had finished mounting.
-  // Marking the swap as a startTransition wasn't enough on its own — React
-  // only yields mid-transition when something else needs the thread, and
-  // with nothing else competing it just ran the whole ~20-chart render in
-  // one go anyway.
-  //
-  // What actually fixes it is keeping every individual commit small:
-  // reveal a handful of previews per animation frame instead of all at
-  // once, so the browser gets a real paint between each batch — including
-  // the frame where the backdrop's own transition is playing.
+  // Mounting 20+ live charts in one commit blocks the backdrop's own
+  // fade-in; revealing them in small batches per frame keeps it smooth.
   const REVEAL_BATCH_SIZE = 4;
   const [readyCount, setReadyCount] = useState(0);
   useEffect(() => {
@@ -134,13 +107,10 @@ export function AddWidgetDialog({
         }
       });
     }
-    // One frame's head start lets the dialog's own open-transition frame
-    // land before the first batch starts mounting.
+    // Extra frame lets the dialog's own open-transition land first.
     frameId = requestAnimationFrame(() => revealNextBatch(0));
 
-    // Runs when `open` flips back to false (or on unmount) — resets so the
-    // next open starts from skeletons again instead of skipping straight
-    // to the already-revealed count from last time.
+    // Resets on close/unmount so the next open starts from skeletons again.
     return () => {
       cancelled = true;
       cancelAnimationFrame(frameId);
@@ -148,10 +118,7 @@ export function AddWidgetDialog({
     };
   }, [open, available.length]);
 
-  // Reveal order doesn't need to match visual (category/grid) order — it
-  // only needs to grow a little each frame — so a simple index into
-  // `available` is enough to decide whether a given widget has its batch
-  // turn yet.
+  // Reveal order is just index into `available`, not visual grid order.
   const revealOrder = new Map(available.map((d, i) => [d.type, i]));
   const isPreviewReady = (type: string) =>
     (revealOrder.get(type) ?? available.length) < readyCount;
@@ -191,11 +158,8 @@ export function AddWidgetDialog({
                   const items = available.filter((d) => d.category === category);
                   if (items.length === 0) return null;
 
-                  // Stacked (multi-panel) charts get their own, taller
-                  // preview box (widget-preview.module.css) — kept in a
-                  // separate grid rather than mixed in with single-panel
-                  // charts so their extra height doesn't force every card
-                  // in the same row to match it.
+                  // Stacked charts get a separate grid so their taller
+                  // preview box doesn't stretch single-panel rows.
                   const singleItems = items.filter((d) => !isStackedChart(d));
                   const stackedItems = items.filter(isStackedChart);
 

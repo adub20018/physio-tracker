@@ -1,6 +1,5 @@
-// Instant loading state for /log — see the dashboard's loading.tsx for why
-// this file exists. Shaped like the real page (date bar + tile grid +
-// footer links) so the swap-in doesn't jump the layout.
+// Loading skeleton for /log, shaped like the real page (date bar + tile
+// grid + footer links). See dashboard's loading.tsx for why this exists.
 import { Skeleton } from "@primereact/ui/skeleton";
 import { LogTilesSkeleton } from "@/components/ui/log/log-tiles-skeleton";
 import sharedStyles from "@/components/ui/log/log-shared.module.css";

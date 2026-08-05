@@ -1,7 +1,5 @@
-// /log/review — the final look-over: every section's summary for one
-// date on a single screen, read-only, with an Edit link back into each
-// section. For checking the whole day is complete before bed, without
-// the day-to-day form of logging living on this same page.
+// /log/review — read-only summary of every section for one date, with an
+// Edit link back into each — for checking a day is complete before bed.
 import Link from "next/link";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";

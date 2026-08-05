@@ -1,8 +1,5 @@
-// Client-side history table: every logged day as one calm row — date, pain
-// trio (dot + value), steps with a small volume bar, condensed physio — with
-// notes, tags, sleep, and exercise detail tucked into an expandable row.
-// Receives a flat, display-ready row shape (HistoryRow) from the server page;
-// no repository or Drizzle imports here (PLAN.md §5 dependency direction).
+// Client-side history table: one calm row per logged day, with notes/tags/sleep/exercise detail
+// in an expandable row. Receives a flat, display-ready HistoryRow shape from the server page.
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";

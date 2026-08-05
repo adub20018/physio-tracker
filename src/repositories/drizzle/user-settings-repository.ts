@@ -1,6 +1,5 @@
-// Drizzle implementation of UserSettingsRepository.
-// One row per user (userId is the primary key), so both operations are
-// single-statement — no batch/transaction needed like DailyLogRepository.
+// Drizzle implementation of UserSettingsRepository. One row per user (userId is the PK),
+// so both operations are single-statement — no batch/transaction needed.
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { userSettings } from "@/db/schema";
@@ -31,9 +30,8 @@ export class DrizzleUserSettingsRepository implements UserSettingsRepository {
     };
   }
 
-  // Insert-or-update in one statement. Falls back to the schema's column
-  // defaults for any field not present in `input` when inserting for the
-  // first time; on conflict, only the provided fields are overwritten.
+  // Insert-or-update in one statement; unset fields keep schema defaults on
+  // first insert, and on conflict only the provided fields are overwritten.
   async upsert(userId: string, input: Partial<UserSettings>): Promise<UserSettings> {
     const [row] = await db
       .insert(userSettings)

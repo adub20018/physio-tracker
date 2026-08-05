@@ -1,11 +1,5 @@
-// Shared visual constants for all chart components. The categorical series
-// palette was validated with the dataviz six-checks validator against the
-// dark card surface (#18181b): lightness band, chroma floor, adjacent-pair
-// CVD separation (worst ΔE 28.4), and ≥3:1 contrast all pass.
-//
-// Charts keep color roles strict: categorical hues identify series, the
-// status red marks flares only, and sequential red encodes pain magnitude
-// in the heatmap. Text always wears text colors, never series colors.
+// Shared visual constants for all charts. Categorical palette validated against dark card
+// surface #18181b via the dataviz six-checks validator; color roles stay strict (series vs flare vs pain magnitude).
 
 // Categorical series colors, in fixed order (never cycled).
 export const SERIES = {

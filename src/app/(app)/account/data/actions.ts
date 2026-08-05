@@ -1,7 +1,5 @@
-// Server action for the Data page's "Delete data" button. Deleting the
-// account itself (Better Auth's deleteUser) happens client-side, same as
-// the Profile page's name change — this action only covers the "keep my
-// account, wipe my data" case, which needs no auth involvement at all.
+// Server action for the "Delete data" button. Account deletion itself
+// happens client-side via Better Auth; this only covers wiping app data.
 "use server";
 
 import { revalidatePath } from "next/cache";

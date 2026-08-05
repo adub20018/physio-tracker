@@ -1,19 +1,12 @@
-// Compact "what's already here" strings and completion counts for the
-// /log overview's tiles and the review page — pure presentation, no data
-// access. Each summary returns the same "Not logged yet" placeholder when
-// its section is completely empty; once anything's there, every slot is
-// shown explicitly (with "—" for whatever's still missing) rather than
-// silently omitted, so a gap stays visible instead of disappearing into
-// the ones that are filled in.
+// Compact "what's already here" strings and completion counts for /log overview's tiles and the review page.
+// Once anything's logged, every slot shows explicitly ("—" if missing) rather than being silently omitted.
 import type { DailyLogWithExercises } from "@/repositories";
 import { summarizeExercises } from "./format";
 
 export const NOT_LOGGED = "Not logged yet";
 
-// How many of a section's "slots" are filled in, out of how many it has —
-// drives both the tile's segmented progress bar and its "2/3" counter.
-// Physio has no fixed slot count (0..n exercises), so it's treated as a
-// single yes/no slot: logged something today, or not.
+// Drives the tile's progress bar and "2/3" counter. Physio has no fixed slot count,
+// so it's treated as a single yes/no slot.
 export type SectionProgress = { filled: number; total: number };
 
 export function painProgress(

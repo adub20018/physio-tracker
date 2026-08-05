@@ -1,6 +1,5 @@
-// Instant loading state for /log/review — see the dashboard's loading.tsx
-// for why this file exists. Shaped like the real page's four per-section
-// summary cards so the swap-in doesn't jump the layout.
+// Loading skeleton for /log/review, shaped like the real page's four
+// per-section summary cards (see dashboard's loading.tsx for why this exists).
 import { Skeleton } from "@primereact/ui/skeleton";
 import { LogSectionHeaderSkeleton } from "@/components/ui/log/log-section-header-skeleton";
 import sharedStyles from "@/components/ui/log/log-shared.module.css";

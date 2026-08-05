@@ -1,8 +1,5 @@
-// Instant loading state for /log/physio — see the dashboard's loading.tsx
-// for why this file exists. Shaped like one exercise card (name + 2x2
-// sets/duration/intensity fields) + Add exercise + Save; the real page can
-// have any number of exercise cards, so this just shows a representative
-// one rather than guessing a count.
+// Instant loading state for /log/physio, shaped like one exercise card
+// (name + 2x2 fields) — a representative card since the real count varies.
 import { Skeleton } from "@primereact/ui/skeleton";
 import { LogSectionHeaderSkeleton } from "@/components/ui/log/log-section-header-skeleton";
 import styles from "@/components/ui/log/log-shared.module.css";

@@ -1,6 +1,5 @@
-// Server action for the Preferences page. Only the flare threshold exists
-// today, but this file is the natural place for more configurable settings
-// to grow into as they're added (see UserSettings in repositories/types.ts).
+// Server actions for the Preferences page. Only the flare threshold exists
+// today, but this is the natural place for more settings to grow into (see UserSettings in repositories/types.ts).
 "use server";
 
 import { revalidatePath } from "next/cache";

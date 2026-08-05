@@ -1,6 +1,5 @@
-// Aggregations over logged days: per-day pain average, calendar-window
-// filtering, and the week-vs-previous-week comparison behind the dashboard
-// stat tiles.
+// Aggregations over logged days: per-day pain average, calendar-window filtering, and
+// the week-vs-previous-week comparison behind the dashboard stat tiles.
 import { average } from "./rolling";
 import { dailyPhysioLoad } from "./load";
 import { daysBetween } from "./flare";
@@ -22,9 +21,8 @@ function presentPainReadings(
   );
 }
 
-// Highest of the day's recorded pain readings — the worst moment of the
-// day, as opposed to dailyPainAverage's overall picture. Null when nothing
-// was recorded.
+// Highest of the day's recorded pain readings — the worst moment of the day, as opposed
+// to dailyPainAverage's overall picture.
 export function dailyPainPeak(
   day: Pick<DomainDay, "painMorning" | "painDaytime" | "painNight">,
 ): number | null {
@@ -40,11 +38,8 @@ export function dailyPainMin(
   return present.length > 0 ? Math.min(...present) : null;
 }
 
-// Items whose date falls in the calendar window [end - (nDays-1), end].
-// Calendar-based (not "last N logged rows") so missed days count as missing.
-// Generic over anything with a `date`, not just DomainDay, so the same
-// windowing logic filters display-ready chart/point arrays too (dashboard
-// and insights time-range selection) without duplicating this check.
+// Items whose date falls in [end - (nDays-1), end]. Calendar-based (not "last N logged
+// rows") so missed days count as missing; generic so it also filters display-ready arrays.
 export function filterWindow<T extends { date: string }>(
   items: T[],
   end: string,
@@ -88,17 +83,12 @@ export function windowComparison(
   return { current: windowStats(current), previous: windowStats(previous) };
 }
 
-// One slot in a lastNDaysSeries result — paired with its calendar date so
-// callers (e.g. a sparkline tooltip) can label a value without having to
-// re-derive which date it came from.
+// One slot in a lastNDaysSeries result, paired with its calendar date so callers
+// (e.g. a sparkline tooltip) can label a value without re-deriving the date.
 export type DatedValue<T> = { date: string; value: T | null };
 
-// A fixed-length, calendar-anchored series for the last nDays ending at
-// `end` (inclusive), oldest first. Unlike filterWindow (which only returns
-// days that HAVE a log entry, so a window with gaps comes back shorter),
-// every slot is present — null for days that weren't logged. Built for
-// stat-tile sparklines, where a consistent day-by-day cadence matters more
-// than compacting past gaps.
+// Fixed-length, calendar-anchored series for the last nDays ending at `end`. Unlike
+// filterWindow, every slot is present (null for unlogged days) — needed for sparkline cadence.
 export function lastNDaysSeries<T>(
   days: DomainDay[],
   end: string,

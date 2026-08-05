@@ -1,9 +1,5 @@
-// Server actions for the daily log flow. Each section (Pain, Activity,
-// Physio, Notes) saves independently through its own action, but the
-// repository's upsert() always replaces the whole day's row (PLAN.md's
-// "one row per day" model) — so every action here loads whatever's already
-// saved for that date and overlays just its own slice before writing,
-// leaving the other sections' data untouched.
+// Server actions for the daily log flow. Repository's upsert() always replaces the whole day's
+// row, so every action here loads what's already saved and overlays just its own slice.
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -20,9 +16,7 @@ import {
 // Result shape returned to every section form.
 export type SaveResult = { ok: true; date: string } | { ok: false; errors: string[] };
 
-// Loads the existing day (or sensible empty defaults for a new one), applies
-// `patch` on top, and writes the full row back — the one place that bridges
-// "save just this section" to the repository's full-replace upsert.
+// Bridges "save just this section" to the repository's full-replace upsert.
 async function mergeAndSave(
   userId: string,
   date: string,

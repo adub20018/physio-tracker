@@ -1,9 +1,5 @@
-// /log — the overview: pick a date once, then tap into whichever section
-// you actually have data for right now. Replaces the old one-long-form
-// page: logging happens in short, separate visits throughout the day
-// (morning pain, midday physio, evening steps, …), so the page you land on
-// shows what's done and what's left for the active date rather than every
-// field at once.
+// /log overview: pick a date, then tap into whichever section has data for right now —
+// logging happens in short separate visits throughout the day, not one long form.
 import Link from "next/link";
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
@@ -54,8 +50,7 @@ export default async function LogOverviewPage({
     {
       href: `/log/pain?date=${date}`,
       title: "Pain",
-      // Single icon: pain readings are all one kind of input (a 0–10 scale,
-      // three times a day), unlike Activity's two distinct fields below.
+      // Single icon: pain readings are all one kind of input (0-10 scale, 3x/day).
       icons: [<BoneFracture key="pain" size={16} />],
       badgeStyle: {
         background: `color-mix(in srgb, ${SERIES.pain} 14%, transparent)`,
@@ -82,9 +77,6 @@ export default async function LogOverviewPage({
     {
       href: `/log/activity?date=${date}`,
       title: "Activity",
-      // Two icons, one per distinct field this section actually logs —
-      // same icons used on the Steps/Sleep inputs inside the section form
-      // itself, so the tile previews exactly what's behind it.
       icons: [<Zap key="activity" size={16} />],
       badgeStyle: {
         background: `color-mix(in srgb, ${SERIES.steps} 14%, transparent)`,

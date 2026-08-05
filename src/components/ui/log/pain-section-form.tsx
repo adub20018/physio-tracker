@@ -1,7 +1,5 @@
 // The Pain section's own small form — readings + character for one date.
-// Saves through its own action and returns to the /log overview, leaving
-// every other section's data untouched (PLAN.md §5: talks to the server
-// only through the action, never imports repositories directly).
+// Saves through its own action and returns to the /log overview.
 "use client";
 
 import { useState, useTransition } from "react";

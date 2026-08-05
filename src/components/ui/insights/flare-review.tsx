@@ -1,11 +1,5 @@
-// Flare review (client): every detected flare day as a PrimeReact Accordion
-// panel; expanding one shows what happened in the days before — load,
-// physio, activities, and notes. Receives display-ready episode data from
-// the server page (no repository or domain imports needed here).
-//
-// Design: full-width rows aligned on a fixed grid (date | readings | chevron)
-// with the app's surface colors — the readings are explicit severity badges
-// ("Morning 3"), matching the pain badges used in the history table.
+// Flare review (client): every detected flare day as an Accordion panel; expanding one shows
+// the days before it. Receives display-ready episode data from the server page.
 "use client";
 
 import { Accordion } from "@primereact/ui/accordion";

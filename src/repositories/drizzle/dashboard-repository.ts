@@ -1,8 +1,5 @@
-// Drizzle/libSQL implementation of DashboardRepository.
-// All queries are scoped by userId and this file is the only place
-// dashboard/dashboard-widget SQL lives — the rest of the app sees the
-// interface. neon-http doesn't support interactive transactions, so
-// multi-statement writes use db.batch(), same as DrizzleDailyLogRepository.
+// Drizzle/libSQL implementation of DashboardRepository — all queries scoped by userId; only
+// file with dashboard SQL. Multi-statement writes use db.batch() (neon-http has no transactions).
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { dashboards, dashboardWidgets } from "@/db/schema";
@@ -15,14 +12,8 @@ import type {
 import type { TimeRange } from "@/lib/time-range";
 import { DEFAULT_DASHBOARD_WIDGETS } from "@/repositories/default-dashboard-widgets";
 
-// The id given to the auto-seeded "Default" dashboard. Derived from the
-// user rather than random so that two concurrent first-visits can't each
-// create one — see getOrCreateDefault. Only ever used for that first
-// seeded row; every other dashboard gets a random id as usual.
-//
-// Hyphen-separated, not colon: this id goes straight into the
-// /dashboard/[dashboardId] path, and a colon in a path segment doesn't
-// survive the round trip (the route stops matching and the page 404s).
+// Deterministic id for the auto-seeded "Default" dashboard so concurrent first-visits can't
+// each create one (see getOrCreateDefault). Hyphenated, not colon-separated, since a colon breaks routing.
 function defaultDashboardId(userId: string): string {
   return `default-${userId}`;
 }
@@ -42,9 +33,8 @@ export class DrizzleDashboardRepository implements DashboardRepository {
     }));
   }
 
-  // Appended to the end of the user's list — sortOrder is always a
-  // contiguous 0..n-1 sequence, rewritten wholesale by reorder(). timeRange
-  // isn't passed to .values() — the column's own default ("7d") applies.
+  // Appended to the end of the list — sortOrder stays a contiguous 0..n-1 sequence,
+  // rewritten wholesale by reorder(). timeRange defaults via the column ("7d").
   async create(userId: string, name: string): Promise<Dashboard> {
     const existing = await this.listForUser(userId);
     const [row] = await db
@@ -84,9 +74,8 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       .where(and(eq(dashboards.id, id), eq(dashboards.userId, userId)));
   }
 
-  // Independent statements (unlike saveWidgets, there's no delete-then-insert
-  // ordering to preserve), so a plain Promise.all is enough — no need for
-  // db.batch's fixed-length-tuple typing here.
+  // Independent statements, unlike saveWidgets — no ordering to preserve, so plain
+  // Promise.all is enough (no need for db.batch's tuple typing).
   async reorder(userId: string, orderedIds: string[]): Promise<void> {
     await Promise.all(
       orderedIds.map((id, index) =>
@@ -133,9 +122,8 @@ export class DrizzleDashboardRepository implements DashboardRepository {
     };
   }
 
-  // Replace-all: confirms ownership first (a dashboard_widgets row has no
-  // userId of its own to scope by directly), then swaps the whole widget
-  // set in one batch so a failed write can't leave a half-saved layout.
+  // Replace-all: confirms ownership first (a dashboard_widgets row has no userId of its
+  // own), then swaps the whole set in one batch so a failed write can't leave a half-saved layout.
   async saveWidgets(
     dashboardId: string,
     userId: string,
@@ -160,13 +148,8 @@ export class DrizzleDashboardRepository implements DashboardRepository {
     ]);
   }
 
-  // Deliberately NOT list-then-create-if-empty: /dashboard is commonly hit
-  // twice at once (Next prefetches it alongside the real navigation), and
-  // both requests would find an empty list and each seed their own
-  // "Default" — observed happening 38ms apart. Instead the seeded row gets
-  // a deterministic id, so the second insert collides on the primary key
-  // and no-ops, and only the request that actually inserted goes on to
-  // write the widgets.
+  // Deliberately NOT list-then-create-if-empty: /dashboard is often hit twice at once (Next
+  // prefetch + navigation), so the deterministic id makes the second insert collide and no-op instead.
   async getOrCreateDefault(userId: string): Promise<Dashboard> {
     const existing = await this.listForUser(userId);
     if (existing.length > 0) return existing[0];
@@ -179,8 +162,7 @@ export class DrizzleDashboardRepository implements DashboardRepository {
       .returning();
 
     if (!inserted) {
-      // Lost the race — the winner's row exists now (and is seeding its own
-      // widgets), so just use it.
+      // Lost the race — the winner's row (and its widgets) already exists, so use it.
       const after = await this.listForUser(userId);
       return after[0] ?? { id, name: "Default", sortOrder: 0, timeRange: "7d" };
     }

@@ -9,8 +9,7 @@ export function average(values: (number | null)[]): number | null {
 }
 
 // Trailing rolling average: result[i] averages the non-null values of
-// series[i-window+1 .. i]. Positions whose window holds no values get null.
-// The series is assumed ordered (oldest first); gaps stay gaps.
+// series[i-window+1 .. i], or null if the window holds none. Series must be oldest-first.
 export function rollingAverage(series: (number | null)[], window: number): (number | null)[] {
   if (window < 1) throw new Error(`window must be ≥ 1, got ${window}`);
   return series.map((_, i) => average(series.slice(Math.max(0, i - window + 1), i + 1)));

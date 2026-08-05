@@ -1,8 +1,5 @@
-// Pain timeline — the dashboard's primary chart. Three thin lines for the
-// raw morning/daytime/night readings, one bold emerald line for the 7-day
-// rolling average of the daily pain mean, and red dots marking flare days
-// (any reading ≥ 3/10). Props are plain data arrays defined by us; Recharts
-// is an internal detail of this folder (PLAN.md §5).
+// Pain timeline — the dashboard's primary chart: thin lines for raw morning/daytime/night
+// readings, a bold line for the 7-day rolling average, red dots for flare days (≥3/10).
 "use client";
 
 import {
@@ -44,10 +41,8 @@ const LINES = [
   { key: "night", label: "Night", color: SERIES.night },
 ] as const;
 
-// Custom tooltip content: same look as the shared TOOLTIP_STYLE, but drops
-// the "Flare" row. The flare dot's own value always equals whichever
-// reading is already shown above it (Morning/Daytime/Night), so listing it
-// again is a pure duplicate — the dot itself is the flare signal.
+// Custom tooltip: same look as TOOLTIP_STYLE, but drops the "Flare" row since its value
+// duplicates whichever reading is already shown above it.
 function PainTooltipContent({
   active,
   payload,
@@ -87,23 +82,17 @@ export function PainTimeline({
   hideLegend = false,
 }: {
   data: PainTimelinePoint[];
-  // When true, the Y-axis scales to fit the visible data's own max instead
-  // of the fixed 0–10 pain scale (Account → Preferences).
+  // When true, the Y-axis scales to the visible data's own max instead of the fixed
+  // 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel height
-  // used on /insights — see .fill in charts.module.css.
+  // When true, fill the parent's height instead of the fixed pixel height used on
+  // /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
-  // fit instead of forcing every one (see interval below), and skips chart
-  // animation — the box is too short to spare the room, and animation on
-  // ~20 previews mounting at once is what made the picker feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately since some previews
-  // (stacked charts especially) are unreadable without knowing which color
-  // is which series. Set via WidgetRenderContext.hideLegend (see
-  // widget-preview-data.ts) rather than tied to `compact`, so legend
-  // visibility can be toggled in preview without touching the interval/
-  // animation behavior above.
+  // Independent of `compact`, set via WidgetRenderContext.hideLegend, so legend visibility
+  // can be toggled in preview separately from compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {
@@ -208,10 +197,8 @@ export function PainTimeline({
             animationDuration={300}
             animationEasing="linear"
           />
-          {/* Flare markers: a dot-only Line on the SHARED chart data — Lines
-              skip null points, and sharing the data keeps the crosshair
-              tooltip tracking every day. (A Scatter with its own filtered
-              data array hijacks the hover index to just the flare points.) */}
+          {/* Flare markers: a dot-only Line on the shared chart data (not a Scatter with its
+              own filtered array) so the crosshair tooltip keeps tracking every day. */}
           <Line
             dataKey="flareValue"
             name="Flare"

@@ -16,10 +16,8 @@ export type SaveLayoutResult = { ok: true } | { ok: false; error: string };
 export type CreateDashboardResult =
   { ok: true; dashboardId: string } | { ok: false; error: string };
 
-// Replaces a dashboard's entire widget set — the Save button in edit mode.
-// dashboardRepository.saveWidgets already scopes by userId and no-ops if
-// the dashboard isn't the caller's, so there's no separate ownership check
-// needed here.
+// Replaces a dashboard's entire widget set (Save button in edit mode).
+// saveWidgets already scopes by userId and no-ops if not caller's — no extra check needed.
 export async function saveDashboardLayout(
   dashboardId: string,
   widgets: NewDashboardWidgetInput[],
@@ -35,13 +33,8 @@ export async function saveDashboardLayout(
   return { ok: true };
 }
 
-// Persists the dashboard's selected time range — fired whenever the user
-// picks a different one from the config popover, so it's remembered the
-// next time this dashboard is opened, on any device. The caller updates its
-// own local state immediately for instant feedback (the range only affects
-// how the client slices data it already has, not what's fetched) and
-// doesn't need to await this or refresh afterward; revalidatePath here just
-// keeps the server's cached RSC payload from going stale for a later visit.
+// Persists the selected time range for next visit. Caller updates local state without
+// awaiting this (range only re-slices fetched data); revalidatePath just avoids a stale RSC cache.
 export async function updateDashboardTimeRange(
   dashboardId: string,
   timeRange: string,
@@ -79,10 +72,8 @@ export async function resetDashboardToDefault(
   };
 }
 
-// Creates an empty dashboard and hands its id back for the client to
-// navigate to. Deliberately starts with no widgets rather than the default
-// set: a new dashboard exists because the user wants a different view, so
-// seeding it with the standard one just means clearing it out first.
+// Creates an empty dashboard and hands its id back for the client to navigate to.
+// Deliberately no default widgets — a new dashboard means the user wants a different view.
 export async function createDashboard(
   name: string,
 ): Promise<CreateDashboardResult> {
@@ -112,9 +103,8 @@ export async function renameDashboard(
   return { ok: true };
 }
 
-// Deletes a dashboard and its widgets (via the cascade FK). The client then
-// navigates to /dashboard, which resolves to whatever dashboard is left —
-// or seeds a fresh "Default" if this was the last one.
+// Deletes a dashboard and its widgets (cascade FK). Client then navigates to
+// /dashboard, which resolves to another dashboard or seeds a fresh "Default".
 export async function deleteDashboard(
   dashboardId: string,
 ): Promise<SaveLayoutResult> {

@@ -1,12 +1,5 @@
-// /account/security — shown as "Account" in the nav: login-related settings
-// (password change) and the Danger Zone (account deletion). Account
-// deletion itself is disabled: Neon's Managed Better Auth doesn't yet
-// support self-service account deletion (confirmed via their docs — the
-// User management guide lists it as a topic but doesn't cover it, matching
-// the 404 the self-service deleteUser() call actually returns). The
-// alternative, Neon's Management API, needs a project-admin API key this
-// app doesn't have configured — revisit once Neon ships self-service
-// deletion, or if that key gets added later.
+// Account page (nav label "Account"): password change + Danger Zone.
+// Deletion is disabled — Neon's Managed Better Auth has no self-service delete yet (404s).
 import { Button } from "@primereact/ui/button";
 import { ChangePasswordForm } from "@/components/ui/account/change-password-form";
 import styles from "./security.module.css";

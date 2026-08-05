@@ -1,8 +1,5 @@
-// Zod schemas for the dashboard actions. Structural validation only —
-// not an enum check against the widget registry: an unrecognized
-// widgetType just fails to render (dashboard-grid.tsx already filters
-// unknown types defensively), it isn't a security or data-integrity risk
-// worth duplicating the registry's type list into a server-safe module for.
+// Zod schemas for the dashboard actions. Structural validation only, not an enum check against
+// the widget registry: an unrecognized widgetType just fails to render (dashboard-grid.tsx filters it).
 import { z } from "zod";
 import { TIME_RANGES } from "@/lib/time-range";
 
@@ -21,9 +18,7 @@ export const dashboardWidgetInputSchema = z.object({
 
 export const saveDashboardLayoutSchema = z.array(dashboardWidgetInputSchema).max(100);
 
-// A dashboard's display name — trimmed, non-empty, and bounded so nobody
-// pastes a paragraph into the switcher. Same shape as the tag/name limits
-// used elsewhere in the app (see log/schema.ts).
+// A dashboard's display name — trimmed, non-empty, and bounded so nobody pastes a paragraph in.
 export const dashboardNameSchema = z
   .string()
   .trim()

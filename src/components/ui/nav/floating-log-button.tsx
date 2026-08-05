@@ -1,10 +1,5 @@
-// Floating shortcut to /log, shown only at phone widths — logging on the
-// go is this app's main mobile use case, so a fixed bottom-right button
-// skips the extra hamburger-menu step the top nav needs at that width.
-// Fixed (not sticky/absolute) so it stays put in the same screen corner
-// regardless of scroll position, rather than moving with page content.
-// Hidden while already under /log, since it would just point at the
-// section already open.
+// Floating shortcut to /log, shown only at phone widths (mobile's main use
+// case) — skips the hamburger step the top nav needs. Hidden under /log itself.
 "use client";
 
 import Link from "next/link";

@@ -1,20 +1,13 @@
-// Small date helpers that depend on the environment clock (unlike domain/,
-// which stays pure). Shared by pages so "today" is defined in exactly one
-// place.
+// Small date helpers that depend on the environment clock (unlike domain/, which stays
+// pure). Shared by pages so "today" is defined in exactly one place.
 import { cookies } from "next/headers";
 
-// Kept in sync with the browser's own IANA timezone by
-// components/ui/shared/ensure-timezone-cookie.tsx, mounted once in
-// (app)/layout.tsx. Read here so "today" reflects wherever the visitor
-// actually is — see that component's own comment for why a per-visitor
-// cookie is used instead of a fixed TZ env var on the server.
+// Kept in sync with the browser's IANA timezone by ensure-timezone-cookie.tsx (mounted in
+// (app)/layout.tsx), so "today" reflects wherever the visitor actually is.
 const TIMEZONE_COOKIE = "tz";
 
-// Today's date, in the visitor's own timezone when known (via the `tz`
-// cookie), falling back to the SERVER's local timezone (UTC on Vercel)
-// otherwise. That fallback only ever applies on a visitor's very first-ever
-// request, before EnsureTimezoneCookie has had a chance to set the cookie
-// and refresh — every request after that uses the real one.
+// Today's date in the visitor's timezone (via the `tz` cookie), falling back to the server's
+// local timezone — only on a visitor's very first request, before the cookie is set.
 export async function todayIso(): Promise<string> {
   const cookieStore = await cookies();
   const tz = cookieStore.get(TIMEZONE_COOKIE)?.value;
@@ -33,10 +26,8 @@ export async function todayIso(): Promise<string> {
       const d = parts.find((p) => p.type === "day")!.value;
       return `${y}-${m}-${d}`;
     } catch {
-      // Malformed/unrecognized zone name — Intl throws a RangeError.
-      // Shouldn't happen (the client always sends a real Intl-resolved
-      // zone), but fall through to the server-clock default rather than
-      // 500ing the page over a stray cookie value.
+      // Malformed/unrecognized zone name (Intl throws RangeError) — shouldn't happen, but
+      // fall through to the server-clock default rather than 500ing over a stray cookie value.
     }
   }
 
@@ -46,10 +37,8 @@ export async function todayIso(): Promise<string> {
   return `${y}-${m}-${d}`;
 }
 
-// The log flow's one shared rule for "which date is active": a valid
-// ?date= query param, or today. Every /log page (overview, each section,
-// review) resolves it the same way so the active date is exactly what's
-// in the URL — no separate client-side date state to fall out of sync.
+// The log flow's one shared rule for "which date is active": a valid ?date= query param,
+// or today. Every /log page resolves it the same way so it can't fall out of sync with the URL.
 export async function resolveDateParam(dateParam: string | undefined): Promise<string> {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateParam ?? "") ? dateParam! : await todayIso();
 }

@@ -1,6 +1,5 @@
 // Domain input shapes. domain/ imports nothing from the rest of the app
-// (PLAN.md §5), so it defines its own minimal view of a logged day — the
-// app layer maps database rows into these before calling domain functions.
+// (PLAN.md §5), so this is its own minimal view of a logged day.
 
 // One physio exercise entry as the domain sees it.
 export type DomainExercise = {

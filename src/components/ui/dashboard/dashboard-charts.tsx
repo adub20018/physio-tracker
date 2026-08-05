@@ -1,13 +1,5 @@
-// Client island for the dashboard's range-dependent charts. Receives the
-// FULL (unfiltered) computed series from the server component — rolling
-// averages and next-morning-pain lag already baked in, since those need
-// full history to compute correctly — and does only the cheap final slice
-// to the selected range client-side, via the same pure filterWindow used
-// server-side. Range changes are then a plain re-render over data already
-// in memory: no server round-trip, no refetch (see the "why is switching
-// ranges slow" discussion — it wasn't the data, it was the URL-driven
-// navigation forcing a full page re-render for a change the client could
-// already answer on its own).
+// Client island for the dashboard's range-dependent charts. Receives the FULL (unfiltered) series
+// from the server (rolling averages/lag need full history) and slices to the selected range client-side via filterWindow — a plain re-render, no round-trip.
 "use client";
 
 import { useMemo } from "react";
@@ -54,11 +46,8 @@ export function DashboardCharts({
   // Account → Preferences: fit each chart's Y-axis to the visible data
   // instead of a fixed range.
   autoScaleYAxis: boolean;
-  // The stat tiles — rendered server-side (they're a fixed 7-day window,
-  // independent of the range picked here) but need to sit visually between
-  // the picker and the charts. Passed as children rather than duplicated
-  // inside this client component, which would need to become async/server
-  // just to compute them.
+  // The stat tiles — rendered server-side (fixed 7-day window, independent of the range here) —
+  // are passed as children rather than duplicated here, which would need this component to become async/server.
   children: React.ReactNode;
 }) {
   const [range, setRange] = usePersistedTimeRange(RANGE_STORAGE_KEY);

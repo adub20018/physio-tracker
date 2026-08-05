@@ -1,8 +1,5 @@
-// Profile form for /account/profile: editable name, plus a display-only
-// email field (changing it needs verification, which requires an email
-// provider this app doesn't have yet — see AGENTS.md/PLAN.md). Name saves
-// via Better Auth's client-side updateUser() directly — no server action,
-// since this only touches Neon Auth's own user record, not our app data.
+// Profile form for /account/profile: editable name; email is display-only (needs an email
+// provider this app doesn't have). Name saves via Better Auth's client-side updateUser(), not a server action, since it's Neon Auth's own record.
 "use client";
 
 import { useState } from "react";

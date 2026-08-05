@@ -1,8 +1,5 @@
-// Shimmering placeholder shaped like one dashboard/insights "card" (title
-// bar + subtitle bar + a content block sized to roughly match a chart).
-// Composed 1-4 times per loading.tsx on chart-heavy pages so the skeleton
-// occupies about the same space the real cards will, minimizing layout
-// shift once they stream in.
+// Shimmering placeholder shaped like one dashboard/insights card (title +
+// subtitle + content block). Composed 1-4x per loading.tsx to minimize layout shift.
 import { Skeleton } from "@primereact/ui/skeleton";
 import styles from "./card-skeleton.module.css";
 

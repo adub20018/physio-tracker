@@ -1,10 +1,5 @@
-// Per-page time-range picker (7D/1M/3M/1Y/All). Plain controlled component
-// — the caller (a client component that also holds the filtered chart data)
-// owns the actual `range` state, persists it however it likes (localStorage
-// per page, in practice — see dashboard-charts.tsx/insights-charts.tsx), and
-// recomputes with it. Keeping this component state-free means switching
-// ranges never needs a server round-trip: it's just a re-render over data
-// already sitting in memory.
+// Time-range picker (7D/1M/3M/1Y/All) — stays state-free; the caller owns
+// and persists `range`, so switching is a re-render, not a server round-trip.
 "use client";
 
 import { ToggleButton } from "@primereact/ui/togglebutton";

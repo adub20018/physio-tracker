@@ -1,7 +1,5 @@
-// /log/physio — the Physio exercises section on its own, reached from the
-// overview's Physio tile. Still needs every log (not just the active
-// date's) for the exercise-name autocomplete and to prefill a new day from
-// the most recent session, same as the old combined form did.
+// /log/physio — the Physio exercises section on its own. Still needs every
+// log (not just the active date's) for autocomplete and to prefill a new day from the most recent session.
 import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository } from "@/repositories";
 import { resolveDateParam } from "@/lib/dates";

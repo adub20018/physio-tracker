@@ -1,8 +1,5 @@
-// Flare detection. Per physio guidance, pain under 3/10 means exercises can
-// continue — so any reading at or above the flare threshold flags the day
-// (PLAN.md §2). The threshold is a per-user setting, not a fixed constant
-// (see DEFAULT_FLARE_PAIN_THRESHOLD in constants.ts for the fallback), so
-// every function here takes it as an explicit parameter.
+// Flare detection (PLAN.md §2). Threshold is a per-user setting (see DEFAULT_FLARE_PAIN_THRESHOLD
+// in constants.ts for the fallback), so every function here takes it as an explicit parameter.
 import type { DomainDay } from "./types";
 
 // True when any of the day's pain readings reaches the flare threshold.
@@ -23,10 +20,7 @@ export function daysBetween(a: string, b: string): number {
   return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86_400_000);
 }
 
-// One flare day together with the days that preceded it — the "what
-// happened before" view for the flare review panel. precedingDays are the
-// logged days within `lookback` calendar days before the flare (oldest
-// first); unlogged days in that span are simply absent.
+// One flare day plus the logged days within `lookback` days before it (oldest first, gaps simply absent).
 export type FlareEpisode = {
   day: DomainDay;
   precedingDays: DomainDay[];

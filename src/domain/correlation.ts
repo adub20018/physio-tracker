@@ -1,18 +1,11 @@
-// Correlation between two gappy series — the math behind the insight
-// scatter plots (steps vs next-morning pain, volume vs next-day pain).
-// Decision support, not medical analysis: with ~50 points the coefficient
-// is suggestive, never proof (see PLAN.md §3 caveat).
+// Correlation between two gappy series, for the insight scatter plots.
+// Decision support, not medical analysis: with ~50 points the coefficient is suggestive, never proof (see PLAN.md §3).
 
-// One paired observation with both values present. `date` is the anchor
-// day's ISO date (kept separate from the display-only `label`, which may
-// have extra text like "2026-07-04 → next morning") so callers can apply
-// calendar-window filtering (e.g. time-range selection) without parsing it
-// back out of the label.
+// `date` is the anchor day's ISO date, kept separate from the display-only `label` so callers
+// can calendar-filter without parsing it back out of the label.
 export type PairedPoint = { x: number; y: number; label: string; date: string };
 
-// Pairs two same-length series by index, keeping only positions where both
-// values are present (pairwise deletion). Labels ride along for tooltips;
-// dates ride along for filtering.
+// Pairs two same-length series by index, keeping only positions where both values are present (pairwise deletion).
 export function pairSeries(
   xs: (number | null)[],
   ys: (number | null)[],
@@ -37,9 +30,8 @@ export function pairSeries(
   return pairs;
 }
 
-// Pearson correlation coefficient r ∈ [-1, 1] over complete pairs.
-// Returns null when there are fewer than 3 pairs or either series is
-// constant (r is undefined there — reporting 0 would be misleading).
+// Pearson correlation coefficient r ∈ [-1, 1] over complete pairs. Returns null under 3
+// pairs or a constant series (r is undefined there — reporting 0 would mislead).
 export function pearson(pairs: { x: number; y: number }[]): number | null {
   const n = pairs.length;
   if (n < 3) return null;

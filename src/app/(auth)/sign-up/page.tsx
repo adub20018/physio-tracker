@@ -1,7 +1,5 @@
-// Sign-up form. Validates every field locally before ever calling the auth
-// server — all violations show at once (each field gets its own red border
-// and message), not just the first one found — and maps the server's own
-// error (e.g. email already registered) onto the relevant field too.
+// Sign-up form. Validates every field locally before calling the auth server — all violations
+// show at once, and the server's own error also maps onto the relevant field.
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,9 +15,7 @@ import styles from "@/components/ui/auth/auth-form.module.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 7;
-// How long to wait, after the user stops typing in either password field,
-// before flagging a mismatch — long enough that mid-typing states (the
-// confirm field trailing behind the one just edited) don't flash red.
+// Wait after typing stops before flagging a mismatch, so mid-typing states don't flash red.
 const CONFIRM_PASSWORD_DEBOUNCE_MS = 500;
 
 type FieldErrors = {
@@ -58,9 +54,7 @@ export default function Signup() {
 
   const router = useRouter();
 
-  // Live confirm-password check: re-runs whenever either password field
-  // changes, but only applies its result after a pause in typing, so a
-  // correction in progress doesn't flash invalid before it's finished.
+  // Re-runs on every change, but only applies after a pause in typing.
   useEffect(() => {
     // Empty field clears instantly (nothing to be wrong about yet); a
     // non-empty one waits out the debounce before it can flag a mismatch.

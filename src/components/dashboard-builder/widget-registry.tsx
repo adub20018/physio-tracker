@@ -1,16 +1,5 @@
-// The widget catalog: every chart/stat-tile that can be placed on a
-// customizable dashboard, keyed by a stable `type` string stored in
-// dashboard_widgets.widget_type. A widget definition is glue, not new chart
-// logic — every `render` function reuses the exact chart components
-// dashboard/page.tsx and insights/page.tsx already use, just fed from the
-// shared ChartDataBundle instead of page-local variables.
-//
-// Range-dependent widgets (everything except stat tiles and the heatmap)
-// all read one shared time range, owned by the dashboard and set from its
-// config popover — a dashboard is one view of one period, and charts sitting
-// side by side on different ranges can't be read against each other. Stat
-// tiles stay on their own fixed 7-day window regardless, and the heatmap
-// deliberately always shows full history.
+// Widget catalog for the customizable dashboard, keyed by `type` (stored in dashboard_widgets.widget_type).
+// Range-dependent widgets share one time range owned by the dashboard; stat tiles stay on a fixed 7-day window.
 "use client";
 
 import { useMemo } from "react";
@@ -35,10 +24,7 @@ import { PainCandleChart } from "@/components/charts/pain-candle-chart";
 import { SERIES } from "@/components/charts/chart-theme";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
-// Formats a numeric delta as "0.4" (no sign — direction is conveyed by the
-// tile's caret icon instead) plus its raw arithmetic direction; null when
-// either side is missing. Display formatting, not domain logic — moved here
-// from dashboard/page.tsx, the only place stat tiles are built now.
+// Formats a delta as "0.4" (sign shown via caret icon instead) + direction.
 function fmtDelta(
   current: number | null,
   previous: number | null,
@@ -54,56 +40,25 @@ export type WidgetCategory =
   "Stat tiles" | "Dashboard charts" | "Insights charts";
 
 export type WidgetRenderContext = {
-  // The widget's own DB row id.
   widgetId: string;
   today: string;
-  // How far back the range-dependent widgets look, in days. Owned by the
-  // dashboard (set in its config popover) rather than per widget: one
-  // dashboard is one view of a period, so having each chart on its own
-  // range made them impossible to read against each other.
+  // Owned by the dashboard (not per-widget) so charts stay comparable.
   rangeDays: number;
-  // Account → Preferences: fit each chart's Y-axis to the visible data
-  // instead of a fixed range.
+  // Account → Preferences: fit Y-axis to visible data instead of fixed range.
   autoScaleYAxis: boolean;
-  // True on the desktop grid, where the widget's cell has a real height the
-  // user can drag — the chart then fills that height instead of rendering
-  // at its fixed pixel size. False in the mobile stack, which has no
-  // definite height to fill (a chart there would collapse to nothing).
+  // True on desktop (real grid-cell height to fill); false on mobile stack.
   fillHeight: boolean;
-  // Edit mode's drag handle + remove button, supplied by WidgetShell. Only
-  // "bare" widgets (stat tiles) read this — they have no card header for
-  // the shell to put the controls in, so they place them inside their own
-  // header instead, which keeps their height the same in edit mode as out
-  // of it. Undefined when not editing.
+  // Drag handle + remove button for "bare" (stat tile) widgets; undefined
+  // when not editing.
   editControls?: React.ReactNode;
-  // True only in the Add-widget picker's thumbnails (see widget-preview.tsx
-  // / widget-preview-data.ts), whose fixed, small box has no room to spare:
-  // lets each chart's Y-axis drop ticks that don't fit instead of forcing
-  // every one, and skips animation (mounting ~20 previews at once with
-  // animation on is what made the picker feel slow). Undefined (falsy)
-  // everywhere else.
+  // Add-widget picker thumbnails only: relaxes axis ticks, skips animation.
   compact?: boolean;
-  // Independent of `compact` — controls only the legend row on charts that
-  // have one. Split out separately because it's being trialled on its own:
-  // stacked (multi-panel) charts in particular are unreadable in preview
-  // without knowing which color is which series, but that doesn't mean the
-  // Y-axis/animation behavior above should change too. Toggle in
-  // mockRenderContext (widget-preview-data.ts). Undefined (falsy)
-  // everywhere else — the real dashboard always shows its legends.
+  // Independent of `compact` — hides the legend row in preview thumbnails.
   hideLegend?: boolean;
 };
 
-// Grid-unit size bounds for one widget type, in the same units as x/y/w/h
-// (12 columns on desktop / 2 on mobile; one row step is 20px — see
-// ROW_HEIGHT in dashboard-grid.tsx). Passed straight to react-grid-layout,
-// which clamps live during a resize drag rather than letting a widget be
-// dragged into a size where it stops being readable.
-//
-// All four are required, not optional: an omitted maximum silently means
-// "unbounded", which is a decision worth making explicitly per widget
-// rather than by forgetting. The constants below are shared by widgets
-// with the same needs, but any definition can supply its own object
-// instead — bounds are per widget type, not per category.
+// Grid-unit size bounds passed to react-grid-layout (12 cols desktop / 2
+// mobile). All four required — an omitted max would silently mean unbounded.
 export type WidgetSizeBounds = {
   minW: number;
   maxW: number;
@@ -115,9 +70,8 @@ export type WidgetSizeBounds = {
 const DESKTOP_MAX_W = 12;
 const MOBILE_MAX_W = 2;
 
-// ~888px. A ceiling rather than a real constraint: tall is fine, but a
-// widget dragged to several screens high is almost always a slip, and an
-// unbounded drag can leave the rest of the dashboard stranded far below.
+// ~888px ceiling — guards against an accidental drag stranding the rest of
+// the dashboard far below, not a real design constraint.
 const TALL_MAX_H = 34;
 
 export type WidgetDefinition = {
@@ -126,18 +80,12 @@ export type WidgetDefinition = {
   category: WidgetCategory;
   defaultSize: { w: number; h: number };
   bounds: WidgetSizeBounds;
-  // The same two, in the phone grid's units (2 columns — see MOBILE_COLS in
-  // dashboard-grid.tsx). Separate because a size that reads well across 12
-  // desktop columns means nothing across 2, and because the minimum heights
-  // differ: content that fits on one line at full width wraps at half.
+  // Same two, in the phone grid's units (2 cols) — sized independently.
   mobileDefaultSize: { w: number; h: number };
   mobileBounds: WidgetSizeBounds;
-  // True for widgets that are already a complete, self-styled unit (stat
-  // tiles) — the widget shell skips its own .card/.cardHeader wrapper for
-  // these, since double-framing would look wrong.
+  // Stat tiles are already self-styled; the shell skips its own card wrapper.
   bare?: boolean;
-  // InfoTooltip text for the widget shell's header — unused for bare
-  // widgets, which already carry their own hint (StatTile's own tooltip).
+  // InfoTooltip text for the shell header; unused for bare widgets.
   hint?: string;
   render: (
     bundle: ChartDataBundle,
@@ -229,13 +177,8 @@ const MOBILE_MULTI_SCATTER_CHART_BOUNDS: WidgetSizeBounds = {
   maxH: 22,
 };
 
-// Whether a widget renders multiple stacked chart panels (see the
-// DOUBLE_/TRIPLE_STACKED_CHART_BOUNDS constants above) rather than one.
-// Reference-checked against those two shared bounds objects rather than a
-// separate per-widget flag, so this can't drift out of sync with the bounds
-// a widget actually declares. Used by the Add-widget picker to give these
-// widgets a taller preview — squeezed into a single-panel-sized box, 2-3
-// stacked panels overlap and become unreadable.
+// Whether a widget has multiple stacked panels — checked by reference
+// against the shared bounds objects so it can't drift out of sync.
 export function isStackedChart(definition: WidgetDefinition): boolean {
   return (
     definition.bounds === DOUBLE_STACKED_CHART_BOUNDS ||
@@ -243,11 +186,8 @@ export function isStackedChart(definition: WidgetDefinition): boolean {
   );
 }
 
-// Shared range-filtering wrapper for every non-stat-tile, non-heatmap
-// widget: owns one widget's independent persisted range selection, filters
-// its full-history data down to that range, and renders the picker above
-// whatever the caller passes as children. `renderCaption` is optional
-// (scatter widgets show a correlation line; the 4 dashboard charts don't).
+// Filters full-history data down to ctx.rangeDays for every non-stat-tile,
+// non-heatmap widget. `renderCaption` is optional (scatter widgets only).
 function RangedChart<T extends { date: string }>({
   ctx,
   fullData,
@@ -548,8 +488,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-load-vs-pain",
     label: "Load vs next-day pain",
     category: "Dashboard charts",
-    // h matches TRIPLE_STACKED_CHART_BOUNDS.minH (20) — below that, the
-    // widget spawns already squashed and only reads correctly once resized.
+    // h must match TRIPLE_STACKED_CHART_BOUNDS.minH or it spawns squashed.
     defaultSize: { w: 12, h: 20 },
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 20 },
@@ -600,8 +539,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     type: "chart-physio-progression",
     label: "Physio progression",
     category: "Dashboard charts",
-    // h matches TRIPLE_STACKED_CHART_BOUNDS.minH (20) — below that, the
-    // widget spawns already squashed and only reads correctly once resized.
+    // h must match TRIPLE_STACKED_CHART_BOUNDS.minH or it spawns squashed.
     defaultSize: { w: 12, h: 20 },
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 20 },
@@ -632,8 +570,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 12 },
     mobileBounds: MOBILE_HEATMAP_BOUNDS,
     hint: "Average pain per day, at a glance",
-    // Deliberately ignores the selected time range, same as today — a
-    // heatmap narrowed to "7D" would just be seven squares.
+    // Ignores the selected time range — always shows full history.
     render: (bundle) => <CalendarHeatmap data={bundle.heatmap} />,
   },
 

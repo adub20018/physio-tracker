@@ -1,15 +1,5 @@
-// The Physio exercises section's own small form — the add/remove exercise
-// list for one date. Saves through its own action and returns to the /log
-// overview, leaving every other section's data untouched.
-//
-// Every row present in the list must be fully valid to save — there is no
-// silent "drop incomplete rows" fallback. That used to exist (rows with a
-// blank exercise name were filtered out of the payload before it ever
-// reached validation), which meant a forgotten name didn't show an error:
-// it just quietly vanished from what got saved, sometimes leaving an empty
-// exercises array that "saved" successfully and redirected as if nothing
-// were wrong. An unwanted row must now be removed with its own trash
-// button instead of just being left blank.
+// The Physio exercises section's own small form — saves via its own action, other sections untouched.
+// Every row must be fully valid to save (no silent "drop incomplete rows" fallback); remove unwanted rows via the trash button.
 "use client";
 
 import { useState, useTransition } from "react";
@@ -39,10 +29,8 @@ export type PhysioSectionInit = {
   knownExerciseNames: string[]; // autocomplete suggestions
 };
 
-// Per-row validation messages, indexed the same as the exercises array.
-// Intensity min/max are intentionally never required here — logging just
-// one side (e.g. a single 20% reading in either field) is a normal, valid
-// entry, not a partial one.
+// Per-row validation messages, indexed the same as the exercises array. Intensity min/max are
+// intentionally never required — logging just one side (e.g. a single 20% reading) is valid, not partial.
 type ExerciseFieldErrors = {
   exerciseName?: string;
   sets?: string;

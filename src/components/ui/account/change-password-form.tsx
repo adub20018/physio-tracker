@@ -1,7 +1,5 @@
-// Change-password form for /account/security. Uses Better Auth's
-// client-side changePassword() — it re-verifies the current password itself,
-// so (unlike a forgotten-password reset) this needs no email provider and
-// can ship now.
+// Uses Better Auth's client-side changePassword(), which re-verifies the current password itself,
+// so (unlike a forgotten-password reset) this needs no email provider.
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,10 +12,7 @@ import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
 import styles from "./account-form.module.css";
 
 const MIN_PASSWORD_LENGTH = 7;
-// How long to wait, after the user stops typing in either password field,
-// before flagging a mismatch — long enough that mid-typing states (the
-// confirm field trailing behind the one just edited) don't flash red. Same
-// pattern as the sign-up form.
+// Wait after typing stops before flagging a mismatch, so mid-typing states don't flash red.
 const CONFIRM_PASSWORD_DEBOUNCE_MS = 500;
 
 type FieldErrors = {
@@ -45,9 +40,7 @@ export function ChangePasswordForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Live confirm-password check: re-runs whenever either password field
-  // changes, but only applies its result after a pause in typing, so a
-  // correction in progress doesn't flash invalid before it's finished.
+  // Re-runs on every change, but only applies after a pause in typing.
   useEffect(() => {
     // Empty field clears instantly (nothing to be wrong about yet); a
     // non-empty one waits out the debounce before it can flag a mismatch.

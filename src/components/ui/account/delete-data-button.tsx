@@ -1,7 +1,5 @@
-// "Delete data" button + confirmation for /account/data. Wipes logged data
-// while keeping the account — a separate, less-destructive action from
-// deleting the account outright (currently disabled on /account/security
-// pending Neon's self-service account-deletion support).
+// Wipes logged data while keeping the account — less destructive than
+// full account deletion (disabled pending Neon self-service support).
 "use client";
 
 import { useState, useTransition } from "react";

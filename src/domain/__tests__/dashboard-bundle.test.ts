@@ -1,6 +1,5 @@
-// Tests for buildChartDataBundle — mostly wiring checks (the individual
-// domain functions it calls already have their own dedicated test files),
-// confirming each slice of the bundle carries the right values through.
+// Tests for buildChartDataBundle — mostly wiring checks (the domain
+// functions it calls have their own dedicated test files) confirming each bundle slice carries through.
 import { describe, expect, it } from "vitest";
 import { buildChartDataBundle } from "../dashboard-bundle";
 import type { DomainDay } from "../types";
@@ -40,9 +39,8 @@ describe("buildChartDataBundle", () => {
   });
 
   it("fills sparklines for every day in the trailing window with formatted display text", () => {
-    // The window ends the day BEFORE `today` (today itself is excluded — a
-    // partially-logged day would bias the average), so the last window day
-    // for today = 07-14 is 07-13.
+    // Window ends the day before `today` (excluded so a partial day can't
+    // bias the average) — so for today = 07-14, the last window day is 07-13.
     const days = [day("2026-07-13", { steps: 5000 })];
     const bundle = buildChartDataBundle(days, "2026-07-14", 3);
     const last = bundle.stepsSparkline[bundle.stepsSparkline.length - 1];

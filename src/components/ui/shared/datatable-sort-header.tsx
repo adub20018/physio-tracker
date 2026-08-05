@@ -1,7 +1,5 @@
-// Sortable column header for PrimeReact DataTables, in the app's quiet
-// uppercase header voice. Shared by the history and weekly-report tables so
-// the sort affordance looks identical everywhere. Must render inside a
-// DataTable.Root (it uses the table's sort context).
+// Sortable column header shared by the history and weekly-report tables.
+// Must render inside a DataTable.Root (uses the table's sort context).
 "use client";
 
 import { DataTable } from "@primereact/ui/datatable";

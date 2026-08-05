@@ -1,14 +1,5 @@
-// Combines every other domain function into one call: every series a
-// dashboard or insights chart could need, computed once from the same
-// `days`/`today`/`flareThreshold` inputs. This is what makes the
-// customizable-dashboard widget system possible — a widget doesn't know or
-// care which page it's rendered on, it just reads its own slice out of one
-// shared bundle. Pure (same inputs always produce the same bundle, no I/O),
-// so it lives in domain/ and is unit-tested like everything else here.
-//
-// Excludes Flare Review and the Weekly Report Card on purpose — those stay
-// Insights-only for now (not part of the v1 widget catalog), so their
-// computation stays local to insights/page.tsx rather than living here.
+// Computes every series a dashboard/insights chart could need from shared `days`/`today`/
+// `flareThreshold` inputs (excludes Flare Review & Report Card, which stay Insights-only).
 import type { DomainDay } from "./types";
 import {
   dailyPainAverage,
@@ -30,10 +21,8 @@ import {
 import { dailyPainCandles, type PainCandle } from "./candle";
 import { pairSeries, type PairedPoint } from "./correlation";
 
-// Stat tiles always use a fixed 7-day window, independent of whatever range
-// a chart widget elsewhere might be showing — see dashboard/page.tsx's
-// original comment: averaging a "how am I doing right now" tile over months
-// would smear an improving baseline together with early, low numbers.
+// Stat tiles always use a fixed 7-day window, independent of any chart widget's range —
+// averaging a "how am I doing right now" tile over months would smear in stale, low numbers.
 const STAT_WINDOW_DAYS = 7;
 
 export type SparklinePoint = DatedValue<number> & { display: string };
@@ -118,8 +107,7 @@ export function buildChartDataBundle(
   flareThreshold: number,
 ): ChartDataBundle {
   // ── Stat tiles ──────────────────────────────────────────────────────────
-  // Today is excluded from the window: a partially-logged day would bias
-  // the averages. Days-since-flare still counts from today itself.
+  // Today is excluded (a partial day would bias averages); days-since-flare still counts from today.
   const statWindowEnd = addDays(today, -1);
   const { current, previous } = windowComparison(
     days,

@@ -1,11 +1,5 @@
-// A small "type a name and confirm" modal — the text-input counterpart to
-// ConfirmDialog, sharing its Dialog composition and footer. Used for both
-// creating and renaming a dashboard, which differ only in their title,
-// button label, and starting value.
-//
-// The field is seeded from `initialValue` each time the dialog opens (keyed
-// on `open`), so reopening it after a cancel doesn't show the abandoned
-// text from last time.
+// A small "type a name and confirm" modal — the text-input counterpart to ConfirmDialog.
+// Used for both creating and renaming a dashboard, which differ only in title/label/starting value.
 "use client";
 
 import { useState } from "react";
@@ -44,10 +38,8 @@ export function NameDialog({
 }) {
   const [value, setValue] = useState(initialValue);
 
-  // Reset the field to `initialValue` on each open, adjusted during render
-  // rather than from an effect: React's documented way to reset state when
-  // a prop changes (it re-renders immediately without committing the stale
-  // value, and doesn't trip react-hooks/set-state-in-effect).
+  // Reset field on open, adjusted during render rather than an effect — React's documented
+  // way to reset state on a prop change without tripping react-hooks/set-state-in-effect.
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);

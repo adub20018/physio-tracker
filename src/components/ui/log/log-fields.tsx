@@ -1,6 +1,5 @@
-// Shared field building blocks for the /log flow — the overview's date bar
-// and every section form (Pain, Activity, Physio, Notes) compose these
-// rather than each reimplementing the same PrimeReact wiring.
+// Shared field building blocks for the /log flow, reused by every section
+// form instead of each reimplementing the same PrimeReact wiring.
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -116,11 +115,8 @@ export function PainInput({
   );
 }
 
-// A group of clickable chips (known suggestions + whatever custom values are
-// already selected) plus a small "add custom" row — shared by Pain type and
-// Activity so both behave identically. Toggling a custom chip off removes it
-// the same way toggling off a known one does; there's no separate list to
-// manage.
+// Clickable chips (known suggestions + selected custom values) plus an
+// "add custom" row — shared by Pain type and Activity fields.
 export function TagMultiSelect({
   value,
   options,
@@ -189,13 +185,8 @@ export function TagMultiSelect({
   );
 }
 
-// PrimeReact DatePicker composed as a MyFitnessPal-style date stepper: a
-// [< prev day][date input][next day >] pill (the chevrons just call onChange
-// with ±1 day directly, bypassing the calendar entirely) plus a standalone
-// calendar-icon trigger further right for picking an arbitrary date. The
-// input itself still opens the same calendar on click, same as before. Only
-// used on the overview page now — section pages show the active date as a
-// plain label (LogSectionHeader).
+// Date stepper: [< prev][date input][next >] pill plus a calendar trigger.
+// Only used on the overview page; section pages show a plain date label.
 export function LogDatePicker({
   date,
   onChange,
@@ -203,30 +194,16 @@ export function LogDatePicker({
   date: string;
   onChange: (iso: string) => void;
 }) {
-  // Stable Date identity per ISO date (fresh objects would re-trigger the
-  // picker's value sync every render).
-  //
-  // Known upstream issue (PrimeReact 11.0.0, no patch yet): DatePicker.Root
-  // only formats the input's displayed text when its `value` prop actually
-  // CHANGES — on mount there's no prior value to change from, so the input
-  // renders blank (confirmed in both dev and production builds; a real
-  // bug, not the dev-only artifact previously assumed here). Rendering
-  // `null` for one tick and then swapping in the real value forces that
-  // transition every mount, which reliably triggers the library's own
-  // sync. Re-check after the next primereact release.
+  // Stable Date identity per ISO date, to avoid re-triggering the picker's sync.
   const dateValue = useMemo(() => isoToDate(date), [date]);
+  // PrimeReact 11.0.0 bug: DatePicker only formats displayed text when `value` actually changes,
+  // so it renders blank on mount — render null then swap in the real value to force that transition.
   const [mountedValue, setMountedValue] = useState<Date | null>(null);
   useEffect(() => {
     const id = setTimeout(() => setMountedValue(dateValue), 0);
     return () => clearTimeout(id);
-    // Re-runs whenever the resolved date actually changes, not just on
-    // mount: this component does NOT reliably remount when `date` changes
-    // (no `key={date}` anywhere it's used, and Next's router cache can
-    // reuse this exact client instance across a soft /log refresh — e.g.
-    // the date rolling over past midnight while the page is still open).
-    // Without this, `mountedValue` — what's actually shown in the input —
-    // would stay frozen on whatever date it first mounted with, even after
-    // the page's own content has moved on to the new day.
+    // Keyed on the resolved date, not just mount — this component can be
+    // reused across a soft /log refresh without remounting.
   }, [dateValue]);
   return (
     <DatePicker.Root
@@ -357,8 +334,7 @@ export function ExerciseNameInput({
       // invalid={invalid}
       className={styles.input}
     >
-      {/* as={InputText}: the AutoComplete input part renders unstyled
-          without this composition (AGENTS.md PrimeReact gotchas). */}
+      {/* as={InputText}: renders unstyled without this composition. */}
       <AutoComplete.Input
         as={InputText}
         invalid={invalid}

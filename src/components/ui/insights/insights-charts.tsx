@@ -1,10 +1,5 @@
-// Client island for the insights page's range-dependent charts (the three
-// correlation scatter sections — NOT Flare review or the Weekly report
-// card, which stay server-rendered and range-independent; "Sleep & pain
-// over time" moved to the dashboard). Same pattern as dashboard-charts.tsx:
-// receives FULL (unfiltered) computed series from the server component and
-// does the cheap final slice to the selected range in-memory, so switching
-// ranges never needs a server round-trip.
+// Client island for the insights page's range-dependent charts. Receives FULL (unfiltered)
+// computed series from the server and slices to the selected range in-memory (no server round-trip).
 "use client";
 
 import { useMemo } from "react";
@@ -31,9 +26,8 @@ import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 const RANGE_STORAGE_KEY = "physimate:insights-range";
 
-// Header line for one scatter: "r = −0.21 · weak · 41 days". Returns null
-// for zero points — the chart's own EmptyState already explains that case
-// (with a link to /log), so this line would just repeat it.
+// Header line for one scatter: "r = −0.21 · weak · 41 days". Null for zero points
+// since the chart's own EmptyState already covers that case.
 function correlationLine(points: PairedPoint[]): string | null {
   if (points.length === 0) return null;
   const r = pearson(points);

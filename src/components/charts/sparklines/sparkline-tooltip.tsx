@@ -1,6 +1,5 @@
-// Shared hover-tooltip content for dashboard stat-tile sparklines — used by
-// both the bar (StatSparkline) and line/area (StatSparklineArea) variants,
-// so the two chart shapes still read as one consistent hover experience.
+// Shared hover-tooltip content for stat-tile sparklines, used by both the
+// bar and line/area variants so both read as one consistent hover experience.
 "use client";
 
 import { TOOLTIP_STYLE } from "@/components/charts/chart-theme";

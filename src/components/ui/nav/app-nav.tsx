@@ -1,10 +1,5 @@
-// Top navigation shown on every authenticated route (mounted in
-// (app)/layout.tsx, not the root layout — /login and /sign-up get their
-// own minimal chrome instead, since these links are all dead ends for a
-// signed-out visitor). Client component so it can highlight the active
-// route and drive the mobile drawer. The account menu always has a real
-// user: this only ever mounts on routes already gated by proxy.ts's
-// middleware.
+// Top navigation shown on every authenticated route (mounted in (app)/layout.tsx, not the root
+// layout). Account menu always has a real user since this only mounts on routes gated by proxy.ts.
 "use client";
 
 import { useState } from "react";
@@ -57,10 +52,8 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
     <>
       <nav className={styles.nav}>
         <Link href="/dashboard" className={styles.wordmark}>
-          {/* Natural size is 65x89 (SVG in /public); fixed height keeps the
-              aspect ratio without needing a static import (public/ assets
-              aren't processed by the bundler, so they're referenced by URL,
-              not import, and don't carry auto-derived dimensions). */}
+          {/* Natural size 65x89; fixed height set manually since public/ assets are
+              referenced by URL, not import, so they carry no auto-derived dimensions. */}
           <Image
             src="/PhysiMate-logo.svg"
             alt="PhysiMate"
@@ -69,9 +62,7 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             priority
           />
         </Link>
-        {/* Links + account menu are grouped together so .nav's own
-            space-between only ever sees two children (wordmark, this group) —
-            otherwise a third top-level child gets centered in the middle. */}
+        {/* Grouped so .nav's space-between only sees two children — a third would get centered. */}
         <div className={styles.navEnd}>
           <div className={styles.links}>
             {LINKS.map(({ href, label }) => (
@@ -85,17 +76,12 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
             ))}
           </div>
 
-          {/* Desktop-only avatar + dropdown. Hidden below the phone
-              breakpoint, where the drawer's own footer already shows identity
-              and its nav list already has a Logout item — a second avatar
-              trigger in the top bar would just duplicate both. */}
+          {/* Desktop-only: hidden on mobile since the drawer's footer/nav already covers identity + logout. */}
           <div className={styles.desktopAccount}>
             <AccountMenu user={user} />
           </div>
 
-          {/* Mobile nav drawer. Controlled so nav links and Logout can close
-              it themselves on click — left uncontrolled, the drawer would
-              stay open after navigating away underneath it. */}
+          {/* Controlled so nav links and Logout can close it on click; uncontrolled would stay open after navigating away. */}
           <Drawer.Root
             position="right"
             blockScroll
@@ -125,11 +111,8 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                       <Menu.Label className={styles.menuLabel}>
                         Navigation
                       </Menu.Label>
-                      {/* as={Link} composes Menu.Item's styling/keyboard-nav
-                          with real Next.js client-side navigation. Close on
-                          `onClick`, not `onSelect`: Link owns click handling
-                          once composed in, so Menu.Item's own onSelect never
-                          fires — confirmed by logging both in the browser. */}
+                      {/* as={Link} composes Menu.Item with real client-side nav; close on `onClick`
+                          since Link owns click handling here, so Menu.Item's onSelect never fires. */}
                       {LINKS.map(({ href, label, icon }) => (
                         <Menu.Item
                           key={href}

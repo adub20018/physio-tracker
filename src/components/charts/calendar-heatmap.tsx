@@ -1,11 +1,5 @@
-// Calendar heatmap — one cell per day, colored by average pain: the
-// at-a-glance "is it getting better" view the spreadsheet color-coding was
-// reaching for. Weeks run as columns (GitHub-contribution style).
-//
-// Color is a sequential single-hue red ramp (magnitude of pain), stepping
-// from near-surface (0) to the status red used for flares — deliberately the
-// same hue family as the app's pain colors. Unlogged days are empty outlined
-// cells, distinct from "logged, zero pain". Pure CSS grid, no chart library.
+// Calendar heatmap — one cell per day, colored by average pain (GitHub-contribution style columns).
+// Sequential single-hue red ramp matching the app's pain colors; unlogged days render as empty outlined cells.
 "use client";
 
 import { EmptyState } from "@/components/ui/shared/empty-state";
@@ -16,9 +10,7 @@ export type HeatmapDay = {
   avgPain: number | null; // null = not logged
 };
 
-// Sequential ramp (dark surface): near-surface → saturated red, 5 steps.
-// Bucket boundaries chosen around the scale's meaning: 0, mild (<1.5),
-// noticeable (<3), flare (<4.5), severe.
+// Sequential ramp, 5 steps: 0, mild (<1.5), noticeable (<3), flare (<4.5), severe.
 const RAMP = ["#2a2325", "#57343a", "#8c4148", "#c25050", "#f87171"] as const;
 
 function bucketColor(avgPain: number): string {

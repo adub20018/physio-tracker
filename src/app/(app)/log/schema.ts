@@ -1,8 +1,5 @@
-// Zod schemas for the daily log flow — one per section, since each section
-// now saves independently (Pain, Activity, Physio, Notes each have their own
-// page and their own server action). The server never trusts a payload
-// (Server Functions are reachable by direct POST), so every action validates
-// against one of these before touching the database.
+// Zod schemas for the daily log flow, one per independently-saving section.
+// Every server action validates against one before touching the DB (reachable by direct POST).
 import { z } from "zod";
 import { PAIN_SCALE_MAX, PAIN_SCALE_MIN, PAIN_SCALE_STEP } from "@/domain/constants";
 

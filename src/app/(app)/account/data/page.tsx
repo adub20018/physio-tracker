@@ -1,6 +1,5 @@
 // /account/data — what's stored, plus exporting or deleting it. Static
-// server component apart from the two small client actions (export is a
-// plain download link; delete goes through DeleteDataButton's confirmation).
+// server component apart from export (download link) and delete (client).
 import { Button } from "@primereact/ui/button";
 import { DeleteDataButton } from "@/components/ui/account/delete-data-button";
 import styles from "./data.module.css";

@@ -1,8 +1,5 @@
-// Shimmering placeholder shaped like the overview's 4-tile grid — shown in
-// two places: the /log route's own loading.tsx (a fresh navigation to the
-// page), and LogDateBar while a date change is pending (see its own
-// comment for why that second case needs its own explicit handling rather
-// than relying on loading.tsx).
+// Shimmering placeholder shaped like the overview's 4-tile grid. Reused by
+// /log's loading.tsx and by LogDateBar during pending date changes.
 import { Skeleton } from "@primereact/ui/skeleton";
 import styles from "./log-tiles-skeleton.module.css";
 

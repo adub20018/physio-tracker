@@ -1,16 +1,5 @@
-// Morning-to-day pain "candlestick" — one candle per day in the same OHLC
-// terms as a stock chart: Open = morning pain, High/Low = the day's
-// highest/lowest reading, Close = night pain (last thing before bed). Body
-// color says which way the day moved: green when night pain came in below
-// morning (improved), red when it came in above (worsened).
-//
-// Recharts has no built-in candlestick type. This draws one via a custom
-// Bar `shape`: the Bar's own dataKey is the [low, high] range (a 2-tuple
-// value — the same "range" convention progression-chart.tsx uses for its
-// Area band — Recharts maps it to a correctly-scaled y/height for us), and
-// the shape function derives the open/close body's pixel position from
-// that same range by linear interpolation, since a Bar's shape prop has no
-// direct access to the chart's y-scale function otherwise.
+// Morning-to-day pain "candlestick" (OHLC: open=morning, high/low=day extremes, close=night;
+// body color = improved/worsened). Recharts has no candlestick type — drawn via a custom Bar `shape`.
 "use client";
 
 import {
@@ -48,9 +37,8 @@ function colorFor(candle: PainCandle): string {
       : UNCHANGED_COLOR;
 }
 
-// x/y/width/height describe the [low, high] range Recharts already mapped
-// to pixels for this Bar (y = pixel for `high`, y+height = pixel for
-// `low`); open/close pixel positions are derived from that same mapping.
+// x/y/width/height are the [low, high] range Recharts already mapped to pixels for this Bar
+// (y = pixel for `high`, y+height = pixel for `low`); open/close derive from that mapping.
 function CandleShape(props: {
   x?: number;
   y?: number;
@@ -140,21 +128,17 @@ export function PainCandleChart({
   hideLegend = false,
 }: {
   data: PainCandle[];
-  // When true, the Y-axis scales to fit the visible data's own range
-  // instead of the fixed 0–10 pain scale (Account → Preferences).
+  // When true, the Y-axis scales to the visible data's own range instead of the fixed
+  // 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
-  // When true, fill the parent's height instead of the fixed pixel height
-  // used on /insights — see .fill in charts.module.css.
+  // When true, fill the parent's height instead of the fixed pixel height used on
+  // /insights — see .fill in charts.module.css.
   fillHeight?: boolean;
-  // Add-widget picker preview mode: lets the Y-axis drop ticks that don't
-  // fit instead of forcing every one (see interval below), and skips chart
-  // animation — the box is too short to spare the room, and animation on
-  // ~20 previews mounting at once is what made the picker feel slow.
+  // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
+  // and skips animation — needed since ~20 previews can mount at once.
   compact?: boolean;
-  // Independent of `compact` — trialled separately. Set via
-  // WidgetRenderContext.hideLegend (see widget-preview-data.ts) rather than
-  // tied to `compact`, so legend visibility can be toggled in preview
-  // without touching the interval/animation behavior above.
+  // Independent of `compact`, set via WidgetRenderContext.hideLegend, so legend visibility
+  // can be toggled in preview separately from compact's interval/animation behavior.
   hideLegend?: boolean;
 }) {
   const {

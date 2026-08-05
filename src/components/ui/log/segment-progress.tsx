@@ -1,8 +1,5 @@
-// A progress bar cut into one equal segment per loggable input in a
-// section (3 for Pain's readings, 2 for Activity's steps/sleep, …) — each
-// segment fills in as that input gets logged, so completeness reads at a
-// glance without parsing the summary text. Used by the /log overview's
-// tiles and the review page's section cards.
+// A progress bar split into one segment per loggable input in a section (3
+// for Pain, 2 for Activity, …) — fills in as each input is logged, so completeness reads at a glance.
 import styles from "./segment-progress.module.css";
 
 export function SegmentProgress({ filled, total }: { filled: number; total: number }) {

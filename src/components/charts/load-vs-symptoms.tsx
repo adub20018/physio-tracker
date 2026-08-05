@@ -104,7 +104,11 @@ export function LoadVsSymptoms({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (data.length === 0) {
     return <EmptyState message="No data yet" height={370} fill={fillHeight} />;
@@ -156,6 +160,7 @@ export function LoadVsSymptoms({
           element (.panelDivider) between them, so a panel's "0" tick
           doesn't read as touching the next panel's top. */}
       <div
+        ref={containerRef}
         className={
           fillHeight
             ? `${styles.panelStack} ${styles.fillPanels}`
@@ -175,6 +180,7 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -216,6 +222,7 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -259,6 +266,7 @@ export function LoadVsSymptoms({
             data={data}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />

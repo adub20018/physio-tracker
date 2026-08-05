@@ -81,7 +81,11 @@ export function ProgressionChart({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (data.length === 0) {
     return (
@@ -154,6 +158,7 @@ export function ProgressionChart({
           element (.panelDivider) between them, so one panel's "0" doesn't
           read as touching the panel below it. */}
       <div
+        ref={containerRef}
         className={
           fillHeight
             ? `${styles.panelStack} ${styles.fillPanels}`
@@ -173,6 +178,7 @@ export function ProgressionChart({
             data={withRange}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -240,6 +246,7 @@ export function ProgressionChart({
             data={withRange}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
@@ -282,6 +289,7 @@ export function ProgressionChart({
             data={withRange}
             syncId={SYNC_ID}
             onClick={onChartClick}
+            accessibilityLayer={false}
             margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />

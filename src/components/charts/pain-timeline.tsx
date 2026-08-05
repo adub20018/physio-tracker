@@ -106,7 +106,11 @@ export function PainTimeline({
   // animation behavior above.
   hideLegend?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (data.length === 0) {
     return (
@@ -144,6 +148,7 @@ export function PainTimeline({
         </div>
       )}
       <ResponsiveContainer
+        ref={containerRef}
         width="100%"
         height={fillHeight ? "100%" : 260}
         className={fillHeight ? styles.fillChart : undefined}
@@ -151,6 +156,7 @@ export function PainTimeline({
         <ComposedChart
           data={data}
           onClick={onChartClick}
+          accessibilityLayer={false}
           margin={{ top: 6, right: 12, bottom: 0, left: -18 }}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />

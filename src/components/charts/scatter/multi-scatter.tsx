@@ -61,7 +61,11 @@ export function MultiScatter({
   // without touching the interval/animation behavior above.
   hideLegend?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   if (series.every((s) => s.points.length === 0)) {
     return <EmptyState message="No data yet" height={280} fill={fillHeight} />;
@@ -83,6 +87,7 @@ export function MultiScatter({
         </div>
       )}
       <ResponsiveContainer
+        ref={containerRef}
         width="100%"
         height={fillHeight ? "100%" : 260}
         className={fillHeight ? styles.fillChart : undefined}
@@ -90,6 +95,7 @@ export function MultiScatter({
         <ScatterChart
           margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
           onClick={onChartClick}
+          accessibilityLayer={false}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} />
           <XAxis

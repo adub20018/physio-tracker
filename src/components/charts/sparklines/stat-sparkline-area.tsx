@@ -29,7 +29,11 @@ export function StatSparklineArea({
   // sparklines would otherwise animate in at once right as the dialog opens.
   animate?: boolean;
 }) {
-  const { suppressed: tooltipSuppressed, onChartClick } = useChartTooltipSuppression();
+  const {
+    suppressed: tooltipSuppressed,
+    onChartClick,
+    containerRef,
+  } = useChartTooltipSuppression();
 
   const data = values.map((d, i) => ({
     i,
@@ -45,11 +49,12 @@ export function StatSparklineArea({
   const gradientId = `stat-sparkline-area-${useId()}`;
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer ref={containerRef} width="100%" height="100%">
       <AreaChart
         data={data}
         margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
         onClick={onChartClick}
+        accessibilityLayer={false}
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">

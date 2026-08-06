@@ -164,3 +164,9 @@ h1 {
 .recharts-wrapper {
   overflow-anchor: none;
 }
+
+/* A tooltip near a panel's bottom edge can overflow past it — without a z-index it
+   then paints under a later DOM sibling (e.g. a stacked chart's axis strip). */
+.recharts-tooltip-wrapper {
+  z-index: 10;
+}

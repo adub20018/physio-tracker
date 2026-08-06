@@ -17,10 +17,11 @@ import {
   CHART_CHROME,
   CHART_Y_AXIS,
   SERIES,
+  STACKED_PANEL_HEIGHT,
   TOOLTIP_STYLE,
-  shortDate,
 } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { StackedPanelXAxis } from "./stacked-panel-xaxis";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
@@ -76,7 +77,7 @@ export function ProgressionChart({
     return (
       <EmptyState
         message="No physio sessions logged yet"
-        height={410}
+        height={436}
         fill={fillHeight}
       />
     );
@@ -154,8 +155,8 @@ export function ProgressionChart({
             drops the 0% tick's <text> entirely on panels like this one. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={withRange}
@@ -164,7 +165,7 @@ export function ProgressionChart({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 6, right: 12, bottom: 8, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             {/* scale="band": this Area+Line-only panel would otherwise get "point" scale
@@ -220,8 +221,8 @@ export function ProgressionChart({
         {/* Panel 2: hold volume */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={withRange}
@@ -230,7 +231,7 @@ export function ProgressionChart({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
             {/* scale="band" explicitly, matching Panel 1 (keeps synced panels' scales identical). */}
@@ -264,8 +265,8 @@ export function ProgressionChart({
         {/* Panel 3: physio load */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={withRange}
@@ -274,19 +275,12 @@ export function ProgressionChart({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            {/* scale="band" explicitly, matching Panels 1 & 2. */}
-            <XAxis
-              dataKey="date"
-              scale="band"
-              tickFormatter={shortDate}
-              tick={CHART_CHROME.tick}
-              axisLine={{ stroke: CHART_CHROME.axisLine }}
-              tickLine={false}
-              minTickGap={28}
-            />
+            {/* scale="band" explicitly, matching Panels 1 & 2; ticks render in
+                StackedPanelXAxis below instead of on this panel directly. */}
+            <XAxis dataKey="date" scale="band" hide height={4} />
             <YAxis
               {...CHART_Y_AXIS}
               domain={[0, "auto"]}
@@ -310,6 +304,8 @@ export function ProgressionChart({
             />
           </ComposedChart>
         </ResponsiveContainer>
+
+        <StackedPanelXAxis data={withRange} />
       </div>
     </div>
   );

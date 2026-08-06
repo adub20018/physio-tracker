@@ -12,14 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  CHART_CHROME,
-  CHART_Y_AXIS,
-  SERIES,
-  TOOLTIP_STYLE,
-  shortDate,
-} from "./chart-theme";
+import { CHART_CHROME, CHART_Y_AXIS, SERIES, STACKED_PANEL_HEIGHT, TOOLTIP_STYLE } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { StackedPanelXAxis } from "./stacked-panel-xaxis";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
@@ -46,22 +41,9 @@ function compactNumber(v: number): string {
   return String(v);
 }
 
-function PanelXAxis({ hidden }: { hidden: boolean }) {
-  return (
-    <XAxis
-      dataKey="date"
-      // Force band scale — on auto this Line-only panel gets "point" scale while Bar panels
-      // get "band", diverging near domain edges and drifting the synced hover cursor off the line.
-      scale="band"
-      tickFormatter={shortDate}
-      tick={CHART_CHROME.tick}
-      axisLine={{ stroke: CHART_CHROME.axisLine }}
-      tickLine={false}
-      minTickGap={28}
-      hide={hidden}
-      height={hidden ? 4 : 22}
-    />
-  );
+// Every panel hides its own axis now — see StackedPanelXAxis for the visible ticks.
+function PanelXAxis() {
+  return <XAxis dataKey="date" scale="band" hide height={4} />;
 }
 
 export function LoadVsSymptoms({
@@ -92,7 +74,7 @@ export function LoadVsSymptoms({
   } = useChartTooltipSuppression();
 
   if (data.length === 0) {
-    return <EmptyState message="No data yet" height={370} fill={fillHeight} />;
+    return <EmptyState message="No data yet" height={436} fill={fillHeight} />;
   }
 
   return (
@@ -152,8 +134,8 @@ export function LoadVsSymptoms({
             gridline, so the "0" tick label would get clipped without it. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={data}
@@ -162,10 +144,10 @@ export function LoadVsSymptoms({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <PanelXAxis hidden />
+            <PanelXAxis />
             <YAxis
               {...CHART_Y_AXIS}
               domain={[0, "auto"]}
@@ -196,8 +178,8 @@ export function LoadVsSymptoms({
         {/* Panel 2: physio load */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 110}
-          style={fillHeight ? { flex: 110, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={data}
@@ -206,10 +188,10 @@ export function LoadVsSymptoms({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 8, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <PanelXAxis hidden />
+            <PanelXAxis />
             <YAxis
               {...CHART_Y_AXIS}
               domain={[0, "auto"]}
@@ -241,8 +223,8 @@ export function LoadVsSymptoms({
             just the first reading taken. */}
         <ResponsiveContainer
           width="100%"
-          height={fillHeight ? "100%" : 130}
-          style={fillHeight ? { flex: 130, minHeight: 0 } : undefined}
+          height={fillHeight ? "100%" : STACKED_PANEL_HEIGHT}
+          style={fillHeight ? { flex: STACKED_PANEL_HEIGHT, minHeight: 0 } : undefined}
         >
           <ComposedChart
             data={data}
@@ -251,10 +233,10 @@ export function LoadVsSymptoms({
             onTouchStart={onChartClick}
             onMouseDown={onChartClick}
             accessibilityLayer={false}
-            margin={{ top: 4, right: 12, bottom: 0, left: -18 }}
+            margin={{ top: 4, right: 12, bottom: 4, left: -18 }}
           >
             <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-            <PanelXAxis hidden={false} />
+            <PanelXAxis />
             <YAxis
               {...CHART_Y_AXIS}
               domain={autoScaleYAxis ? [0, "auto"] : [0, 10]}
@@ -305,6 +287,8 @@ export function LoadVsSymptoms({
             />
           </ComposedChart>
         </ResponsiveContainer>
+
+        <StackedPanelXAxis data={data} />
       </div>
     </div>
   );

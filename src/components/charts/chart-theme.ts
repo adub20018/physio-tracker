@@ -53,3 +53,10 @@ export const CHART_Y_AXIS = {
   axisLine: false,
   tickLine: false,
 };
+
+// Every data panel in a multi-panel chart uses this same flex weight, with its own
+// x-axis hidden — the visible tick labels render separately in StackedPanelXAxis
+// (a fixed-height strip outside the flex-grow pool) so no panel's plot area has to
+// share its growing space with axis chrome, at any total chart height.
+export const STACKED_PANEL_HEIGHT = 120;
+export const STACKED_PANEL_XAXIS_HEIGHT = 22;

@@ -72,11 +72,13 @@ function ensureClickListener() {
   });
 }
 
-// Dispatches a real mouseout on every `.recharts-wrapper` in the container — multi-panel
-// charts have one recharts instance per panel, each with its own stuck state to clear.
-function clearRechartsHoverState(container: HTMLElement | null) {
+// Dispatches a real mouseout on every `.recharts-wrapper` in the container except
+// `keep` — multi-panel charts have one recharts instance per panel, each with its
+// own stuck state to clear.
+function clearRechartsHoverState(container: HTMLElement | null, keep?: Element | null) {
   if (!container) return;
   container.querySelectorAll<HTMLElement>(".recharts-wrapper").forEach((wrapper) => {
+    if (wrapper === keep) return;
     wrapper.dispatchEvent(
       new MouseEvent("mouseout", {
         bubbles: true,
@@ -98,7 +100,8 @@ export function useChartTooltipSuppression<
   T extends HTMLElement = HTMLDivElement,
 >(): {
   suppressed: boolean;
-  onChartClick: () => void;
+  // Second param, matching recharts' CategoricalChartFunc<E> = (nextState, event) => void.
+  onChartClick: (nextState: unknown, event: { target: EventTarget | null }) => void;
   containerRef: RefObject<T | null>;
 } {
   const containerRef = useRef<T | null>(null);
@@ -131,13 +134,16 @@ export function useChartTooltipSuppression<
     };
   }, []);
 
-  // Fires on touchstart/mousedown/click (earliest signal). Also clears every synced
-  // panel's own hover state — recharts prefers a panel's own state over a syncId
-  // broadcast, so without this an untouched sibling panel freezes on its last tap.
-  const resetNeedsFreshTap = () => {
+  // Clears sibling panels (not this one) so they don't freeze on their last point —
+  // deferred to avoid racing their own still-pending throttled state update.
+  const resetNeedsFreshTap = (_nextState: unknown, event: { target: EventTarget | null }) => {
     lastInteractionRef.current = Date.now();
     setNeedsFreshTap(false);
-    clearRechartsHoverState(containerRef.current);
+    const target = event.target instanceof Element ? event.target : null;
+    const tappedWrapper = target?.closest(".recharts-wrapper") ?? null;
+    setTimeout(() => {
+      clearRechartsHoverState(containerRef.current, tappedWrapper);
+    }, 50);
   };
 
   return {

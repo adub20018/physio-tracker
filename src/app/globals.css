@@ -157,3 +157,10 @@ h1 {
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
+
+/* A bar's active-state transition moves it into its own z-index layer — a real DOM
+   shift the browser's scroll anchoring can react to with a genuine scroll event,
+   which our own tooltip-suppression then (correctly) treats as "user scrolled". */
+.recharts-wrapper {
+  overflow-anchor: none;
+}

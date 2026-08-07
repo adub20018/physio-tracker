@@ -331,7 +331,7 @@ export function DashboardGrid({
     <>
       <div className={styles.controls}>
         <div className={styles.controlsLeft}>
-          {isEditing ? (
+          {isEditing && (
             <Button
               variant="outlined"
               severity="secondary"
@@ -340,21 +340,13 @@ export function DashboardGrid({
             >
               <Plus size={14} /> Add widget
             </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              severity="secondary"
-              size="small"
-              onClick={startEdit}
-            >
-              <Pencil size={14} /> Edit dashboard
-            </Button>
           )}
         </div>
 
+        {/* Always [calendar] [edit dashboard / cancel+save] [settings] — settings stays hard right. */}
         <div className={styles.controlsRight}>
           <DashboardTimerangeButton range={range} onRangeChange={handleRangeChange} />
-          {isEditing && (
+          {isEditing ? (
             <>
               <Button
                 variant="outlined"
@@ -376,6 +368,15 @@ export function DashboardGrid({
                 )}
               </Button>
             </>
+          ) : (
+            <Button
+              variant="outlined"
+              severity="secondary"
+              size="small"
+              onClick={startEdit}
+            >
+              <Pencil size={14} /> Edit dashboard
+            </Button>
           )}
           <DashboardConfig
             dashboardId={dashboardId}

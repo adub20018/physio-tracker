@@ -1,7 +1,7 @@
 // /account/data — what's stored, plus exporting or deleting it. Static
 // server component apart from export (download link) and delete (client).
-import { Button } from "@primereact/ui/button";
 import { DeleteDataButton } from "@/components/ui/account/delete-data-button";
+import { ExportCsvButton } from "@/components/ui/account/export-csv-button";
 import styles from "./data.module.css";
 
 export default function DataPage() {
@@ -39,14 +39,10 @@ export default function DataPage() {
             <div className={styles.rowText}>
               <span className={styles.rowLabel}>Export CSV</span>
               <span className={styles.rowHint}>
-                Download every logged day as a CSV file.
+                Download logged days as a CSV file, for a timeframe or all of it.
               </span>
             </div>
-            {/* Plain anchor composed as a Button: a download must be a real
-                navigation, not a client route. */}
-            <Button as="a" href="/history/export" download severity="secondary" variant="outlined">
-              Export CSV
-            </Button>
+            <ExportCsvButton />
           </div>
           <div className={styles.row}>
             <div className={styles.rowText}>

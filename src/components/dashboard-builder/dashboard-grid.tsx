@@ -22,6 +22,7 @@ import { WIDGET_REGISTRY, type WidgetDefinition } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
+import { DashboardTimerangeButton } from "./dashboard-timerange-button";
 import {
   saveDashboardLayout,
   updateDashboardTimeRange,
@@ -352,6 +353,7 @@ export function DashboardGrid({
         </div>
 
         <div className={styles.controlsRight}>
+          <DashboardTimerangeButton range={range} onRangeChange={handleRangeChange} />
           {isEditing && (
             <>
               <Button
@@ -378,8 +380,6 @@ export function DashboardGrid({
           <DashboardConfig
             dashboardId={dashboardId}
             dashboardName={dashboardName}
-            range={range}
-            onRangeChange={handleRangeChange}
             // Drop any open edit draft — it's stale after a reset.
             onReset={(widgets) => {
               setSavedWidgets(widgets);

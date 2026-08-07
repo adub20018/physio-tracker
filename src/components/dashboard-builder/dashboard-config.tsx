@@ -1,4 +1,5 @@
-// The dashboard's settings popover (gear button): time range, rename, reset layout, delete.
+// The dashboard's settings popover (gear button): rename, reset layout, delete.
+// Time range now lives in its own toolbar button (dashboard-timerange-button.tsx).
 // Moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
 "use client";
 
@@ -7,10 +8,8 @@ import { useRouter } from "next/navigation";
 import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
 import { Settings, Pencil, Trash2 } from "lucide-react";
-import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
-import type { TimeRange } from "@/lib/time-range";
 import type { DashboardWidget } from "@/repositories";
 import {
   resetDashboardToDefault,
@@ -22,16 +21,12 @@ import styles from "./dashboard-config.module.css";
 export function DashboardConfig({
   dashboardId,
   dashboardName,
-  range,
-  onRangeChange,
+  // Lets the grid drop any in-progress edit draft, so a reset can't be
+  // immediately overwritten by a stale Save.
   onReset,
 }: {
   dashboardId: string;
   dashboardName: string;
-  range: TimeRange;
-  onRangeChange: (range: TimeRange) => void;
-  // Lets the grid drop any in-progress edit draft, so a reset can't be
-  // immediately overwritten by a stale Save.
   onReset?: (widgets: DashboardWidget[]) => void;
 }) {
   const router = useRouter();
@@ -111,16 +106,6 @@ export function DashboardConfig({
         <Popover.Portal>
           <Popover.Positioner sideOffset={8} align="end">
             <Popover.Popup className={styles.popup}>
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Time range</h3>
-                <TimeRangeSelector value={range} onChange={onRangeChange} />
-                <p className={styles.sectionHint}>
-                  Applies to every chart on this dashboard. Stat tiles always
-                  show the last 7 days, and the calendar always shows your full
-                  history.
-                </p>
-              </div>
-
               <div className={styles.section}>
                 <h3 className={styles.sectionTitle}>Layout</h3>
                 <p className={styles.sectionHint}>

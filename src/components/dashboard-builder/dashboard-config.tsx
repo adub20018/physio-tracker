@@ -1,13 +1,13 @@
-// The dashboard's settings popover (gear button): rename, reset layout, delete.
-// Time range now lives in its own toolbar button (dashboard-timerange-button.tsx).
-// Moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
+// The dashboard's settings menu (gear button): rename, reset layout, delete.
+// Time range now lives in its own toolbar button (dashboard-timerange-button.tsx);
+// moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx).
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Popover } from "@primereact/ui/popover";
+import { Menu } from "@primereact/ui/menu";
 import { Button } from "@primereact/ui/button";
-import { Settings, Pencil, Trash2 } from "lucide-react";
+import { Settings, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
 import type { DashboardWidget } from "@/repositories";
@@ -89,11 +89,11 @@ export function DashboardConfig({
 
   return (
     <>
-      <Popover.Root
+      <Menu.Root
         open={open}
         onOpenChange={(e: { value?: boolean }) => setOpen(e.value ?? false)}
       >
-        <Popover.Trigger
+        <Menu.Trigger
           as={Button}
           iconOnly
           variant="outlined"
@@ -102,57 +102,43 @@ export function DashboardConfig({
           aria-label="Dashboard settings"
         >
           <Settings size={14} />
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Positioner sideOffset={8} align="end">
-            <Popover.Popup className={styles.popup}>
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Layout</h3>
-                <p className={styles.sectionHint}>
-                  Restore the standard set of widgets and their original
-                  arrangement.
-                </p>
-                <Button
-                  severity="secondary"
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setResetOpen(true)}
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner sideOffset={8} align="end">
+            <Menu.Popup className={styles.popup}>
+              <Menu.List>
+                <Menu.Item
+                  onSelect={() => {
+                    setError(null);
+                    setRenameOpen(true);
+                  }}
                 >
-                  Reset to default dashboard
-                </Button>
-              </div>
-
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>This dashboard</h3>
-                <div className={styles.actionRow}>
-                  <Button
-                    severity="secondary"
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      setError(null);
-                      setRenameOpen(true);
-                    }}
-                  >
-                    <Pencil size={14} /> Rename
-                  </Button>
-                  <Button
-                    severity="danger"
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      setError(null);
-                      setDeleteOpen(true);
-                    }}
-                  >
-                    <Trash2 size={14} /> Delete
-                  </Button>
-                </div>
-              </div>
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
-      </Popover.Root>
+                  <Pencil size={14} /> Rename dashboard
+                </Menu.Item>
+                <Menu.Separator />
+                <Menu.Item
+                  onSelect={() => {
+                    setError(null);
+                    setResetOpen(true);
+                  }}
+                >
+                  <RotateCcw size={14} /> Restore default layout
+                </Menu.Item>
+                <Menu.Separator />
+                <Menu.Item
+                  className={styles.dangerItem}
+                  onSelect={() => {
+                    setError(null);
+                    setDeleteOpen(true);
+                  }}
+                >
+                  <Trash2 size={14} /> Delete dashboard
+                </Menu.Item>
+              </Menu.List>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
 
       <ConfirmDialog
         open={resetOpen}

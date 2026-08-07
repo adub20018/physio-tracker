@@ -1,0 +1,61 @@
+/* Export dialog — sibling of confirm-dialog/name-dialog's popup/footer sizing,
+   plus a radio list and conditional custom-range date fields. */
+
+.popup {
+  width: min(26rem, calc(100vw - 2rem));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sectionLabel,
+.dateLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--faint);
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.customRange {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 8rem;
+}
+
+.dateInput {
+  width: 100%;
+  min-width: 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

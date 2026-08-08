@@ -5,31 +5,8 @@
 import { Accordion } from "@primereact/ui/accordion";
 import { Tag } from "@primereact/ui/tag";
 import { ChevronDown } from "@primeicons/react/chevron-down";
+import type { FlareEpisodeView } from "@/lib/widget-data";
 import styles from "./flare-review.module.css";
-
-// One pain reading that crossed the flare threshold.
-export type FlareReading = {
-  slot: "Morning" | "Daytime" | "Night";
-  value: number;
-};
-
-// One preceding day, preformatted for display.
-export type FlareContextDay = {
-  date: string;
-  weekday: string;
-  steps: number | null;
-  physioSummary: string; // "" when rest day
-  activityTags: string[];
-  notes: string;
-};
-
-export type FlareEpisodeView = {
-  date: string;
-  weekday: string;
-  readings: FlareReading[];
-  notes: string;
-  precedingDays: FlareContextDay[];
-};
 
 export function FlareReview({ episodes }: { episodes: FlareEpisodeView[] }) {
   if (episodes.length === 0) {

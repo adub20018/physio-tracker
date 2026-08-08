@@ -23,6 +23,7 @@ import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
 import { DashboardTimerangeButton } from "./dashboard-timerange-button";
+import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
 import {
   saveDashboardLayout,
   updateDashboardTimeRange,
@@ -168,13 +169,16 @@ export function DashboardGrid({
   // in the edit-mode transition above so it doesn't drive the Save button.
   function handleRangeChange(next: TimeRange) {
     setRangeState(next);
-    updateDashboardTimeRange(dashboardId, next).then((result) => {
-      if (!result.ok) {
-        console.error("Failed to save dashboard time range:", result.error);
-      }
-    }, (err: unknown) => {
-      console.error("Failed to save dashboard time range:", err);
-    });
+    updateDashboardTimeRange(dashboardId, next).then(
+      (result) => {
+        if (!result.ok) {
+          console.error("Failed to save dashboard time range:", result.error);
+        }
+      },
+      (err: unknown) => {
+        console.error("Failed to save dashboard time range:", err);
+      },
+    );
   }
 
   const [isEditing, setIsEditing] = useState(false);
@@ -345,7 +349,10 @@ export function DashboardGrid({
 
         {/* Always [calendar] [edit dashboard / cancel+save] [settings] — settings stays hard right. */}
         <div className={styles.controlsRight}>
-          <DashboardTimerangeButton range={range} onRangeChange={handleRangeChange} />
+          <DashboardTimerangeButton
+            range={range}
+            onRangeChange={handleRangeChange}
+          />
           {isEditing ? (
             <>
               <Button
@@ -370,12 +377,11 @@ export function DashboardGrid({
             </>
           ) : (
             <Button
-              variant="outlined"
-              severity="secondary"
-              size="small"
+              {...TOOLBAR_ICON_BUTTON_PROPS}
+              aria-label="Edit dashboard"
               onClick={startEdit}
             >
-              <Pencil size={14} /> Edit dashboard
+              <Pencil size={14} />
             </Button>
           )}
           <DashboardConfig

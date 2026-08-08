@@ -7,9 +7,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
-import { Settings, Pencil, Trash2 } from "lucide-react";
+import { Settings, Pencil, Trash2, RotateCcw } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
+import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
 import type { DashboardWidget } from "@/repositories";
 import {
   resetDashboardToDefault,
@@ -95,10 +96,7 @@ export function DashboardConfig({
       >
         <Popover.Trigger
           as={Button}
-          iconOnly
-          variant="outlined"
-          severity="secondary"
-          size="small"
+          {...TOOLBAR_ICON_BUTTON_PROPS}
           aria-label="Dashboard settings"
         >
           <Settings size={14} />
@@ -120,7 +118,7 @@ export function DashboardConfig({
                       setRenameOpen(true);
                     }}
                   >
-                    <Pencil size={16} />
+                    <Pencil size={14} />
                   </Button>
                 </div>
               </div>
@@ -128,13 +126,14 @@ export function DashboardConfig({
               <div className={styles.section}>
                 <h3 className={styles.sectionTitle}>Layout</h3>
                 <p className={styles.sectionHint}>
-                  Restores the default widgets and arrangement.
+                  Restores to the default widgets and arrangement.
                 </p>
                 <Button
                   severity="secondary"
                   variant="outlined"
                   onClick={() => setResetOpen(true)}
                 >
+                  <RotateCcw size={16} />
                   Restore default layout
                 </Button>
               </div>

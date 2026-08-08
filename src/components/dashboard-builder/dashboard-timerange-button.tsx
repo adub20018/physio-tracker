@@ -8,6 +8,7 @@ import { Button } from "@primereact/ui/button";
 import { Calendar } from "lucide-react";
 import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
 import type { TimeRange } from "@/lib/time-range";
+import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
 import styles from "./dashboard-timerange-button.module.css";
 
 export function DashboardTimerangeButton({
@@ -26,10 +27,7 @@ export function DashboardTimerangeButton({
     >
       <Popover.Trigger
         as={Button}
-        iconOnly
-        variant="outlined"
-        severity="secondary"
-        size="small"
+        {...TOOLBAR_ICON_BUTTON_PROPS}
         aria-label="Change time range"
       >
         <Calendar size={14} />
@@ -41,8 +39,7 @@ export function DashboardTimerangeButton({
             <TimeRangeSelector value={range} onChange={onRangeChange} />
             <p className={styles.hint}>
               Applies to every chart on this dashboard. Stat tiles always show
-              the last 7 days, and the calendar always shows your full
-              history.
+              the last 7 days, and the calendar always shows your full history.
             </p>
           </Popover.Popup>
         </Popover.Positioner>

@@ -104,26 +104,36 @@
 .gridContainer
   :global(.react-grid-item)
   > :global(.react-resizable-handle)::after {
-  border-right-color: var(--muted);
-  border-bottom-color: var(--muted);
-  /* Slightly bigger than the library's 5px so it reads as a grab target. */
-  width: 8px;
-  height: 8px;
+  width: 22px;
+  height: 22px;
+  right: -2px;
+  bottom: -2px;
+
+  border-right: 8px solid var(--muted);
+  border-bottom: 8px solid var(--muted);
+  border-radius: 0 0 18px 0;
 }
 
 .editing :global(.react-grid-item) > :global(.react-resizable-handle) {
-  opacity: 0.75;
+  opacity: 0.5;
   height: 1.5rem;
   width: 1.5rem;
 }
 
-.editing :global(.react-grid-item):hover > :global(.react-resizable-handle) {
-  opacity: 1;
+.editing :global(.react-grid-item) > :global(.react-resizable-handle):hover {
+  opacity: 0.9;
 }
 
 .editing
-  :global(.react-grid-item):hover
-  > :global(.react-resizable-handle)::after {
+  :global(.react-grid-item)
+  > :global(.react-resizable-handle):active::after {
+  border-right-color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.editing
+  :global(.react-grid-item)
+  > :global(.react-resizable-handle):hover::after {
   border-right-color: var(--accent);
   border-bottom-color: var(--accent);
 }

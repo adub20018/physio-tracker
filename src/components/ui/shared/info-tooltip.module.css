@@ -52,6 +52,16 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.useCase {
+  color: var(--muted);
+}
+
 .arrow {
   fill: var(--surface-raised);
 }

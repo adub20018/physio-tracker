@@ -36,6 +36,10 @@ export function InfoTooltip({
   triggerClassName = styles.trigger,
   triggerStyle,
 }: {
+  // A blank-line-separated "\n\n" splits into a general description and a
+  // second block (e.g. "Use it to answer: ...") rendered with a gap between —
+  // plain whitespace collapses in JSX otherwise, so this is the one delimiter
+  // callers use for a paragraph break.
   text: string;
   label?: string;
   // Trigger content — defaults to the "?" icon.
@@ -47,6 +51,7 @@ export function InfoTooltip({
 }) {
   const isTouch = useIsCoarsePointer();
   const [open, setOpen] = useState(false);
+  const [description, useCase] = text.split("\n\n");
 
   return (
     <Tooltip.Root
@@ -83,7 +88,10 @@ export function InfoTooltip({
       <Tooltip.Portal>
         <Tooltip.Positioner side="top" align="center" sideOffset={6}>
           <Tooltip.Popup className={styles.popup}>
-            {text}
+            <div className={styles.content}>
+              <p>{description}</p>
+              {useCase && <p className={styles.useCase}>{useCase}</p>}
+            </div>
             <Tooltip.Arrow className={styles.arrow} />
           </Tooltip.Popup>
         </Tooltip.Positioner>

@@ -24,7 +24,10 @@ export default async function DashboardViewPage({
 }) {
   const { dashboardId } = await params;
   const user = await getCurrentUser();
-  const dashboard = await dashboardRepository.getWithWidgets(dashboardId, user.id);
+  const dashboard = await dashboardRepository.getWithWidgets(
+    dashboardId,
+    user.id,
+  );
   if (!dashboard) notFound();
 
   const [logs, { flareThreshold, chartAutoScaleYAxis }, dashboards] =
@@ -36,11 +39,12 @@ export default async function DashboardViewPage({
   const days = toDomainDays(logs);
   const today = await todayIso();
   const bundle = buildChartDataBundle(days, today, flareThreshold);
-  const hasEnoughDataForPreviews = days.length >= MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS;
+  const hasEnoughDataForPreviews =
+    days.length >= MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS;
 
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>
-      <header className="page-header">
+      <header className="dashboard-header">
         <DashboardSwitcher
           dashboards={dashboards}
           currentId={dashboard.id}

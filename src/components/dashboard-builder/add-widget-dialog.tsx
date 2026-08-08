@@ -6,7 +6,8 @@ import { startTransition, useEffect, useState } from "react";
 import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
 import { X } from "lucide-react";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import {
   WIDGET_DEFINITIONS,
   isStackedChart,
@@ -29,25 +30,34 @@ function WidgetCard({
   definition,
   onAdd,
   loading,
+  adding,
   bundle,
   today,
 }: {
   definition: WidgetDefinition;
   onAdd: (widgetType: string) => void;
   loading: boolean;
-  bundle: ChartDataBundle;
+  // This card's widget is being added: the dashboard behind the dialog is
+  // mounting it, and this card is about to disappear from the picker.
+  adding: boolean;
+  bundle: WidgetDataBundle;
   today: string;
 }) {
+  function add() {
+    if (!adding) onAdd(definition.type);
+  }
+
   return (
     <div
       role="button"
       tabIndex={0}
+      aria-busy={adding}
       className={styles.card}
-      onClick={() => onAdd(definition.type)}
+      onClick={add}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onAdd(definition.type);
+          add();
         }
       }}
     >
@@ -58,6 +68,12 @@ function WidgetCard({
         today={today}
       />
       <span className={styles.cardLabel}>{definition.label}</span>
+      {adding && (
+        <span className={styles.addingOverlay} role="status">
+          <ButtonSpinner />
+          Adding…
+        </span>
+      )}
     </div>
   );
 }
@@ -78,7 +94,7 @@ export function AddWidgetDialog({
   onAdd: (widgetType: string) => void;
   // Used for previews once hasEnoughDataForPreviews is true (see
   // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS).
-  realBundle: ChartDataBundle;
+  realBundle: WidgetDataBundle;
   realToday: string;
   hasEnoughDataForPreviews: boolean;
 }) {
@@ -122,6 +138,24 @@ export function AddWidgetDialog({
   const revealOrder = new Map(available.map((d, i) => [d.type, i]));
   const isPreviewReady = (type: string) =>
     (revealOrder.get(type) ?? available.length) < readyCount;
+
+  // Adding a widget makes the dashboard behind the dialog mount a whole new
+  // live chart, which takes long enough that the click felt unregistered.
+  const [addingType, setAddingType] = useState<string | null>(null);
+
+  // Clear the flag once the widget lands — its card leaves `available`, so a
+  // stale type would otherwise keep any re-added card stuck on "Adding…".
+  if (addingType != null && existingTypes.has(addingType)) {
+    setAddingType(null);
+  }
+
+  function handleAdd(widgetType: string) {
+    setAddingType(widgetType);
+    // Urgent above, deferred here: React paints "Adding…" first and keeps the
+    // card on screen while it commits the expensive grid update, instead of
+    // batching both into one late render where the feedback never shows.
+    startTransition(() => onAdd(widgetType));
+  }
 
   return (
     <Dialog.Root
@@ -178,8 +212,9 @@ export function AddWidgetDialog({
                             <WidgetCard
                               key={def.type}
                               definition={def}
-                              onAdd={onAdd}
+                              onAdd={handleAdd}
                               loading={!isPreviewReady(def.type)}
+                              adding={addingType === def.type}
                               bundle={previewBundle}
                               today={previewToday}
                             />
@@ -196,8 +231,9 @@ export function AddWidgetDialog({
                               <WidgetCard
                                 key={def.type}
                                 definition={def}
-                                onAdd={onAdd}
+                                onAdd={handleAdd}
                                 loading={!isPreviewReady(def.type)}
+                                adding={addingType === def.type}
                                 bundle={previewBundle}
                                 today={previewToday}
                               />

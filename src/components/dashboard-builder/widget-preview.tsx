@@ -5,7 +5,7 @@
 import { Skeleton } from "@primereact/ui/skeleton";
 import { isStackedChart, type WidgetDefinition } from "./widget-registry";
 import { previewRenderContext } from "./widget-preview-data";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import styles from "./widget-preview.module.css";
 
 export function WidgetPreview({
@@ -19,7 +19,7 @@ export function WidgetPreview({
   // `render`, so mounting ~20+ real charts doesn't happen in the same paint as the dialog's open transition.
   loading?: boolean;
   // Already resolved to either the real account or the mock one — see add-widget-dialog.tsx.
-  bundle: ChartDataBundle;
+  bundle: WidgetDataBundle;
   today: string;
 }) {
   // Bare widgets (stat tiles) get the same height:100%-flex-child wrapper as WidgetShell's

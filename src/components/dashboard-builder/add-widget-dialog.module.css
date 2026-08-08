@@ -61,6 +61,7 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -85,6 +86,23 @@
 .cardLabel {
   font-size: 0.85rem;
   padding: 0 0.1rem;
+}
+
+/* Covers the card between the click and the card leaving the picker — the
+   dashboard behind the dialog is mounting the widget, which takes long
+   enough that an unacknowledged click reads as "did that register?". */
+.addingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-sunken) 82%, transparent);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .empty {

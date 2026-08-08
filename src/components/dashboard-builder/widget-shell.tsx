@@ -2,7 +2,7 @@
 // the card wrapper. Edit mode adds a drag handle (`[data-drag-handle]`, matched by dashboard-grid.tsx's dragConfig.handle) + remove button in place, so nothing resizes.
 import { GripVertical, X, Info } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import type { WidgetDefinition, WidgetRenderContext } from "./widget-registry";
 import cardStyles from "@/components/ui/dashboard/dashboard.module.css";
 import styles from "./widget-shell.module.css";
@@ -48,7 +48,7 @@ export function WidgetShell({
   onRemove,
 }: {
   definition: WidgetDefinition;
-  bundle: ChartDataBundle;
+  bundle: WidgetDataBundle;
   ctx: WidgetRenderContext;
   editMode?: boolean;
   onRemove?: () => void;

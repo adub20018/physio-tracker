@@ -4,18 +4,9 @@ import { getCurrentUser } from "@/auth/get-current-user";
 import { dailyLogRepository, userSettingsRepository } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
-import { summarizeExercises, weekdayOf } from "@/lib/format";
-import { buildChartDataBundle } from "@/domain/dashboard-bundle";
-import { flareEpisodes } from "@/domain/flare";
-import { weeklyReport } from "@/domain/weekly";
-import {
-  FlareReview,
-  type FlareEpisodeView,
-} from "@/components/ui/insights/flare-review";
-import {
-  WeeklyReportTable,
-  type WeeklyRow,
-} from "@/components/ui/insights/weekly-report-table";
+import { buildWidgetDataBundle } from "@/lib/widget-data";
+import { FlareReview } from "@/components/ui/insights/flare-review";
+import { WeeklyReportTable } from "@/components/ui/insights/weekly-report-table";
 import { InsightsCharts } from "@/components/ui/insights/insights-charts";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { Info } from "lucide-react";
@@ -24,33 +15,6 @@ import styles from "@/components/ui/dashboard/dashboard.module.css";
 // Always render at request time — insights must reflect the latest logs.
 export const dynamic = "force-dynamic";
 
-// How many days before a flare the review panel looks back.
-const FLARE_LOOKBACK_DAYS = 3;
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-// "Jul 13 – Jul 19" from two ISO dates.
-function weekLabel(startIso: string, endIso: string): string {
-  const fmt = (iso: string) => {
-    const [, m, d] = iso.split("-").map(Number);
-    return `${MONTHS[m - 1]} ${d}`;
-  };
-  return `${fmt(startIso)} – ${fmt(endIso)}`;
-}
-
 export default async function InsightsPage() {
   const user = await getCurrentUser();
   const [logs, { flareThreshold, chartAutoScaleYAxis }] = await Promise.all([
@@ -58,11 +22,9 @@ export default async function InsightsPage() {
     userSettingsRepository.get(user.id),
   ]);
   const days = toDomainDays(logs);
-  const logByDate = new Map(logs.map((l) => [l.date, l]));
   const today = await todayIso();
 
-  // See domain/dashboard-bundle.ts. This page only uses the scatter/candlestick slices;
-  // Flare review and the Weekly report card below aren't part of the shared bundle.
+  // Same builder the dashboard widgets use, so both render identical data.
   const {
     fullStepsPoints,
     fullVolumePoints,
@@ -74,69 +36,9 @@ export default async function InsightsPage() {
     fullSleepVsMorning,
     fullSleepVsDaytime,
     fullSleepVsNight,
-  } = buildChartDataBundle(days, today, flareThreshold);
-
-  // ── Flare review ──────────────────────────────────────────────────────
-  const episodes: FlareEpisodeView[] = flareEpisodes(
-    days,
-    FLARE_LOOKBACK_DAYS,
-    flareThreshold,
-  ).map((ep) => {
-    // The reading(s) that crossed the threshold, with explicit slot names.
-    const readings = (
-      [
-        ["Morning", ep.day.painMorning],
-        ["Daytime", ep.day.painDaytime],
-        ["Night", ep.day.painNight],
-      ] as const
-    )
-      .filter((entry): entry is [(typeof entry)[0], number] => {
-        const v = entry[1];
-        return v != null && v >= flareThreshold;
-      })
-      .map(([slot, value]) => ({ slot, value }));
-    return {
-      date: ep.day.date,
-      weekday: weekdayOf(ep.day.date),
-      readings,
-      notes: logByDate.get(ep.day.date)?.generalNotes ?? "",
-      precedingDays: ep.precedingDays.map((d) => {
-        const log = logByDate.get(d.date);
-        return {
-          date: d.date,
-          weekday: weekdayOf(d.date),
-          steps: d.steps,
-          physioSummary: log ? summarizeExercises(log) : "",
-          activityTags: log?.activityTags ?? [],
-          notes: log?.generalNotes ?? "",
-        };
-      }),
-    };
-  });
-
-  // ── Weekly report card with week-over-week pain deltas ────────────────
-  const weeks = weeklyReport(days, flareThreshold);
-  const weeklyRows: WeeklyRow[] = weeks.map((w, i) => {
-    const prev = i > 0 ? weeks[i - 1] : null;
-    const delta =
-      w.painAvg != null && prev?.painAvg != null
-        ? w.painAvg - prev.painAvg
-        : null;
-    return {
-      weekStart: w.weekStart,
-      weekLabel: weekLabel(w.weekStart, w.weekEnd),
-      loggedDays: w.loggedDays,
-      painAvg: w.painAvg,
-      painDelta:
-        delta != null
-          ? `${delta < 0 ? "−" : "+"}${Math.abs(delta).toFixed(1)}`
-          : null,
-      painImproved: delta != null ? delta <= 0 : null,
-      stepsAvg: w.stepsAvg,
-      physioLoad: w.physioLoad,
-      flareDays: w.flareDays,
-    };
-  });
+    flareEpisodeViews: episodes,
+    weeklyRows,
+  } = buildWidgetDataBundle(logs, days, today, flareThreshold);
 
   return (
     <main className="page" style={{ maxWidth: "64rem" }}>

@@ -10,8 +10,10 @@ import { WeightTilde } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { pearson, correlationStrength } from "@/domain/correlation";
 import type { PairedPoint } from "@/domain/correlation";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
+import { FlareReview } from "@/components/ui/insights/flare-review";
+import { WeeklyReportTable } from "@/components/ui/insights/weekly-report-table";
 import { PainTimeline } from "@/components/charts/pain-timeline";
 import { LoadVsSymptoms } from "@/components/charts/load-vs-symptoms";
 import { SleepPainTimeline } from "@/components/charts/sleep-pain-timeline";
@@ -45,6 +47,8 @@ export type WidgetRenderContext = {
   rangeDays: number;
   // Account → Preferences: fit Y-axis to visible data instead of fixed range.
   autoScaleYAxis: boolean;
+  // Account → Preferences: the report widgets colour/count pain against it.
+  flareThreshold: number;
   // True on desktop (real grid-cell height to fill); false on mobile stack.
   fillHeight: boolean;
   // Drag handle + remove button for "bare" (stat tile) widgets; undefined
@@ -87,7 +91,7 @@ export type WidgetDefinition = {
   // InfoTooltip text for the shell header; unused for bare widgets.
   hint?: string;
   render: (
-    bundle: ChartDataBundle,
+    bundle: WidgetDataBundle,
     ctx: WidgetRenderContext,
   ) => React.ReactNode;
 };
@@ -176,6 +180,22 @@ const MOBILE_MULTI_SCATTER_CHART_BOUNDS: WidgetSizeBounds = {
   maxH: 22,
 };
 
+// Report widgets (Flare review, Weekly report card): a scrolling accordion /
+// table rather than a chart, so they want width for their columns and scroll
+// internally past their minimum height instead of shrinking to fit.
+const REPORT_BOUNDS: WidgetSizeBounds = {
+  minW: 6,
+  maxW: DESKTOP_MAX_W,
+  minH: 14,
+  maxH: TALL_MAX_H,
+};
+const MOBILE_REPORT_BOUNDS: WidgetSizeBounds = {
+  minW: MOBILE_MAX_W,
+  maxW: MOBILE_MAX_W,
+  minH: 14,
+  maxH: TALL_MAX_H,
+};
+
 // Whether a widget has multiple stacked panels — checked by reference
 // against the shared bounds objects so it can't drift out of sync.
 export function isStackedChart(definition: WidgetDefinition): boolean {
@@ -231,7 +251,7 @@ function SleepVsPainWidget({
   bundle,
   ctx,
 }: {
-  bundle: ChartDataBundle;
+  bundle: WidgetDataBundle;
   ctx: WidgetRenderContext;
 }) {
   const morning = useMemo(
@@ -769,6 +789,43 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileBounds: MOBILE_MULTI_SCATTER_CHART_BOUNDS,
     hint: 'Shows the relationship between your sleep and your pain throughout the same day.\n\nUse it to answer: "Does getting more sleep seem to affect my pain?"',
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
+  },
+  {
+    type: "report-flare-review",
+    label: "Flare review",
+    category: "Insights charts",
+    defaultSize: { w: 6, h: 18 },
+    bounds: REPORT_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_REPORT_BOUNDS,
+    hint: 'Shows every flare day alongside the activity, physio, and notes from the days leading up to it.\n\nUse it to answer: "What happened before my flare-up?"',
+    // Ignores the selected time range — a flare history is only useful whole,
+    // same reasoning as the calendar heatmap above.
+    render: (bundle) => (
+      <div className={styles.scrollBody}>
+        <FlareReview episodes={bundle.flareEpisodeViews} />
+      </div>
+    ),
+  },
+  {
+    type: "report-weekly",
+    label: "Weekly report card",
+    category: "Insights charts",
+    defaultSize: { w: 6, h: 18 },
+    bounds: REPORT_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_REPORT_BOUNDS,
+    hint: 'Shows a weekly summary of your pain, activity, physio load, and flare count.\n\nUse it to answer: "How does each week compare with the last?"',
+    // Range-independent for the same reason as Flare review: the point is
+    // comparing every week to the last.
+    render: (bundle, ctx) => (
+      <div className={styles.scrollBody}>
+        <WeeklyReportTable
+          rows={bundle.weeklyRows}
+          flareThreshold={ctx.flareThreshold}
+        />
+      </div>
+    ),
   },
 ];
 

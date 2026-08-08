@@ -8,19 +8,8 @@ import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
+import type { WeeklyRow } from "@/lib/widget-data";
 import styles from "./weekly-report-table.module.css";
-
-export type WeeklyRow = {
-  weekStart: string;
-  weekLabel: string; // "Jul 13 – Jul 19"
-  loggedDays: number;
-  painAvg: number | null;
-  painDelta: string | null; // "+0.4" / "−0.2" vs previous week
-  painImproved: boolean | null;
-  stepsAvg: number | null;
-  physioLoad: number;
-  flareDays: number;
-};
 
 const SEVERITY_COLOR: Record<
   PainSeverity,

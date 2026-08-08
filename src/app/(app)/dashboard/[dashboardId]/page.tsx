@@ -9,7 +9,7 @@ import {
 } from "@/repositories";
 import { toDomainDays } from "@/lib/to-domain";
 import { todayIso } from "@/lib/dates";
-import { buildChartDataBundle } from "@/domain/dashboard-bundle";
+import { buildWidgetDataBundle } from "@/lib/widget-data";
 import { MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS } from "@/domain/constants";
 import { DashboardGrid } from "@/components/dashboard-builder/dashboard-grid";
 import { DashboardSwitcher } from "@/components/dashboard-builder/dashboard-switcher";
@@ -38,7 +38,7 @@ export default async function DashboardViewPage({
     ]);
   const days = toDomainDays(logs);
   const today = await todayIso();
-  const bundle = buildChartDataBundle(days, today, flareThreshold);
+  const bundle = buildWidgetDataBundle(logs, days, today, flareThreshold);
   const hasEnoughDataForPreviews =
     days.length >= MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS;
 
@@ -59,6 +59,7 @@ export default async function DashboardViewPage({
         bundle={bundle}
         today={today}
         autoScaleYAxis={chartAutoScaleYAxis}
+        flareThreshold={flareThreshold}
         initialRange={dashboard.timeRange}
         hasEnoughDataForPreviews={hasEnoughDataForPreviews}
       />

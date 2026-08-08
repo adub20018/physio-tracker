@@ -16,7 +16,7 @@ import { LayoutDashboard, Pencil, Plus } from "lucide-react";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { daysForRange, type TimeRange } from "@/lib/time-range";
 import { ButtonSpinner } from "@/components/ui/shared/button-spinner";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import type { DashboardWidget, NewDashboardWidgetInput } from "@/repositories";
 import { WIDGET_REGISTRY, type WidgetDefinition } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
@@ -141,15 +141,18 @@ export function DashboardGrid({
   bundle,
   today,
   autoScaleYAxis,
+  flareThreshold,
   initialRange,
   hasEnoughDataForPreviews,
 }: {
   dashboardId: string;
   dashboardName: string;
   widgets: DashboardWidget[];
-  bundle: ChartDataBundle;
+  bundle: WidgetDataBundle;
   today: string;
   autoScaleYAxis: boolean;
+  // Account → Preferences; the report widgets colour/count against it.
+  flareThreshold: number;
   // Server-loaded (dashboards.timeRange) so the first paint is correct.
   initialRange: TimeRange;
   // See domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS — false falls
@@ -470,6 +473,7 @@ export function DashboardGrid({
                       today,
                       rangeDays,
                       autoScaleYAxis,
+                      flareThreshold,
                       fillHeight: true,
                     }}
                     editMode={isEditing}

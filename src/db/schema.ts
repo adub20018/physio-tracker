@@ -21,7 +21,7 @@ export const PAIN_TYPES = [
 ] as const;
 export type PainType = string;
 
-export const ACTIVITY_TAGS = ["gym", "physio", "rest", "walking"] as const;
+export const ACTIVITY_TAGS = ["gym", "physio", "rest", "walking", "hiking"] as const;
 export type ActivityTag = string;
 
 // One row per tracked day. Pain is REAL to allow half-steps (0–10 scale).

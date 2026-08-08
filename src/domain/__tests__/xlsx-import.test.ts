@@ -60,6 +60,22 @@ describe("deriveActivityTags", () => {
       "walking",
     ]);
   });
+  it("matches hiking", () => {
+    expect(deriveActivityTags("Gym + hiking")).toEqual(["gym", "hiking"]);
+    expect(deriveActivityTags("Went for a hike")).toEqual(["hiking"]);
+  });
+  it("counts a word's own suffixes", () => {
+    expect(deriveActivityTags("Resting")).toEqual(["rest"]);
+    expect(deriveActivityTags("Walked to the shops")).toEqual(["walking"]);
+  });
+  // "restaurant" starts with "rest" but is not a rest day.
+  it("does not match a keyword buried inside a longer word", () => {
+    expect(deriveActivityTags("Gym + physio + some walking to restaurant")).toEqual([
+      "gym",
+      "physio",
+      "walking",
+    ]);
+  });
   it("returns an empty array when nothing matches", () => {
     expect(deriveActivityTags("Nothing today")).toEqual([]);
     expect(deriveActivityTags(null)).toEqual([]);

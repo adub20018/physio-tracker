@@ -40,17 +40,27 @@ export function parseIntensity(value: unknown): { min: number; max: number } | n
   return { min, max };
 }
 
-// Activity notes → structured tags by keyword ("Gym + physio + walking" → gym, physio,
-// walking). "phy" catches the "phyio" typo in the source data; original text kept as notes.
+// Matched at word starts rather than as bare substrings: a plain
+// includes("rest") read "walking to restaurant" as a rest day. Each pattern
+// still allows the word's own suffixes, so "resting"/"walked"/"hikes" count.
+const ACTIVITY_PATTERNS: { tag: ActivityTag; pattern: RegExp }[] = [
+  { tag: "gym", pattern: /\bgyms?\b/ },
+  // Deliberately loose — also catches the "phyio" typo in the source data.
+  { tag: "physio", pattern: /\bphy\w*/ },
+  // Suffixes listed explicitly, not \w*, so "restaurant" isn't a rest day.
+  { tag: "rest", pattern: /\brest(?:ing|ed|s)?\b/ },
+  { tag: "walking", pattern: /\bwalk\w*/ },
+  { tag: "hiking", pattern: /\bhik\w*/ },
+];
+
+// Activity notes → structured tags by keyword ("Gym + physio + walking" → gym,
+// physio, walking). Original text is kept as notes either way.
 export function deriveActivityTags(value: unknown): ActivityTag[] {
   if (value == null || value === "") return [];
   const text = String(value).toLowerCase();
-  const tags: ActivityTag[] = [];
-  if (text.includes("gym")) tags.push("gym");
-  if (text.includes("phy")) tags.push("physio");
-  if (text.includes("rest")) tags.push("rest");
-  if (text.includes("walk")) tags.push("walking");
-  return tags;
+  return ACTIVITY_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(
+    ({ tag }) => tag,
+  );
 }
 
 // Normalizes inconsistent casing ("standing ankle raise" vs "Standing ankle

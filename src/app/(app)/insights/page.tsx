@@ -164,7 +164,7 @@ export default async function InsightsPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Flare review</h2>
           <InfoTooltip
-            text={`Every day a reading hit ${flareThreshold}/10, with the ${FLARE_LOOKBACK_DAYS} days leading up to it`}
+            text={`Shows every flare day alongside the activity, physio, and notes from the days leading up to it.\n\nUse it to answer: "What happened before my flare-up?"`}
             label="What does this show?"
           >
             <Info size={14} />
@@ -177,7 +177,7 @@ export default async function InsightsPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Weekly report card</h2>
           <InfoTooltip
-            text="Averages per calendar week, newest first — click Week to flip the order"
+            text={`Shows a weekly summary of your pain, activity, physio load, and flare count.\n\nUse it to answer: "How does each week compare with the last?"`}
             label="What does this show?"
           >
             <Info size={14} />

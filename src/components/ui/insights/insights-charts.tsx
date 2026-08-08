@@ -145,7 +145,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Steps vs next-morning pain</h2>
           <InfoTooltip
-            text="Data is lagged (day-over-day) so the steps are compared to the next morning's pain"
+            text={`Shows the relationship between your daily steps and your pain the following morning.\n\nUse it to answer: "Do higher step counts lead to more pain the next morning?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -164,7 +164,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Steps vs peak next-day pain</h2>
           <InfoTooltip
-            text="Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level"
+            text={`Shows the relationship between your daily steps and your highest pain the following day.\n\nUse it to answer: "Do higher step counts lead to worse pain the next day?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -185,7 +185,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Steps vs average next-day pain</h2>
           <InfoTooltip
-            text="Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading"
+            text={`Shows the relationship between your daily steps and your average pain the following day.\n\nUse it to answer: "Do higher step counts affect my overall pain the next day?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -206,7 +206,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Physio load vs next-morning pain</h2>
           <InfoTooltip
-            text="Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain"
+            text={`Shows the relationship between your physio load and your pain the following morning.\n\nUse it to answer: "Does increasing my physio workload affect my pain the next morning?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -227,7 +227,7 @@ export function InsightsCharts({
             Physio load vs peak next-day pain
           </h2>
           <InfoTooltip
-            text="Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level"
+            text={`Shows the relationship between your physio load and your highest pain the following day.\n\nUse it to answer: "Does increasing my physio workload lead to worse pain the next day?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -250,7 +250,7 @@ export function InsightsCharts({
             Physio load vs average next-day pain
           </h2>
           <InfoTooltip
-            text="Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading"
+            text={`Shows the relationship between your physio load and your average pain the following day.\n\nUse it to answer: "Does increasing my physio workload affect my overall pain the next day?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -271,7 +271,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Morning-to-day pain</h2>
           <InfoTooltip
-            text="Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up"
+            text={`Shows how your pain changes throughout each day, from morning to night.\n\nUse it to answer: "Does my pain usually improve or worsen as the day goes on?"`}
             label="What does this chart show?"
           >
             <Info size={14} />
@@ -284,7 +284,7 @@ export function InsightsCharts({
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>Sleep vs pain, all day</h2>
           <InfoTooltip
-            text="Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one"
+            text={`Shows the relationship between your sleep and your pain throughout the same day.\n\nUse it to answer: "Does getting more sleep seem to affect my pain?"`}
             label="What does this chart show?"
           >
             <Info size={14} />

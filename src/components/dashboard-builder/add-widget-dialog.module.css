@@ -5,6 +5,7 @@
 
 .content {
   overflow-y: auto;
+  will-change: transform; /* Fixes the laggy scrolling problem */
 }
 
 .group + .group {

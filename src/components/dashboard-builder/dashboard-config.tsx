@@ -1,13 +1,13 @@
-// The dashboard's settings menu (gear button): rename, reset layout, delete.
+// The dashboard's settings popover (gear button): rename, reset layout, delete.
 // Time range now lives in its own toolbar button (dashboard-timerange-button.tsx);
-// moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx).
+// moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Menu } from "@primereact/ui/menu";
+import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
-import { Settings, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { Settings, Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
 import type { DashboardWidget } from "@/repositories";
@@ -89,11 +89,11 @@ export function DashboardConfig({
 
   return (
     <>
-      <Menu.Root
+      <Popover.Root
         open={open}
         onOpenChange={(e: { value?: boolean }) => setOpen(e.value ?? false)}
       >
-        <Menu.Trigger
+        <Popover.Trigger
           as={Button}
           iconOnly
           variant="outlined"
@@ -102,43 +102,66 @@ export function DashboardConfig({
           aria-label="Dashboard settings"
         >
           <Settings size={14} />
-        </Menu.Trigger>
-        <Menu.Portal>
-          <Menu.Positioner sideOffset={8} align="end">
-            <Menu.Popup className={styles.popup}>
-              <Menu.List>
-                <Menu.Item
-                  onSelect={() => {
-                    setError(null);
-                    setRenameOpen(true);
-                  }}
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Positioner sideOffset={8} align="end">
+            <Popover.Popup className={styles.popup}>
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Dashboard name</h3>
+                <div className={styles.nameRow}>
+                  <span className={styles.nameText}>{dashboardName}</span>
+                  <Button
+                    iconOnly
+                    variant="text"
+                    severity="secondary"
+                    size="small"
+                    aria-label="Rename dashboard"
+                    onClick={() => {
+                      setError(null);
+                      setRenameOpen(true);
+                    }}
+                  >
+                    <Pencil size={14} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Layout</h3>
+                <p className={styles.sectionHint}>
+                  Restores the default widgets and arrangement.
+                </p>
+                <Button
+                  severity="secondary"
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setResetOpen(true)}
                 >
-                  <Pencil size={14} /> Rename dashboard
-                </Menu.Item>
-                <Menu.Separator />
-                <Menu.Item
-                  onSelect={() => {
-                    setError(null);
-                    setResetOpen(true);
-                  }}
-                >
-                  <RotateCcw size={14} /> Restore default layout
-                </Menu.Item>
-                <Menu.Separator />
-                <Menu.Item
-                  className={styles.dangerItem}
-                  onSelect={() => {
+                  Restore default layout
+                </Button>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Danger zone</h3>
+                <p className={styles.sectionHint}>
+                  Permanently deletes this dashboard and its layout.
+                </p>
+                <Button
+                  severity="danger"
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
                     setError(null);
                     setDeleteOpen(true);
                   }}
                 >
                   <Trash2 size={14} /> Delete dashboard
-                </Menu.Item>
-              </Menu.List>
-            </Menu.Popup>
-          </Menu.Positioner>
-        </Menu.Portal>
-      </Menu.Root>
+                </Button>
+              </div>
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root>
 
       <ConfirmDialog
         open={resetOpen}

@@ -339,7 +339,6 @@ export function DashboardGrid({
             <Button
               variant="outlined"
               severity="secondary"
-              size="small"
               onClick={() => setAddOpen(true)}
             >
               <Plus size={14} /> Add widget

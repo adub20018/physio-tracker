@@ -17,5 +17,5 @@ export const TOOLBAR_ICON_BUTTON_PROPS = {
   variant: "outlined",
   severity: "secondary",
   size: "small",
-  style: { width: "2rem", height: "2rem" },
+  style: { width: "2.2rem", height: "2.2rem" },
 } satisfies Partial<ComponentProps<typeof Button>>;

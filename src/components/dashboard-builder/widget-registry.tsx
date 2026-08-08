@@ -8,7 +8,6 @@ import { Footprints } from "lucide-react";
 import { BedDouble } from "lucide-react";
 import { WeightTilde } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
-import { TIME_RANGE_HINT_PHRASES } from "@/lib/time-range";
 import { pearson, correlationStrength } from "@/domain/correlation";
 import type { PairedPoint } from "@/domain/correlation";
 import type { ChartDataBundle } from "@/domain/dashboard-bundle";
@@ -293,8 +292,6 @@ function SleepVsPainWidget({
   );
 }
 
-const statRangePhrase = TIME_RANGE_HINT_PHRASES["7d"];
-
 export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   // ── Stat tiles ────────────────────────────────────────────────────────
   {
@@ -322,7 +319,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
-          hint={`Average of each day's recorded morning/day/night pain combined, ${statRangePhrase}`}
+          hint={`Shows your average daily pain over 7 days, with a trend line showing how it has changed across each day in this period.\n\nUse it to answer: "Is my pain improving, worsening, or staying consistent?"`}
           icon={<BoneFracture size={16} />}
           accentColor={SERIES.pain}
           sparklineValues={bundle.painSparkline}
@@ -365,7 +362,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
-          hint={`Average of each day's daily steps, ${statRangePhrase}`}
+          hint={`Shows your average daily steps over 7 days, showing how your activity has changed across each day in this period.\n\nUse it to answer: "Is my activity level increasing, decreasing, or staying consistent?"`}
           icon={<Footprints size={16} />}
           accentColor={SERIES.steps}
           sparklineValues={bundle.stepsSparkline}
@@ -400,7 +397,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
-          hint={`Average of each night's sleep, ${statRangePhrase}`}
+          hint={`Shows your average nightly sleep duration over 7 days, showing how your sleep has changed across each night in this period.\n\nUse it to answer: "Is my sleep improving, worsening, or staying consistent?"`}
           icon={<BedDouble size={16} />}
           accentColor={SERIES.sleep}
           sparklineValues={bundle.sleepSparkline}
@@ -446,7 +443,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
-          hint={`Average of each day's physio load, ${statRangePhrase}. Physio load combines the physio sets, reps/duration, and intensity. Calculated by (sets * reps * average intensity)`}
+          hint={`Shows your average daily physio load over 7 days, with a trend line showing how your rehabilitation workload has changed across each day in this period.\n\nUse it to answer: "Is my rehabilitation workload increasing, decreasing, or staying consistent?"`}
           icon={<WeightTilde size={16} />}
           accentColor={SERIES.load}
           sparklineValues={bundle.physioLoadSparkline}
@@ -467,7 +464,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: 'Raw readings with the 7-day trend — the line that answers "am I actually progressing?"',
+    hint: 'Shows your morning, daytime, and night pain over time, alongside a 7-day trend line and highlighted flare days.\n\nUse it to answer: "Is my pain improving overall, or just fluctuating from day to day?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -493,7 +490,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
-    hint: "What you did each day, paired with how the tendon felt across all of the next day's readings — morning, daytime, and night. Load can show up at any point the next day, not just the first reading taken. Physio load here is the same intensity-weighted metric as the dashboard tile, shown per day instead of summed over the week",
+    hint: "Shows your daily steps and physio load alongside the following day's pain.\n\nUse it to answer: \"Did yesterday's workload contribute to today's pain?\"",
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -518,7 +515,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: DOUBLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_DOUBLE_STACKED_CHART_BOUNDS,
-    hint: "Sleep the night before, and how the whole next day felt — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings",
+    hint: "Shows your sleep alongside your pain throughout the same day.\n\nUse it to answer: \"Does getting more or less sleep seem to affect my pain?\"",
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -544,7 +541,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: TRIPLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
-    hint: "Intensity range, hold volume, and Physio load across sessions — the program advancing is progress too. Hold volume and Physio load can move in opposite directions (e.g. longer holds at lower intensity raise one and lower the other), so both are shown rather than just one",
+    hint: 'Shows how your rehabilitation program has progressed by tracking exercise intensity, hold volume, and overall physio load.\n\nUse it to answer: "Am I steadily progressing my rehabilitation program?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -569,7 +566,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: HEATMAP_BOUNDS,
     mobileDefaultSize: { w: 2, h: 12 },
     mobileBounds: MOBILE_HEATMAP_BOUNDS,
-    hint: "Average pain per day, at a glance",
+    hint: 'Shows your daily pain as a color-coded calendar, making patterns and flare periods easy to spot.\n\nUse it to answer: "When was my pain better or worse?"',
     // Ignores the selected time range — always shows full history.
     render: (bundle) => <CalendarHeatmap data={bundle.heatmap} />,
   },
@@ -583,7 +580,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Data is lagged (day-over-day) so the steps are compared to the next morning's pain",
+    hint: 'Shows the relationship between your daily steps and your pain the following morning.\n\nUse it to answer: "Do higher step counts lead to more pain the next morning?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -610,7 +607,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Steps compared to the highest of the next day's three pain readings (morning, daytime, night) — the worst moment that day reached, not just its morning level",
+    hint: 'Shows the relationship between your daily steps and your highest pain the following day.\n\nUse it to answer: "Do higher step counts lead to worse pain the next day?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -637,7 +634,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Steps compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
+    hint: 'Shows the relationship between your daily steps and your average pain the following day.\n\nUse it to answer: "Do higher step counts affect my overall pain the next day?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -664,7 +661,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Physio Load represents the overall load of a physio exercise. Calculated by (sets * reps * average intensity). Data is lagged (day-over-day) so the physio load are compared to the next morning's pain",
+    hint: 'Shows the relationship between your physio load and your pain the following morning.\n\nUse it to answer: "Does increasing my physio workload affect my pain the next morning?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -691,7 +688,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Physio load compared to the highest of the next day's three pain readings — the worst moment that day reached, not just its morning level",
+    hint: 'Shows the relationship between your physio load and your highest pain the following day.\n\nUse it to answer: "Does increasing my physio workload lead to worse pain the next day?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -718,7 +715,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Physio load compared to the average of the next day's three pain readings — the day's overall level, rather than any one reading",
+    hint: 'Shows the relationship between your physio load and your average pain the following day.\n\nUse it to answer: "Does increasing my physio workload affect my overall pain the next day?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -745,7 +742,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: "Each candle is one day's pain movement, in the same terms as a stock candlestick: open = morning pain, high/low = that day's highest and lowest reading, close = night pain. Green means pain came down by night; red means it went up",
+    hint: 'Shows how your pain changes throughout each day, from morning to night.\n\nUse it to answer: "Does my pain usually improve or worsen as the day goes on?"',
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -770,7 +767,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: MULTI_SCATTER_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_MULTI_SCATTER_CHART_BOUNDS,
-    hint: "Same day, not lagged — sleep hours logged on a date are the hours slept the night before waking up that day, so they precede all three of that day's readings, not just the morning one",
+    hint: 'Shows the relationship between your sleep and your pain throughout the same day.\n\nUse it to answer: "Does getting more sleep seem to affect my pain?"',
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
   },
 ];

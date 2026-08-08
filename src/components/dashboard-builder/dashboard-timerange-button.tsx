@@ -30,7 +30,7 @@ export function DashboardTimerangeButton({
         {...TOOLBAR_ICON_BUTTON_PROPS}
         aria-label="Change time range"
       >
-        <Calendar size={14} />
+        <Calendar size={16} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={8} align="end">

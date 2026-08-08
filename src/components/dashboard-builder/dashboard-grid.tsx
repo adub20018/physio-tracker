@@ -381,7 +381,7 @@ export function DashboardGrid({
               aria-label="Edit dashboard"
               onClick={startEdit}
             >
-              <Pencil size={14} />
+              <Pencil size={16} />
             </Button>
           )}
           <DashboardConfig

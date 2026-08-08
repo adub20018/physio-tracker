@@ -7,7 +7,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
-import { Settings, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
 import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
@@ -99,7 +99,7 @@ export function DashboardConfig({
           {...TOOLBAR_ICON_BUTTON_PROPS}
           aria-label="Dashboard settings"
         >
-          <Settings size={14} />
+          <SlidersHorizontal size={14} />
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Positioner sideOffset={8} align="end">

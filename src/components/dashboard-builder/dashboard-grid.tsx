@@ -23,7 +23,10 @@ import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
 import { DashboardTimerangeButton } from "./dashboard-timerange-button";
-import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
+import {
+  TOOLBAR_BUTTON_HEIGHT,
+  TOOLBAR_ICON_BUTTON_PROPS,
+} from "./toolbar-icon-button-props";
 import {
   saveDashboardLayout,
   updateDashboardTimeRange,
@@ -340,6 +343,7 @@ export function DashboardGrid({
               variant="outlined"
               severity="secondary"
               onClick={() => setAddOpen(true)}
+              style={{ height: TOOLBAR_BUTTON_HEIGHT }}
             >
               <Plus size={14} /> Add widget
             </Button>
@@ -355,10 +359,15 @@ export function DashboardGrid({
                 severity="secondary"
                 onClick={cancelEdit}
                 disabled={isPending}
+                style={{ height: TOOLBAR_BUTTON_HEIGHT }}
               >
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isPending}>
+              <Button
+                onClick={handleSave}
+                disabled={isPending}
+                style={{ height: TOOLBAR_BUTTON_HEIGHT }}
+              >
                 {isPending ? (
                   <>
                     <ButtonSpinner />
@@ -380,7 +389,7 @@ export function DashboardGrid({
                 aria-label="Edit dashboard"
                 onClick={startEdit}
               >
-                <Pencil size={16} />
+                <Pencil size={14} />
               </Button>
               <DashboardConfig
                 dashboardId={dashboardId}

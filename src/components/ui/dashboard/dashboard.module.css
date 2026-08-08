@@ -42,7 +42,7 @@
 }
 
 .card {
-  border-radius: 12px;
+  border-radius: var(--widget-border-radius);
   background: var(--surface);
   padding: 1.1rem 1.25rem 0.9rem;
   box-shadow: var(--shadow-subtle);

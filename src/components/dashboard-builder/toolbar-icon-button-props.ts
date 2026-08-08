@@ -4,7 +4,7 @@ import type { Button } from "@primereact/ui/button";
 // Shared height for every dashboard toolbar button (icon-only or not), so
 // the time-range button's text+chevron shape still lines up with its
 // square neighbors instead of reading a different size.
-export const TOOLBAR_BUTTON_HEIGHT = "2.2rem";
+export const TOOLBAR_BUTTON_HEIGHT = "2rem";
 
 // Shared prop bundle for the dashboard toolbar's icon-only buttons (edit
 // dashboard, settings) — one place to keep them uniform and square instead

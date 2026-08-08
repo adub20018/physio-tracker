@@ -99,7 +99,7 @@ export function DashboardConfig({
           {...TOOLBAR_ICON_BUTTON_PROPS}
           aria-label="Dashboard settings"
         >
-          <SlidersHorizontal size={16} />
+          <SlidersHorizontal size={14} />
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Positioner sideOffset={8} align="end">

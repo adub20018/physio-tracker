@@ -1,3 +1,8 @@
+.trigger {
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
 .popup {
   width: min(20rem, calc(100vw - 2rem));
   padding: 0.9rem 1rem 1rem;

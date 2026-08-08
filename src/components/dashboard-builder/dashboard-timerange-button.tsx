@@ -1,14 +1,14 @@
-// Standalone calendar-icon toolbar button opening the same TimeRangeSelector
-// that used to live inside the settings menu.
+// Toolbar button showing the dashboard's current time range (e.g. "3M") that
+// opens the same TimeRangeSelector that used to live inside the settings menu.
 "use client";
 
 import { useState } from "react";
 import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
-import { Calendar } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
-import type { TimeRange } from "@/lib/time-range";
-import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
+import { TIME_RANGE_LABELS, type TimeRange } from "@/lib/time-range";
+import { TOOLBAR_BUTTON_HEIGHT } from "./toolbar-icon-button-props";
 import styles from "./dashboard-timerange-button.module.css";
 
 export function DashboardTimerangeButton({
@@ -27,10 +27,15 @@ export function DashboardTimerangeButton({
     >
       <Popover.Trigger
         as={Button}
-        {...TOOLBAR_ICON_BUTTON_PROPS}
-        aria-label="Change time range"
+        variant="outlined"
+        severity="secondary"
+        size="small"
+        className={styles.trigger}
+        style={{ height: TOOLBAR_BUTTON_HEIGHT }}
+        aria-label={`Change time range, currently ${TIME_RANGE_LABELS[range]}`}
       >
-        <Calendar size={16} />
+        {TIME_RANGE_LABELS[range]}
+        <ChevronDown size={14} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={8} align="end">

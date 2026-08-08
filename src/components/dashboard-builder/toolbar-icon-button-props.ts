@@ -1,9 +1,14 @@
 import type { ComponentProps } from "react";
 import type { Button } from "@primereact/ui/button";
 
-// Shared prop bundle for the dashboard toolbar's icon-only buttons (time
-// range, edit dashboard, settings) — one place to keep them uniform and
-// square instead of each button's own file redeclaring the same values.
+// Shared height for every dashboard toolbar button (icon-only or not), so
+// the time-range button's text+chevron shape still lines up with its
+// square neighbors instead of reading a different size.
+export const TOOLBAR_BUTTON_HEIGHT = "2.2rem";
+
+// Shared prop bundle for the dashboard toolbar's icon-only buttons (edit
+// dashboard, settings) — one place to keep them uniform and square instead
+// of each button's own file redeclaring the same values.
 //
 // PrimeReact's own `.p-button-icon-only` CSS pins only the button's WIDTH
 // (to a token sized for its own ~1rem icons, e.g. 1.75rem at size="small")
@@ -17,5 +22,5 @@ export const TOOLBAR_ICON_BUTTON_PROPS = {
   variant: "outlined",
   severity: "secondary",
   size: "small",
-  style: { width: "2.2rem", height: "2.2rem" },
+  style: { width: TOOLBAR_BUTTON_HEIGHT, height: TOOLBAR_BUTTON_HEIGHT },
 } satisfies Partial<ComponentProps<typeof Button>>;

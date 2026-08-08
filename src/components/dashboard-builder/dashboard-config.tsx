@@ -114,14 +114,13 @@ export function DashboardConfig({
                     iconOnly
                     variant="text"
                     severity="secondary"
-                    size="small"
                     aria-label="Rename dashboard"
                     onClick={() => {
                       setError(null);
                       setRenameOpen(true);
                     }}
                   >
-                    <Pencil size={14} />
+                    <Pencil size={16} />
                   </Button>
                 </div>
               </div>
@@ -134,7 +133,6 @@ export function DashboardConfig({
                 <Button
                   severity="secondary"
                   variant="outlined"
-                  size="small"
                   onClick={() => setResetOpen(true)}
                 >
                   Restore default layout
@@ -149,13 +147,12 @@ export function DashboardConfig({
                 <Button
                   severity="danger"
                   variant="outlined"
-                  size="small"
                   onClick={() => {
                     setError(null);
                     setDeleteOpen(true);
                   }}
                 >
-                  <Trash2 size={14} /> Delete dashboard
+                  <Trash2 size={16} /> Delete dashboard
                 </Button>
               </div>
             </Popover.Popup>

@@ -1,5 +1,5 @@
 // Domain constants shared across the app. Kept in domain/ so every layer
-// (UI colors, flare detection, insights) agrees on the same thresholds.
+// (UI colors, flare detection, charts) agrees on the same thresholds.
 
 // Pain at or above this counts as a flare (PLAN.md §2). Only the fallback/seed value —
 // the real threshold is per-user (UserSettings), passed explicitly rather than imported.

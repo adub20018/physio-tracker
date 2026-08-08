@@ -37,7 +37,7 @@ export function LagScatter({
   // of the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
   // When true, fill the parent's height instead of the fixed pixel height
-  // used on /insights — see .fill in charts.module.css.
+  // used in fixed-height mode — see .fill in charts.module.css.
   fillHeight?: boolean;
   // Add-widget picker preview mode: lets the Y-axis drop ticks that don't fit (box is too short to spare the room).
   compact?: boolean;

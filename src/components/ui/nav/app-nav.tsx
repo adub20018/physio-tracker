@@ -19,7 +19,6 @@ import { Bars } from "@primeicons/react/bars";
 import { Times } from "@primeicons/react/times";
 import { ObjectsColumn } from "@primeicons/react/objects-column";
 import { PenToSquare } from "@primeicons/react/pen-to-square";
-import { ChartBar } from "@primeicons/react/chart-bar";
 import { History } from "@primeicons/react/history";
 import { Comments } from "@primeicons/react/comments";
 import { SignOut } from "@primeicons/react/sign-out";
@@ -32,7 +31,6 @@ import styles from "./app-nav.module.css";
 const LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: <ObjectsColumn /> },
   { href: "/log", label: "Log", icon: <PenToSquare /> },
-  { href: "/insights", label: "Insights", icon: <ChartBar /> },
   { href: "/history", label: "History", icon: <History /> },
 ];
 

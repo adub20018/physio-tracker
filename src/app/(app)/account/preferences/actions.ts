@@ -28,7 +28,6 @@ export async function saveFlareThreshold(flareThreshold: number): Promise<SaveRe
   // Every page that derives flare detection from the threshold must reflect
   // the change immediately.
   revalidatePath("/dashboard");
-  revalidatePath("/insights");
   revalidatePath("/history");
   return { ok: true };
 }
@@ -39,6 +38,5 @@ export async function saveChartAutoScaleYAxis(chartAutoScaleYAxis: boolean): Pro
 
   // Every chart-bearing page must reflect the change immediately.
   revalidatePath("/dashboard");
-  revalidatePath("/insights");
   return { ok: true };
 }

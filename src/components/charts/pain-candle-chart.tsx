@@ -132,7 +132,7 @@ export function PainCandleChart({
   // 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
   // When true, fill the parent's height instead of the fixed pixel height used on
-  // /insights — see .fill in charts.module.css.
+  // fixed-height mode — see .fill in charts.module.css.
   fillHeight?: boolean;
   // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
   // and skips animation — needed since ~20 previews can mount at once.

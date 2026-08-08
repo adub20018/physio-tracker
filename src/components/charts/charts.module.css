@@ -3,8 +3,8 @@
    them. */
 
 /* ── Fill mode ────────────────────────────────────────────────────
-   Every chart normally renders at a fixed pixel height (what /insights
-   uses). On a customizable dashboard the chart instead has to grow and
+   Every chart defaults to a fixed pixel height. On a customizable
+   dashboard the chart instead has to grow and
    shrink with whatever height the user dragged its grid cell to, so each
    chart takes a `fillHeight` prop that swaps these classes in and switches
    its ResponsiveContainer to height="100%".

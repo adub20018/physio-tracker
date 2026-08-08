@@ -1,5 +1,6 @@
-// Computes every series a dashboard/insights chart could need from shared `days`/`today`/
-// `flareThreshold` inputs (excludes Flare Review & Report Card, which stay Insights-only).
+// Computes every series a dashboard chart could need from shared `days`/`today`/
+// `flareThreshold` inputs. Flare review and the Weekly report card need raw-log fields
+// DomainDay drops, so they're built in lib/widget-data.ts instead — see the note there.
 import type { DomainDay } from "./types";
 import {
   dailyPainAverage,

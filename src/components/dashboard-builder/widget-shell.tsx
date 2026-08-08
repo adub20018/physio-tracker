@@ -1,4 +1,4 @@
-// Frames one widget instance, reusing dashboard/insights' .card classes; "bare" stat tiles skip
+// Frames one widget instance, reusing the shared .card classes; "bare" stat tiles skip
 // the card wrapper. Edit mode adds a drag handle (`[data-drag-handle]`, matched by dashboard-grid.tsx's dragConfig.handle) + remove button in place, so nothing resizes.
 import { GripVertical, X, Info } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";

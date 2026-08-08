@@ -15,7 +15,6 @@ export async function deleteAllData(): Promise<ActionResult> {
     await userSettingsRepository.delete(user.id);
 
     revalidatePath("/dashboard");
-    revalidatePath("/insights");
     revalidatePath("/history");
     revalidatePath("/log");
     revalidatePath("/account/preferences");

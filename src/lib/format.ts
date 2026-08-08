@@ -1,4 +1,4 @@
-// Display formatters shared across pages (history, insights). Pure
+// Display formatters shared across pages and widgets (history, flare review). Pure
 // presentation helpers — no data access, no business rules.
 import type { DailyLogWithExercises } from "@/repositories";
 

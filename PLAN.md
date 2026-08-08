@@ -123,7 +123,12 @@ Variable changes vs. the spreadsheet:
   sleep hours, notes.
 - Editing past days supported (same form, pick a date).
 
-### `/insights` — Correlation explorer
+### Correlation explorer — now dashboard widgets
+
+Originally a separate `/insights` route. Once dashboards became customizable, that page
+was a fixed second copy of things the picker could already arrange freely, so the route
+was removed and its contents became widgets under the picker's "Insights charts"
+category — put them on their own dashboard for the same view.
 
 - **Lag scatter plots**: today's steps vs. tomorrow-morning pain; physio load vs.
   next-day pain — with simple correlation coefficient displayed.
@@ -330,7 +335,7 @@ means that day) doesn't have to be reverse-engineered from the component later.
 - **Calendar** _(heatmap)_ — one cell per day, colored by that day's average pain
   (GitHub-contribution-style weeks-as-columns); unlogged days are a distinct empty outline.
 
-#### `/insights`
+#### "Insights charts" widgets
 
 - **Steps vs next-morning pain** _(scatter)_ — today's steps vs. the *following* day's
   morning pain, with Pearson r.

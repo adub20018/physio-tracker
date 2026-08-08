@@ -347,24 +347,19 @@ export function DashboardGrid({
           )}
         </div>
 
-        {/* Always [calendar] [edit dashboard / cancel+save] [settings] — settings stays hard right. */}
+        {/* Editing: just Cancel/Save. Otherwise: [calendar] [edit dashboard] [settings] — settings stays hard right. */}
         <div className={styles.controlsRight}>
-          <DashboardTimerangeButton
-            range={range}
-            onRangeChange={handleRangeChange}
-          />
           {isEditing ? (
             <>
               <Button
                 variant="outlined"
                 severity="secondary"
-                size="small"
                 onClick={cancelEdit}
                 disabled={isPending}
               >
                 Cancel
               </Button>
-              <Button size="small" onClick={handleSave} disabled={isPending}>
+              <Button onClick={handleSave} disabled={isPending}>
                 {isPending ? (
                   <>
                     <ButtonSpinner />
@@ -376,24 +371,30 @@ export function DashboardGrid({
               </Button>
             </>
           ) : (
-            <Button
-              {...TOOLBAR_ICON_BUTTON_PROPS}
-              aria-label="Edit dashboard"
-              onClick={startEdit}
-            >
-              <Pencil size={16} />
-            </Button>
+            <>
+              <DashboardTimerangeButton
+                range={range}
+                onRangeChange={handleRangeChange}
+              />
+              <Button
+                {...TOOLBAR_ICON_BUTTON_PROPS}
+                aria-label="Edit dashboard"
+                onClick={startEdit}
+              >
+                <Pencil size={16} />
+              </Button>
+              <DashboardConfig
+                dashboardId={dashboardId}
+                dashboardName={dashboardName}
+                // Drop any open edit draft — it's stale after a reset.
+                onReset={(widgets) => {
+                  setSavedWidgets(widgets);
+                  setDraft(widgets);
+                  setIsEditing(false);
+                }}
+              />
+            </>
           )}
-          <DashboardConfig
-            dashboardId={dashboardId}
-            dashboardName={dashboardName}
-            // Drop any open edit draft — it's stale after a reset.
-            onReset={(widgets) => {
-              setSavedWidgets(widgets);
-              setDraft(widgets);
-              setIsEditing(false);
-            }}
-          />
         </div>
       </div>
 

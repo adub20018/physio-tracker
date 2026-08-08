@@ -22,6 +22,11 @@ import { WIDGET_REGISTRY, type WidgetDefinition } from "./widget-registry";
 import { WidgetShell } from "./widget-shell";
 import { AddWidgetDialog } from "./add-widget-dialog";
 import { DashboardConfig } from "./dashboard-config";
+import { DashboardTimerangeButton } from "./dashboard-timerange-button";
+import {
+  TOOLBAR_BUTTON_HEIGHT,
+  TOOLBAR_ICON_BUTTON_PROPS,
+} from "./toolbar-icon-button-props";
 import {
   saveDashboardLayout,
   updateDashboardTimeRange,
@@ -167,13 +172,16 @@ export function DashboardGrid({
   // in the edit-mode transition above so it doesn't drive the Save button.
   function handleRangeChange(next: TimeRange) {
     setRangeState(next);
-    updateDashboardTimeRange(dashboardId, next).then((result) => {
-      if (!result.ok) {
-        console.error("Failed to save dashboard time range:", result.error);
-      }
-    }, (err: unknown) => {
-      console.error("Failed to save dashboard time range:", err);
-    });
+    updateDashboardTimeRange(dashboardId, next).then(
+      (result) => {
+        if (!result.ok) {
+          console.error("Failed to save dashboard time range:", result.error);
+        }
+      },
+      (err: unknown) => {
+        console.error("Failed to save dashboard time range:", err);
+      },
+    );
   }
 
   const [isEditing, setIsEditing] = useState(false);
@@ -330,40 +338,36 @@ export function DashboardGrid({
     <>
       <div className={styles.controls}>
         <div className={styles.controlsLeft}>
-          {isEditing ? (
+          {isEditing && (
             <Button
               variant="outlined"
               severity="secondary"
-              size="small"
               onClick={() => setAddOpen(true)}
+              style={{ height: TOOLBAR_BUTTON_HEIGHT }}
             >
               <Plus size={14} /> Add widget
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              severity="secondary"
-              size="small"
-              onClick={startEdit}
-            >
-              <Pencil size={14} /> Edit dashboard
             </Button>
           )}
         </div>
 
+        {/* Editing: just Cancel/Save. Otherwise: [calendar] [edit dashboard] [settings] — settings stays hard right. */}
         <div className={styles.controlsRight}>
-          {isEditing && (
+          {isEditing ? (
             <>
               <Button
                 variant="outlined"
                 severity="secondary"
-                size="small"
                 onClick={cancelEdit}
                 disabled={isPending}
+                style={{ height: TOOLBAR_BUTTON_HEIGHT }}
               >
                 Cancel
               </Button>
-              <Button size="small" onClick={handleSave} disabled={isPending}>
+              <Button
+                onClick={handleSave}
+                disabled={isPending}
+                style={{ height: TOOLBAR_BUTTON_HEIGHT }}
+              >
                 {isPending ? (
                   <>
                     <ButtonSpinner />
@@ -374,19 +378,31 @@ export function DashboardGrid({
                 )}
               </Button>
             </>
+          ) : (
+            <>
+              <DashboardTimerangeButton
+                range={range}
+                onRangeChange={handleRangeChange}
+              />
+              <Button
+                {...TOOLBAR_ICON_BUTTON_PROPS}
+                aria-label="Edit dashboard"
+                onClick={startEdit}
+              >
+                <Pencil size={14} />
+              </Button>
+              <DashboardConfig
+                dashboardId={dashboardId}
+                dashboardName={dashboardName}
+                // Drop any open edit draft — it's stale after a reset.
+                onReset={(widgets) => {
+                  setSavedWidgets(widgets);
+                  setDraft(widgets);
+                  setIsEditing(false);
+                }}
+              />
+            </>
           )}
-          <DashboardConfig
-            dashboardId={dashboardId}
-            dashboardName={dashboardName}
-            range={range}
-            onRangeChange={handleRangeChange}
-            // Drop any open edit draft — it's stale after a reset.
-            onReset={(widgets) => {
-              setSavedWidgets(widgets);
-              setDraft(widgets);
-              setIsEditing(false);
-            }}
-          />
         </div>
       </div>
 

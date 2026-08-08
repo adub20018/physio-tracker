@@ -6,7 +6,7 @@
   gap: 0.35rem;
   padding: 1rem 1.15rem;
   box-shadow: var(--shadow-subtle);
-  border-radius: 12px;
+  border-radius: var(--widget-border-radius);
   background: var(--surface);
   cursor: default;
 }

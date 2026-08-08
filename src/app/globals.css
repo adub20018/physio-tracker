@@ -47,6 +47,13 @@
   --font-display: var(--font-instrument), system-ui, sans-serif;
   --font-body: var(--font-instrument), system-ui, sans-serif;
   --font-data: var(--font-instrument), system-ui, sans-serif;
+
+  --widget-border-radius: 20px;
+  --p-border-radius-xs: 4px !important;
+  --p-border-radius-sm: 6px !important;
+  --p-border-radius-md: 8px !important;
+  --p-border-radius-lg: 12px !important;
+  --p-border-radius-xl: 16px !important;
 }
 
 html {
@@ -131,6 +138,10 @@ h1 {
   margin-top: 0.25rem;
 }
 
+.dashboard-header {
+  margin-bottom: 0.75rem;
+}
+
 .wordmark {
   display: inline-flex;
   align-items: center;
@@ -169,4 +180,8 @@ h1 {
    then paints under a later DOM sibling (e.g. a stacked chart's axis strip). */
 .recharts-tooltip-wrapper {
   z-index: 10;
+}
+
+.p-popover-popup {
+  border-radius: var(--p-border-radius-xl) !important;
 }

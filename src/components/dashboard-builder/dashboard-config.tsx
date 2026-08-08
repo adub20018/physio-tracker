@@ -1,16 +1,16 @@
-// The dashboard's settings popover (gear button): time range, rename, reset layout, delete.
-// Moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
+// The dashboard's settings popover (gear button): rename, reset layout, delete.
+// Time range now lives in its own toolbar button (dashboard-timerange-button.tsx);
+// moving/creating dashboards is the switcher's job instead (dashboard-switcher.tsx); reset/delete confirm first.
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Popover } from "@primereact/ui/popover";
 import { Button } from "@primereact/ui/button";
-import { Settings, Pencil, Trash2 } from "lucide-react";
-import { TimeRangeSelector } from "@/components/ui/shared/time-range-selector";
+import { Pencil, Trash2, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/shared/confirm-dialog";
 import { NameDialog } from "@/components/ui/shared/name-dialog";
-import type { TimeRange } from "@/lib/time-range";
+import { TOOLBAR_ICON_BUTTON_PROPS } from "./toolbar-icon-button-props";
 import type { DashboardWidget } from "@/repositories";
 import {
   resetDashboardToDefault,
@@ -22,16 +22,12 @@ import styles from "./dashboard-config.module.css";
 export function DashboardConfig({
   dashboardId,
   dashboardName,
-  range,
-  onRangeChange,
+  // Lets the grid drop any in-progress edit draft, so a reset can't be
+  // immediately overwritten by a stale Save.
   onReset,
 }: {
   dashboardId: string;
   dashboardName: string;
-  range: TimeRange;
-  onRangeChange: (range: TimeRange) => void;
-  // Lets the grid drop any in-progress edit draft, so a reset can't be
-  // immediately overwritten by a stale Save.
   onReset?: (widgets: DashboardWidget[]) => void;
 }) {
   const router = useRouter();
@@ -100,69 +96,63 @@ export function DashboardConfig({
       >
         <Popover.Trigger
           as={Button}
-          iconOnly
-          variant="outlined"
-          severity="secondary"
-          size="small"
+          {...TOOLBAR_ICON_BUTTON_PROPS}
           aria-label="Dashboard settings"
         >
-          <Settings size={14} />
+          <SlidersHorizontal size={14} />
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Positioner sideOffset={8} align="end">
             <Popover.Popup className={styles.popup}>
               <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Time range</h3>
-                <TimeRangeSelector value={range} onChange={onRangeChange} />
-                <p className={styles.sectionHint}>
-                  Applies to every chart on this dashboard. Stat tiles always
-                  show the last 7 days, and the calendar always shows your full
-                  history.
-                </p>
-              </div>
-
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>Layout</h3>
-                <p className={styles.sectionHint}>
-                  Restore the standard set of widgets and their original
-                  arrangement.
-                </p>
-                <Button
-                  severity="secondary"
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setResetOpen(true)}
-                >
-                  Reset to default dashboard
-                </Button>
-              </div>
-
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>This dashboard</h3>
-                <div className={styles.actionRow}>
+                <h3 className={styles.sectionTitle}>Dashboard name</h3>
+                <div className={styles.nameRow}>
+                  <span className={styles.nameText}>{dashboardName}</span>
                   <Button
+                    iconOnly
+                    variant="text"
                     severity="secondary"
-                    variant="outlined"
-                    size="small"
+                    aria-label="Rename dashboard"
                     onClick={() => {
                       setError(null);
                       setRenameOpen(true);
                     }}
                   >
-                    <Pencil size={14} /> Rename
-                  </Button>
-                  <Button
-                    severity="danger"
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      setError(null);
-                      setDeleteOpen(true);
-                    }}
-                  >
-                    <Trash2 size={14} /> Delete
+                    <Pencil size={14} />
                   </Button>
                 </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Layout</h3>
+                <p className={styles.sectionHint}>
+                  Restores to the default widgets and arrangement.
+                </p>
+                <Button
+                  severity="secondary"
+                  variant="outlined"
+                  onClick={() => setResetOpen(true)}
+                >
+                  <RotateCcw size={16} />
+                  Restore default layout
+                </Button>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Danger zone</h3>
+                <p className={styles.sectionHint}>
+                  Permanently deletes this dashboard and its layout.
+                </p>
+                <Button
+                  severity="danger"
+                  variant="outlined"
+                  onClick={() => {
+                    setError(null);
+                    setDeleteOpen(true);
+                  }}
+                >
+                  <Trash2 size={16} /> Delete dashboard
+                </Button>
               </div>
             </Popover.Popup>
           </Popover.Positioner>

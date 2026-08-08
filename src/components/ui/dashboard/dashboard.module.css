@@ -75,6 +75,16 @@
   margin-bottom: 0.9rem;
 }
 
+/* Report widgets (Flare review, Weekly report card) on the dashboard grid:
+   unlike a chart, their content has its own natural height and can't shrink
+   to fit a cell, so they scroll inside it. min-height:0 is what lets a flex
+   child actually shrink far enough for that overflow to engage. */
+.scrollBody {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
 /* Per-series correlation lines above a multi-series chart (e.g. sleep vs
    morning/daytime/night) — each item's color matches its series in the
    chart below, so the number and the dots read as the same thing. */

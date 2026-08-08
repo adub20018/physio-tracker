@@ -6,7 +6,7 @@ import { startTransition, useEffect, useState } from "react";
 import { Dialog } from "@primereact/ui/dialog";
 import { Button } from "@primereact/ui/button";
 import { X } from "lucide-react";
-import type { ChartDataBundle } from "@/domain/dashboard-bundle";
+import type { WidgetDataBundle } from "@/lib/widget-data";
 import {
   WIDGET_DEFINITIONS,
   isStackedChart,
@@ -35,7 +35,7 @@ function WidgetCard({
   definition: WidgetDefinition;
   onAdd: (widgetType: string) => void;
   loading: boolean;
-  bundle: ChartDataBundle;
+  bundle: WidgetDataBundle;
   today: string;
 }) {
   return (
@@ -78,7 +78,7 @@ export function AddWidgetDialog({
   onAdd: (widgetType: string) => void;
   // Used for previews once hasEnoughDataForPreviews is true (see
   // domain/constants.ts:MIN_LOGGED_DAYS_FOR_REAL_PREVIEWS).
-  realBundle: ChartDataBundle;
+  realBundle: WidgetDataBundle;
   realToday: string;
   hasEnoughDataForPreviews: boolean;
 }) {

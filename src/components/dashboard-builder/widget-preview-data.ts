@@ -1,7 +1,7 @@
 // Fabricated data for the Add-widget picker's live previews (60 days of steps/pain/sleep/exercises,
 // run through the same buildChartDataBundle real dashboards use), built from sine waves so it's deterministic.
 import type { DomainDay, DomainExercise } from "@/domain/types";
-import { buildChartDataBundle } from "@/domain/dashboard-bundle";
+import { buildWidgetDataBundle } from "@/lib/widget-data";
 import { addDays } from "@/domain/lag";
 import {
   DEFAULT_FLARE_PAIN_THRESHOLD,
@@ -9,6 +9,7 @@ import {
   PAIN_SCALE_MAX,
   PAIN_SCALE_STEP,
 } from "@/domain/constants";
+import type { FlareLogFields } from "@/lib/widget-data";
 import type { WidgetRenderContext } from "./widget-registry";
 
 const MOCK_DAY_COUNT = 60;
@@ -87,9 +88,27 @@ function buildMockDays(): DomainDay[] {
 const MOCK_DAYS = buildMockDays();
 export const MOCK_TODAY = addDays(MOCK_START_DATE, MOCK_DAY_COUNT - 1);
 
-// Computed once at module load — buildChartDataBundle is pure and MOCK_DAYS
-// never changes, so there's nothing to recompute on render.
-export const MOCK_CHART_DATA_BUNDLE = buildChartDataBundle(
+// The Flare review preview needs the log-level fields DomainDay drops (notes,
+// activity tags, exercise names), so the mock days are widened back into the
+// narrow log shape that builder reads — see FlareLogFields.
+const MOCK_LOGS: FlareLogFields[] = MOCK_DAYS.map((day, i) => ({
+  date: day.date,
+  activityTags: i % 4 === 3 ? ["Rest"] : ["Walking"],
+  generalNotes: i % 17 === 8 ? "Sore after a longer walk." : "",
+  exercises: day.exercises.map((ex, j) => ({
+    id: `mock-ex-${i}-${j}`,
+    dailyLogId: `mock-log-${i}`,
+    exerciseName: "Calf raise",
+    unit: "seconds" as const,
+    notes: null,
+    ...ex,
+  })),
+}));
+
+// Computed once at module load — the builder is pure and MOCK_DAYS never
+// changes, so there's nothing to recompute on render.
+export const MOCK_CHART_DATA_BUNDLE = buildWidgetDataBundle(
+  MOCK_LOGS,
   MOCK_DAYS,
   MOCK_TODAY,
   DEFAULT_FLARE_PAIN_THRESHOLD,
@@ -110,6 +129,7 @@ export function previewRenderContext(
     today,
     rangeDays: Infinity,
     autoScaleYAxis: false,
+    flareThreshold: DEFAULT_FLARE_PAIN_THRESHOLD,
     fillHeight: true,
     compact: true,
     hideLegend: PREVIEW_HIDE_LEGENDS,

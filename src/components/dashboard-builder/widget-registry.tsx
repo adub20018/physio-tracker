@@ -7,8 +7,10 @@ import { BoneFracture } from "lucide-react";
 import { Footprints } from "lucide-react";
 import { BedDouble } from "lucide-react";
 import { WeightTilde } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { pearson, correlationStrength } from "@/domain/correlation";
+import { workloadZone, type WorkloadZone } from "@/domain/workload";
 import type { PairedPoint } from "@/domain/correlation";
 import type { WidgetDataBundle } from "@/lib/widget-data";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
@@ -19,6 +21,7 @@ import { LoadVsSymptoms } from "@/components/charts/load-vs-symptoms";
 import { SleepPainTimeline } from "@/components/charts/sleep-pain-timeline";
 import { ProgressionChart } from "@/components/charts/progression-chart";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
+import { WorkloadRatioChart } from "@/components/charts/workload-ratio-chart";
 import { LagScatter } from "@/components/charts/scatter/lag-scatter";
 import { MultiScatter } from "@/components/charts/scatter/multi-scatter";
 import { PainCandleChart } from "@/components/charts/pain-candle-chart";
@@ -312,6 +315,56 @@ function SleepVsPainWidget({
   );
 }
 
+// Ratio tiles colour by zone rather than by metric identity (the usual StatTile rule):
+// on these the zone *is* the headline, and "am I ramping too fast" should be readable
+// without parsing the number. Amber for over, not red — a spike is worth a look, not an
+// alarm (see domain/workload.ts on how much weight this deserves).
+const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
+  under: "var(--faint)",
+  steady: SERIES.rollingAvg,
+  over: "var(--pain-elevated)",
+};
+
+// One ratio stat tile. `pick` chooses which of the two ratios this tile tracks.
+function WorkloadTile({
+  label,
+  bundle,
+  ctx,
+  ratio,
+  pick,
+  hint,
+}: {
+  label: string;
+  bundle: WidgetDataBundle;
+  ctx: WidgetRenderContext;
+  ratio: number | null;
+  pick: (point: WidgetDataBundle["fullWorkload"][number]) => number | null;
+  hint: string;
+}) {
+  const color = ratio == null ? "var(--faint)" : WORKLOAD_ZONE_COLOR[workloadZone(ratio)];
+  return (
+    <StatTile
+      label={label}
+      value={ratio != null ? ratio.toFixed(2) : "—"}
+      unit={ratio != null ? "×" : undefined}
+      hint={hint}
+      icon={<Gauge size={16} />}
+      accentColor={color}
+      sparklineValues={bundle.fullWorkload.slice(-7).map((p) => {
+        const value = pick(p);
+        return {
+          date: p.date,
+          value,
+          display: value != null ? `${value.toFixed(2)}×` : "Not enough history",
+        };
+      })}
+      sparklineVariant="area"
+      actions={ctx.editControls}
+      animate={!ctx.compact}
+    />
+  );
+}
+
 export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   // ── Stat tiles ────────────────────────────────────────────────────────
   {
@@ -475,6 +528,47 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     },
   },
 
+  {
+    type: "stat-workload-physio",
+    label: "Physio load ratio",
+    category: "Stat tiles",
+    defaultSize: { w: 3, h: 7 },
+    bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
+    bare: true,
+    render: (bundle, ctx) => (
+      <WorkloadTile
+        label="Physio load ratio"
+        bundle={bundle}
+        ctx={ctx}
+        ratio={bundle.workloadNow.physioLoad}
+        pick={(p) => p.physioLoadRatio}
+        hint={`Your last 7 days of physio load divided by your last 28 — 1.00× means training at the baseline you've adapted to, higher means ramping ahead of it. Steady zone is 0.80–1.30×.\n\nUse it to answer: "Have I stepped up my physio faster than usual?"`}
+      />
+    ),
+  },
+  {
+    type: "stat-workload-steps",
+    label: "Step load ratio",
+    category: "Stat tiles",
+    defaultSize: { w: 3, h: 7 },
+    bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
+    bare: true,
+    render: (bundle, ctx) => (
+      <WorkloadTile
+        label="Step load ratio"
+        bundle={bundle}
+        ctx={ctx}
+        ratio={bundle.workloadNow.steps}
+        pick={(p) => p.stepsRatio}
+        hint={`Your last 7 days of daily steps divided by your last 28 — 1.00× means walking about as much as you've built up to, higher means ramping ahead of it. Steady zone is 0.80–1.30×.\n\nUse it to answer: "Am I increasing my steps gradually?"`}
+      />
+    ),
+  },
+
   // ── Dashboard charts ─────────────────────────────────────────────────
   {
     type: "chart-pain-timeline",
@@ -570,6 +664,30 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           <ProgressionChart
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-workload-ratio",
+    label: "Workload ratio",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: 'Shows your recent physio load and step count against the baseline you\'ve built up to, with the steady zone shaded.\n\nUse it to answer: "Am I ramping up faster than I\'ve adapted to?"',
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullWorkload}
+        renderChart={(data) => (
+          <WorkloadRatioChart
+            data={data}
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
             hideLegend={ctx.hideLegend}

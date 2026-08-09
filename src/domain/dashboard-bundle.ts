@@ -21,6 +21,7 @@ import {
 } from "./lag";
 import { dailyPainCandles, type PainCandle } from "./candle";
 import { pairSeries, type PairedPoint } from "./correlation";
+import { latestRatio, workloadRatios } from "./workload";
 
 // Stat tiles always use a fixed 7-day window, independent of any chart widget's range —
 // averaging a "how am I doing right now" tile over months would smear in stale, low numbers.
@@ -72,6 +73,14 @@ export type ProgressionPoint = {
 
 export type HeatmapDay = { date: string; avgPain: number | null };
 
+// Acute:chronic ratios for the two things being ramped at once. Null until each has
+// enough logged history to have a baseline worth dividing by (see domain/workload.ts).
+export type WorkloadPoint = {
+  date: string;
+  physioLoadRatio: number | null;
+  stepsRatio: number | null;
+};
+
 export type ChartDataBundle = {
   // Stat tiles: fixed 7-day window vs the 7 days before it.
   flareGap: number | null;
@@ -88,6 +97,9 @@ export type ChartDataBundle = {
   fullSleepTimelineData: SleepPainPoint[];
   fullProgression: ProgressionPoint[];
   heatmap: HeatmapDay[];
+  fullWorkload: WorkloadPoint[];
+  // Latest qualifying ratio for each, for the stat tiles.
+  workloadNow: { physioLoad: number | null; steps: number | null };
 
   // Insights scatters + candlestick: full history.
   fullStepsPoints: PairedPoint[];
@@ -239,15 +251,35 @@ export function buildChartDataBundle(
       };
     });
 
-  // ── Calendar heatmap: full range, unlogged days included ───────────────
+  // ── Calendar-dense series: every date present, unlogged days null ──────
+  // The heatmap needs the gaps drawn; the workload ratios need array slots to
+  // equal calendar days, or a "28-day" window would silently reach further
+  // back whenever logging lapsed.
   const byDate = new Map(days.map((d) => [d.date, d]));
   const heatmap: HeatmapDay[] = [];
+  const denseLoad: DatedValue<number>[] = [];
+  const denseSteps: DatedValue<number>[] = [];
   if (days.length > 0) {
     for (let date = days[0].date; date <= today; date = addDays(date, 1)) {
       const day = byDate.get(date);
       heatmap.push({ date, avgPain: day ? dailyPainAverage(day) : null });
+      denseLoad.push({ date, value: day ? dailyPhysioLoad(day) : null });
+      denseSteps.push({ date, value: day ? day.steps : null });
     }
   }
+
+  // ── Workload ratios: recent load vs the adapted-to baseline ────────────
+  const physioLoadRatios = workloadRatios(denseLoad);
+  const stepsRatios = workloadRatios(denseSteps);
+  const fullWorkload: WorkloadPoint[] = denseLoad.map((slot, i) => ({
+    date: slot.date,
+    physioLoadRatio: physioLoadRatios[i],
+    stepsRatio: stepsRatios[i],
+  }));
+  const workloadNow = {
+    physioLoad: latestRatio(physioLoadRatios),
+    steps: latestRatio(stepsRatios),
+  };
 
   // ── Insights scatters ───────────────────────────────────────────────────
   const dates = days.map((d) => d.date);
@@ -330,6 +362,8 @@ export function buildChartDataBundle(
     fullSleepTimelineData,
     fullProgression,
     heatmap,
+    fullWorkload,
+    workloadNow,
     fullStepsPoints,
     fullVolumePoints,
     fullStepsVsPeakPoints,

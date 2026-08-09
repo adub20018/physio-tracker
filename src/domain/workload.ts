@@ -48,19 +48,22 @@ function trailingMean(
 export type WorkloadSeries = {
   // Acute:chronic ratio — the 7-day mean over the 28-day baseline.
   ratio: (number | null)[];
-  // That single day's own load over the same baseline. Shares the ratio's units and
-  // axis, so the two can be read together: the spikes a 7-day mean flattens show here.
-  dayRatio: (number | null)[];
+  // The same two means in the original units (steps, physio load). Multiplying the
+  // baseline by the zone edges turns the ratio's thresholds into a corridor you can
+  // read directly — see zoneBoundsFor.
+  acute: (number | null)[];
+  chronic: (number | null)[];
 };
 
-// Both series per day, aligned to `series`, which must be calendar-dense (one slot per
-// day, null where unlogged) and oldest-first — a window of array slots is only a window
-// of days if no dates are missing.
+// All three series per day, aligned to `series`, which must be calendar-dense (one slot
+// per day, null where unlogged) and oldest-first — a window of array slots is only a
+// window of days if no dates are missing.
 export function workloadSeries(series: DatedValue<number>[]): WorkloadSeries {
   const ratio: (number | null)[] = [];
-  const dayRatio: (number | null)[] = [];
+  const acuteOut: (number | null)[] = [];
+  const chronicOut: (number | null)[] = [];
 
-  series.forEach((slot, i) => {
+  series.forEach((_, i) => {
     const acute = trailingMean(series, i, ACUTE_WINDOW_DAYS, MIN_ACUTE_LOGGED_DAYS);
     const chronic = trailingMean(
       series,
@@ -72,10 +75,27 @@ export function workloadSeries(series: DatedValue<number>[]): WorkloadSeries {
     // "started again", not a ratio worth showing.
     const usableBaseline = chronic != null && chronic > 0;
     ratio.push(usableBaseline && acute != null ? acute / chronic : null);
-    dayRatio.push(usableBaseline && slot.value != null ? slot.value / chronic : null);
+    acuteOut.push(acute);
+    chronicOut.push(usableBaseline ? chronic : null);
   });
 
-  return { ratio, dayRatio };
+  return { ratio, acute: acuteOut, chronic: chronicOut };
+}
+
+// The zone edges expressed in the metric's own units for a given baseline. Bounds the
+// 7-day average, not any single day: one hard session is fine as long as the week's
+// average stays inside. Null baseline in, null bounds out.
+export function zoneBoundsFor(baseline: number | null): {
+  steadyMin: number;
+  steadyMax: number;
+  dangerMin: number;
+} | null {
+  if (baseline == null) return null;
+  return {
+    steadyMin: baseline * WORKLOAD_STEADY_MIN,
+    steadyMax: baseline * WORKLOAD_STEADY_MAX,
+    dangerMin: baseline * WORKLOAD_DANGER_MIN,
+  };
 }
 
 // Most recent ratio in the series, or null if none qualified.

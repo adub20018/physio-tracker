@@ -1,10 +1,9 @@
-// Acute:chronic workload ratio (ACWR) — recent load (7d) over the baseline you're adapted
-// to (28d), for physio and steps together since both are usually being ramped at once.
-// Bands mark the conventional zones; `showBars` adds each day's own load on the same axis.
+// Workload ratio — recent load (7d) over the baseline you're adapted to (28d), for physio
+// and steps together, since both are usually being ramped at once. The shaded band is the
+// steady zone; excursions above it are where flares tend to cluster.
 "use client";
 
 import {
-  Bar,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -28,6 +27,7 @@ import {
   WORKLOAD_STEADY_MIN,
 } from "@/domain/workload";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { roundUpTo, stepTicks } from "./axis-scale";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
@@ -35,18 +35,11 @@ export type WorkloadRatioPoint = {
   date: string;
   physioLoadRatio: number | null;
   stepsRatio: number | null;
-  physioLoadDayRatio: number | null;
-  stepsDayRatio: number | null;
 };
 
 const LINES = [
   { key: "physioLoadRatio", label: "Physio load", color: SERIES.load },
   { key: "stepsRatio", label: "Steps", color: SERIES.steps },
-] as const;
-
-const BARS = [
-  { key: "physioLoadDayRatio", label: "Physio load (that day)", color: SERIES.load },
-  { key: "stepsDayRatio", label: "Steps (that day)", color: SERIES.steps },
 ] as const;
 
 // Zone fills. Green/amber/red match the pain severity scale used elsewhere, so the
@@ -67,19 +60,8 @@ const ZONE_BANDS = [
   },
 ] as const;
 
-// Next multiple of `step` at or above `value`, kept off floating-point edges so a
-// value already sitting on a step doesn't round up a whole one.
-function roundUpTo(value: number, step: number): number {
-  return Math.ceil(value / step - 1e-9) * step;
-}
-
-// Every tick from 0 to `max` inclusive, so the axis endpoint is always a round label.
-function stepTicks(max: number, step: number): number[] {
-  const ticks: number[] = [];
-  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(Number(t.toFixed(2)));
-  return ticks;
-}
-
+// Ratios round to 2dp here rather than in the domain — the numbers stay exact for
+// comparisons, and only the displayed value is shortened.
 function WorkloadTooltipContent({
   active,
   payload,
@@ -112,15 +94,11 @@ function WorkloadTooltipContent({
 
 export function WorkloadRatioChart({
   data,
-  showBars = false,
   fillHeight = false,
   compact = false,
   hideLegend = false,
 }: {
   data: WorkloadRatioPoint[];
-  // Overlay each day's own load against the baseline — the individual spikes the
-  // 7-day rolling ratio smooths away.
-  showBars?: boolean;
   fillHeight?: boolean;
   compact?: boolean;
   hideLegend?: boolean;
@@ -131,8 +109,8 @@ export function WorkloadRatioChart({
     containerRef,
   } = useChartTooltipSuppression();
 
-  // Every slot is null until ~2 weeks of history exists, which would otherwise render
-  // as an empty grid with no explanation of why.
+  // Every slot is null until ~2 weeks of history exists, which would otherwise render as
+  // an empty grid with no explanation of why.
   const hasRatios = data.some(
     (d) => d.physioLoadRatio != null || d.stepsRatio != null,
   );
@@ -147,23 +125,12 @@ export function WorkloadRatioChart({
   }
 
   // Explicit domain rather than "auto": the top band has to be drawn up to a known
-  // number, and an auto domain could leave headroom above it unshaded. Rounded up to a
-  // whole step, with matching ticks — an explicit domain makes its own endpoint a tick,
-  // so a raw 2.2214… would render clipped on top of the 2 next to it.
+  // number, and an auto domain could leave headroom above it unshaded. Rounded so the
+  // endpoint lands on a tick — see axis-scale.ts.
   const ratios = data.flatMap((d) =>
     [d.physioLoadRatio, d.stepsRatio].filter((v): v is number => v != null),
   );
   const ratioMax = roundUpTo(Math.max(WORKLOAD_DANGER_MIN + 0.3, ...ratios), 0.5);
-
-  // Bars get their own axis. A single hard day routinely lands several times the
-  // baseline — sharing the ratio's scale would squash the lines and every zone band
-  // into the bottom of the plot, which is the part actually being read.
-  const dayRatios = data.flatMap((d) =>
-    [d.physioLoadDayRatio, d.stepsDayRatio].filter((v): v is number => v != null),
-  );
-  const rawDayMax = Math.max(1, ...dayRatios);
-  const dayStep = rawDayMax > 4 ? 1 : 0.5;
-  const dayMax = roundUpTo(rawDayMax, dayStep);
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
@@ -178,15 +145,13 @@ export function WorkloadRatioChart({
               {l.label}
             </span>
           ))}
-          {showBars && (
-            <span className={styles.legendItem}>
-              <span
-                className={styles.legendSwatch}
-                style={{ background: "var(--muted)", opacity: 0.45 }}
-              />
-              Bars: that day alone (right axis)
-            </span>
-          )}
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: "var(--pain-none)", opacity: 0.35 }}
+            />
+            Steady ({WORKLOAD_STEADY_MIN}–{WORKLOAD_STEADY_MAX}×)
+          </span>
         </div>
       )}
       <ResponsiveContainer
@@ -208,7 +173,6 @@ export function WorkloadRatioChart({
           {ZONE_BANDS.map((band) => (
             <ReferenceArea
               key={band.from}
-              yAxisId="ratio"
               y1={band.from}
               y2={band.to}
               fill={band.fill}
@@ -217,7 +181,6 @@ export function WorkloadRatioChart({
             />
           ))}
           <ReferenceArea
-            yAxisId="ratio"
             y1={WORKLOAD_DANGER_MIN}
             y2={ratioMax}
             fill="var(--pain-flare)"
@@ -225,7 +188,6 @@ export function WorkloadRatioChart({
             strokeOpacity={0}
           />
           <ReferenceLine
-            yAxisId="ratio"
             y={1}
             stroke={CHART_CHROME.axisLine}
             strokeDasharray="3 3"
@@ -240,19 +202,8 @@ export function WorkloadRatioChart({
           />
           <YAxis
             {...CHART_Y_AXIS}
-            yAxisId="ratio"
             domain={[0, ratioMax]}
             ticks={stepTicks(ratioMax, 0.5)}
-            interval={compact ? "preserveStart" : 0}
-          />
-          <YAxis
-            {...CHART_Y_AXIS}
-            yAxisId="day"
-            orientation="right"
-            width={showBars ? 32 : 0}
-            domain={[0, dayMax]}
-            ticks={stepTicks(dayMax, dayStep)}
-            hide={!showBars}
             interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
@@ -260,26 +211,9 @@ export function WorkloadRatioChart({
             cursor={{ stroke: CHART_CHROME.axisLine }}
             active={tooltipSuppressed ? false : undefined}
           />
-          {showBars &&
-            BARS.map((b) => (
-              <Bar
-                key={b.key}
-                yAxisId="day"
-                dataKey={b.key}
-                name={b.label}
-                fill={b.color}
-                fillOpacity={0.32}
-                isAnimationActive={!compact}
-                animationBegin={0}
-                animationDuration={300}
-                animationEasing="linear"
-              />
-            ))}
-          {/* After the bars so the trend lines read on top of them. */}
           {LINES.map((l) => (
             <Line
               key={l.key}
-              yAxisId="ratio"
               dataKey={l.key}
               name={l.label}
               stroke={l.color}

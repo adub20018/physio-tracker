@@ -3,6 +3,7 @@ import {
   latestRatio,
   workloadSeries,
   workloadZone,
+  zoneBoundsFor,
   WORKLOAD_DANGER_MIN,
   WORKLOAD_STEADY_MAX,
   WORKLOAD_STEADY_MIN,
@@ -80,28 +81,42 @@ describe("workloadSeries ratio", () => {
   });
 });
 
-describe("workloadSeries dayRatio", () => {
-  it("is 1 on a day matching the baseline", () => {
-    expect(workloadSeries(series(Array(40).fill(100))).dayRatio[39]).toBeCloseTo(1, 10);
+describe("workloadSeries acute and chronic", () => {
+  it("reports both means in the original units", () => {
+    const { acute, chronic } = workloadSeries(series(Array(40).fill(100)));
+    expect(acute[39]).toBeCloseTo(100, 10);
+    expect(chronic[39]).toBeCloseTo(100, 10);
   });
 
-  it("shows a single hard day the rolling ratio flattens", () => {
-    // One 400 day against a 100 baseline: the day reads 4x, while the 7-day
-    // ratio barely moves — which is the whole reason for showing both.
-    const values = Array(40).fill(100);
-    values[39] = 400;
-    const { ratio, dayRatio } = workloadSeries(series(values));
-    // The 28-day baseline spans slots 12–39, so it includes the spike itself.
-    const chronicMean = (27 * 100 + 400) / 28;
-    expect(dayRatio[39]!).toBeCloseTo(400 / chronicMean, 10);
-    expect(dayRatio[39]!).toBeGreaterThan(3);
-    expect(ratio[39]!).toBeLessThan(1.5);
+  it("moves the acute mean ahead of the baseline after a step up", () => {
+    const { acute, chronic } = workloadSeries(
+      series([...Array(28).fill(100), ...Array(7).fill(200)]),
+    );
+    expect(acute[34]!).toBeGreaterThan(chronic[34]!);
   });
 
-  it("is null on unlogged days", () => {
-    const values: (number | null)[] = Array(40).fill(100);
-    values[39] = null;
-    expect(workloadSeries(series(values)).dayRatio[39]).toBeNull();
+  it("nulls the baseline when it would be zero", () => {
+    expect(workloadSeries(series(Array(40).fill(0))).chronic[39]).toBeNull();
+  });
+});
+
+describe("zoneBoundsFor", () => {
+  it("scales the ratio thresholds into the metric's own units", () => {
+    const bounds = zoneBoundsFor(2000)!;
+    expect(bounds.steadyMin).toBeCloseTo(1600, 10);
+    expect(bounds.steadyMax).toBeCloseTo(2600, 10);
+    expect(bounds.dangerMin).toBeCloseTo(3000, 10);
+  });
+
+  it("round-trips against workloadZone", () => {
+    // A 7-day average sitting exactly on the steady ceiling is still steady.
+    const baseline = 1900;
+    const { steadyMax } = zoneBoundsFor(baseline)!;
+    expect(workloadZone(steadyMax / baseline)).toBe("steady");
+  });
+
+  it("returns null without a baseline", () => {
+    expect(zoneBoundsFor(null)).toBeNull();
   });
 });
 

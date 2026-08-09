@@ -73,15 +73,22 @@ export type ProgressionPoint = {
 
 export type HeatmapDay = { date: string; avgPain: number | null };
 
-// Acute:chronic ratios for the two things being ramped at once, plus each day's own
-// load against the same baseline. Null until there's enough logged history to have a
-// baseline worth dividing by (see domain/workload.ts).
+// Acute:chronic ratios for the two things being ramped at once. Null until there's
+// enough logged history to have a baseline worth dividing by (see domain/workload.ts).
 export type WorkloadPoint = {
   date: string;
   physioLoadRatio: number | null;
   stepsRatio: number | null;
-  physioLoadDayRatio: number | null;
-  stepsDayRatio: number | null;
+};
+
+// The same windows kept in the metric's own units, so the ratio's thresholds can be
+// drawn as a moving corridor (zoneBoundsFor) instead of an abstract multiplier.
+export type LoadZonePoint = {
+  date: string;
+  // 28-day mean — what the body is currently adapted to.
+  baseline: number | null;
+  // 7-day mean — the thing the zones actually bound.
+  acute: number | null;
 };
 
 export type ChartDataBundle = {
@@ -101,6 +108,8 @@ export type ChartDataBundle = {
   fullProgression: ProgressionPoint[];
   heatmap: HeatmapDay[];
   fullWorkload: WorkloadPoint[];
+  fullPhysioLoadZones: LoadZonePoint[];
+  fullStepZones: LoadZonePoint[];
   // Latest qualifying ratio for each, for the stat tiles.
   workloadNow: { physioLoad: number | null; steps: number | null };
 
@@ -278,9 +287,15 @@ export function buildChartDataBundle(
     date: slot.date,
     physioLoadRatio: physioWorkload.ratio[i],
     stepsRatio: stepsWorkload.ratio[i],
-    physioLoadDayRatio: physioWorkload.dayRatio[i],
-    stepsDayRatio: stepsWorkload.dayRatio[i],
   }));
+  const toZonePoints = (w: typeof physioWorkload): LoadZonePoint[] =>
+    denseLoad.map((slot, i) => ({
+      date: slot.date,
+      baseline: w.chronic[i],
+      acute: w.chronic[i] != null ? w.acute[i] : null,
+    }));
+  const fullPhysioLoadZones = toZonePoints(physioWorkload);
+  const fullStepZones = toZonePoints(stepsWorkload);
   const workloadNow = {
     physioLoad: latestRatio(physioWorkload.ratio),
     steps: latestRatio(stepsWorkload.ratio),
@@ -368,6 +383,8 @@ export function buildChartDataBundle(
     fullProgression,
     heatmap,
     fullWorkload,
+    fullPhysioLoadZones,
+    fullStepZones,
     workloadNow,
     fullStepsPoints,
     fullVolumePoints,

@@ -22,6 +22,7 @@ import { SleepPainTimeline } from "@/components/charts/sleep-pain-timeline";
 import { ProgressionChart } from "@/components/charts/progression-chart";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
 import { WorkloadRatioChart } from "@/components/charts/workload-ratio-chart";
+import { LoadZoneChart } from "@/components/charts/load-zone-chart";
 import { LagScatter } from "@/components/charts/scatter/lag-scatter";
 import { MultiScatter } from "@/components/charts/scatter/multi-scatter";
 import { PainCandleChart } from "@/components/charts/pain-candle-chart";
@@ -330,6 +331,10 @@ const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
 // and the limits of the thresholds, which are conventions rather than facts.
 const ACWR_EXPLAINER =
   "This is the acute:chronic workload ratio (ACWR) — the last 7 days of load divided by the 28-day baseline you've built up to. 1.00× means training right at that baseline. Zones: green 0.80–1.30 steady, amber 1.30–1.50 higher risk, red above 1.50.";
+// Only shown on the zone charts, where a corridor in real units invites reading it as a
+// daily allowance — it isn't one.
+const ACWR_ZONES_BOUND_THE_WEEK =
+  "The range bounds your 7-day average, not any single day: one hard session is fine as long as the week's average stays inside it.";
 const ACWR_CAVEAT =
   "These cut-offs come from team-sport research and are not golden numbers — they won't hold for every person or injury, so treat a reading as a prompt to look, not a verdict.";
 
@@ -705,22 +710,53 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     ),
   },
   {
-    type: "chart-workload-ratio-bars",
-    label: "Workload ratio + daily load",
+    type: "chart-step-zones",
+    label: "Step load zones",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `The same chart with each day's own load drawn as bars against the same baseline, so single hard days show up instead of being averaged away by the lines. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Which individual days were the big ones?"`,
+    hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
-        fullData={bundle.fullWorkload}
+        fullData={bundle.fullStepZones}
         renderChart={(data) => (
-          <WorkloadRatioChart
+          <LoadZoneChart
             data={data}
-            showBars
+            color={SERIES.steps}
+            unit="steps"
+            formatValue={(v) => Math.round(v).toLocaleString()}
+            emptyMessage="Not enough logged history yet"
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-physio-load-zones",
+    label: "Physio load zones",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullPhysioLoadZones}
+        renderChart={(data) => (
+          <LoadZoneChart
+            data={data}
+            color={SERIES.load}
+            unit="load"
+            formatValue={(v) => Math.round(v).toLocaleString()}
+            emptyMessage="Not enough logged history yet"
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
             hideLegend={ctx.hideLegend}

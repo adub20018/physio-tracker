@@ -7,8 +7,10 @@ import { BoneFracture } from "lucide-react";
 import { Footprints } from "lucide-react";
 import { BedDouble } from "lucide-react";
 import { WeightTilde } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { pearson, correlationStrength } from "@/domain/correlation";
+import { workloadZone, type WorkloadZone } from "@/domain/workload";
 import type { PairedPoint } from "@/domain/correlation";
 import type { WidgetDataBundle } from "@/lib/widget-data";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
@@ -19,6 +21,8 @@ import { LoadVsSymptoms } from "@/components/charts/load-vs-symptoms";
 import { SleepPainTimeline } from "@/components/charts/sleep-pain-timeline";
 import { ProgressionChart } from "@/components/charts/progression-chart";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
+import { WorkloadRatioChart } from "@/components/charts/workload-ratio-chart";
+import { LoadZoneChart } from "@/components/charts/load-zone-chart";
 import { LagScatter } from "@/components/charts/scatter/lag-scatter";
 import { MultiScatter } from "@/components/charts/scatter/multi-scatter";
 import { PainCandleChart } from "@/components/charts/pain-candle-chart";
@@ -312,6 +316,68 @@ function SleepVsPainWidget({
   );
 }
 
+// Ratio tiles colour by zone rather than by metric identity (the usual StatTile rule):
+// on these the zone *is* the headline, and "am I ramping too fast" should be readable
+// without parsing the number. Reuses the pain severity palette so green/amber/red mean
+// the same thing here as everywhere else.
+const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
+  under: "var(--faint)",
+  steady: "var(--pain-none)",
+  caution: "var(--pain-elevated)",
+  danger: "var(--pain-flare)",
+};
+
+// Shared across all four ACWR tooltips: the metric's full name (so it can be looked up)
+// and the limits of the thresholds, which are conventions rather than facts.
+const ACWR_EXPLAINER =
+  "This is the acute:chronic workload ratio (ACWR) — the last 7 days of load divided by the 28-day baseline you've built up to. 1.00× means training right at that baseline. Zones: green 0.80–1.30 steady, amber 1.30–1.50 higher risk, red above 1.50.";
+// Only shown on the zone charts, where a corridor in real units invites reading it as a
+// daily allowance — it isn't one.
+const ACWR_ZONES_BOUND_THE_WEEK =
+  "The range bounds your 7-day average, not any single day: one hard session is fine as long as the week's average stays inside it.";
+const ACWR_CAVEAT =
+  "These cut-offs come from team-sport research and are not golden numbers — they won't hold for every person or injury, so treat a reading as a prompt to look, not a verdict.";
+
+// One ratio stat tile. `pick` chooses which of the two ratios this tile tracks.
+function WorkloadTile({
+  label,
+  bundle,
+  ctx,
+  ratio,
+  pick,
+  hint,
+}: {
+  label: string;
+  bundle: WidgetDataBundle;
+  ctx: WidgetRenderContext;
+  ratio: number | null;
+  pick: (point: WidgetDataBundle["fullWorkload"][number]) => number | null;
+  hint: string;
+}) {
+  const color = ratio == null ? "var(--faint)" : WORKLOAD_ZONE_COLOR[workloadZone(ratio)];
+  return (
+    <StatTile
+      label={label}
+      value={ratio != null ? ratio.toFixed(2) : "—"}
+      unit={ratio != null ? "×" : undefined}
+      hint={hint}
+      icon={<Gauge size={16} />}
+      accentColor={color}
+      sparklineValues={bundle.fullWorkload.slice(-7).map((p) => {
+        const value = pick(p);
+        return {
+          date: p.date,
+          value,
+          display: value != null ? `${value.toFixed(2)}×` : "Not enough history",
+        };
+      })}
+      sparklineVariant="area"
+      actions={ctx.editControls}
+      animate={!ctx.compact}
+    />
+  );
+}
+
 export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   // ── Stat tiles ────────────────────────────────────────────────────────
   {
@@ -475,6 +541,47 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     },
   },
 
+  {
+    type: "stat-workload-physio",
+    label: "Physio load ratio",
+    category: "Stat tiles",
+    defaultSize: { w: 3, h: 7 },
+    bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
+    bare: true,
+    render: (bundle, ctx) => (
+      <WorkloadTile
+        label="Physio load ratio"
+        bundle={bundle}
+        ctx={ctx}
+        ratio={bundle.workloadNow.physioLoad}
+        pick={(p) => p.physioLoadRatio}
+        hint={`${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Have I stepped up my physio faster than usual?"`}
+      />
+    ),
+  },
+  {
+    type: "stat-workload-steps",
+    label: "Step load ratio",
+    category: "Stat tiles",
+    defaultSize: { w: 3, h: 7 },
+    bounds: STAT_TILE_BOUNDS,
+    mobileDefaultSize: { w: 1, h: 9 },
+    mobileBounds: MOBILE_STAT_TILE_BOUNDS,
+    bare: true,
+    render: (bundle, ctx) => (
+      <WorkloadTile
+        label="Step load ratio"
+        bundle={bundle}
+        ctx={ctx}
+        ratio={bundle.workloadNow.steps}
+        pick={(p) => p.stepsRatio}
+        hint={`${ACWR_EXPLAINER} Here the load is your daily step count. ${ACWR_CAVEAT}\n\nUse it to answer: "Am I increasing my steps gradually?"`}
+      />
+    ),
+  },
+
   // ── Dashboard charts ─────────────────────────────────────────────────
   {
     type: "chart-pain-timeline",
@@ -570,6 +677,86 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
           <ProgressionChart
             data={data}
             autoScaleYAxis={ctx.autoScaleYAxis}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-workload-ratio",
+    label: "Workload ratio",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: `Tracks physio load and steps together, since both are usually being ramped at once. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Am I ramping up faster than I've adapted to?"`,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullWorkload}
+        renderChart={(data) => (
+          <WorkloadRatioChart
+            data={data}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-step-zones",
+    label: "Step load zones",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullStepZones}
+        renderChart={(data) => (
+          <LoadZoneChart
+            data={data}
+            color={SERIES.steps}
+            unit="steps"
+            formatValue={(v) => Math.round(v).toLocaleString()}
+            emptyMessage="Not enough logged history yet"
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-physio-load-zones",
+    label: "Physio load zones",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullPhysioLoadZones}
+        renderChart={(data) => (
+          <LoadZoneChart
+            data={data}
+            color={SERIES.load}
+            unit="load"
+            formatValue={(v) => Math.round(v).toLocaleString()}
+            emptyMessage="Not enough logged history yet"
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
             hideLegend={ctx.hideLegend}

@@ -38,7 +38,11 @@ export function DashboardTimerangeButton({
         <ChevronDown size={14} />
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={8} align="end">
+        <Popover.Positioner
+          sideOffset={8}
+          align="end"
+          className={styles.positioner}
+        >
           <Popover.Popup className={styles.popup}>
             <h3 className={styles.title}>Time range</h3>
             <TimeRangeSelector value={range} onChange={onRangeChange} />

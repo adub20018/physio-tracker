@@ -8,14 +8,19 @@
   padding: 0.9rem 1rem 1rem;
 }
 
-/* The trigger sits third-from-right in the toolbar, so a popup anchored to its
-   right edge extends left past the viewport unless it's narrow enough to fit in
-   what's left. Sized to clear that gap on a 360px screen rather than relying on
-   the positioner to clamp — Chrome's anchor positioning does, but not every
-   engine we ship to has it. The toggle group simply wraps at this width. */
+/* The trigger sits third-from-right in the toolbar, so a panel anchored to its
+   right edge reaches past the left of a phone screen. Pin the horizontal inset
+   to the viewport instead — there's room for the full-width panel over there,
+   it just can't start from the trigger.
+
+   `left: auto` matters as much as the right inset: the library positions either
+   by CSS anchor (`right: anchor(right)`) or, without that support, by an inline
+   `left` in JS. Clearing left and setting right handles both, and vertical
+   placement still comes from the positioner either way. */
 @media (max-width: 34rem) {
-  .popup {
-    width: min(15rem, calc(100vw - 2rem));
+  .positioner {
+    left: auto !important;
+    right: 0.75rem !important;
   }
 }
 

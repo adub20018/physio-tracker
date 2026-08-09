@@ -73,6 +73,11 @@
   /* Same reason as the track's minmax(0, …) above — a grid item defaults to
      min-width:auto and would otherwise refuse to shrink under its chart. */
   min-width: 0;
+  /* A preview whose widget scrolls internally (the report widgets) is clipped
+     correctly by its own box, but Chrome still folds the full un-clipped height
+     into an overflow:visible ancestor's scrollHeight — which left ~1100px of
+     dead scroll under the last widget. Clipping here stops it propagating. */
+  overflow: hidden;
   padding: 0.6rem;
   border: var(--border-subtle);
   border-radius: 12px;

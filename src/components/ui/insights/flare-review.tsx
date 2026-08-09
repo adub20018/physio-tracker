@@ -3,10 +3,23 @@
 "use client";
 
 import { Accordion } from "@primereact/ui/accordion";
-import { Tag } from "@primereact/ui/tag";
 import { ChevronDown } from "@primeicons/react/chevron-down";
-import type { FlareEpisodeView } from "@/lib/widget-data";
+import { Sunrise, Sun, Moon, type LucideIcon } from "lucide-react";
+import { SERIES } from "@/components/charts/chart-theme";
+import type { FlareEpisodeView, FlareReading } from "@/lib/widget-data";
 import styles from "./flare-review.module.css";
+
+// Icon + color per reading slot. Colors are the same ones the charts use for
+// these series, so a violet 5 reads as "night" here exactly as it does there.
+// The row's own red dot carries "this is a flare"; these carry which reading.
+const SLOT_STYLES: Record<
+  FlareReading["slot"],
+  { Icon: LucideIcon; color: string }
+> = {
+  Morning: { Icon: Sunrise, color: SERIES.morning },
+  Daytime: { Icon: Sun, color: SERIES.daytime },
+  Night: { Icon: Moon, color: SERIES.night },
+};
 
 export function FlareReview({ episodes }: { episodes: FlareEpisodeView[] }) {
   if (episodes.length === 0) {
@@ -26,11 +39,26 @@ export function FlareReview({ episodes }: { episodes: FlareEpisodeView[] }) {
                   <span className={styles.weekday}>{ep.weekday}</span>
                 </span>
                 <span className={styles.readings}>
-                  {ep.readings.map((r) => (
-                    <Tag key={r.slot} severity="danger">
-                      {r.slot} {r.value}
-                    </Tag>
-                  ))}
+                  {ep.readings.map((r) => {
+                    const { Icon, color } = SLOT_STYLES[r.slot];
+                    return (
+                      <span
+                        key={r.slot}
+                        className={styles.reading}
+                        // Tinted from the slot's own color so each chip reads
+                        // as one unit rather than an icon beside a number.
+                        style={{
+                          color,
+                          background: `color-mix(in srgb, ${color} 16%, transparent)`,
+                        }}
+                        title={`${r.slot} pain ${r.value}`}
+                      >
+                        <Icon size={14} aria-hidden />
+                        <span className={styles.srOnly}>{r.slot} pain</span>
+                        {r.value}
+                      </span>
+                    );
+                  })}
                 </span>
                 <Accordion.Indicator className={styles.indicator}>
                   <ChevronDown size={14} />

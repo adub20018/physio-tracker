@@ -317,13 +317,21 @@ function SleepVsPainWidget({
 
 // Ratio tiles colour by zone rather than by metric identity (the usual StatTile rule):
 // on these the zone *is* the headline, and "am I ramping too fast" should be readable
-// without parsing the number. Amber for over, not red — a spike is worth a look, not an
-// alarm (see domain/workload.ts on how much weight this deserves).
+// without parsing the number. Reuses the pain severity palette so green/amber/red mean
+// the same thing here as everywhere else.
 const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
   under: "var(--faint)",
-  steady: SERIES.rollingAvg,
-  over: "var(--pain-elevated)",
+  steady: "var(--pain-none)",
+  caution: "var(--pain-elevated)",
+  danger: "var(--pain-flare)",
 };
+
+// Shared across all four ACWR tooltips: the metric's full name (so it can be looked up)
+// and the limits of the thresholds, which are conventions rather than facts.
+const ACWR_EXPLAINER =
+  "This is the acute:chronic workload ratio (ACWR) — the last 7 days of load divided by the 28-day baseline you've built up to. 1.00× means training right at that baseline. Zones: green 0.80–1.30 steady, amber 1.30–1.50 higher risk, red above 1.50.";
+const ACWR_CAVEAT =
+  "These cut-offs come from team-sport research and are not golden numbers — they won't hold for every person or injury, so treat a reading as a prompt to look, not a verdict.";
 
 // One ratio stat tile. `pick` chooses which of the two ratios this tile tracks.
 function WorkloadTile({
@@ -544,7 +552,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         ctx={ctx}
         ratio={bundle.workloadNow.physioLoad}
         pick={(p) => p.physioLoadRatio}
-        hint={`Your last 7 days of physio load divided by your last 28 — 1.00× means training at the baseline you've adapted to, higher means ramping ahead of it. Steady zone is 0.80–1.30×.\n\nUse it to answer: "Have I stepped up my physio faster than usual?"`}
+        hint={`${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Have I stepped up my physio faster than usual?"`}
       />
     ),
   },
@@ -564,7 +572,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         ctx={ctx}
         ratio={bundle.workloadNow.steps}
         pick={(p) => p.stepsRatio}
-        hint={`Your last 7 days of daily steps divided by your last 28 — 1.00× means walking about as much as you've built up to, higher means ramping ahead of it. Steady zone is 0.80–1.30×.\n\nUse it to answer: "Am I increasing my steps gradually?"`}
+        hint={`${ACWR_EXPLAINER} Here the load is your daily step count. ${ACWR_CAVEAT}\n\nUse it to answer: "Am I increasing my steps gradually?"`}
       />
     ),
   },
@@ -680,7 +688,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: 'Shows your recent physio load and step count against the baseline you\'ve built up to, with the steady zone shaded.\n\nUse it to answer: "Am I ramping up faster than I\'ve adapted to?"',
+    hint: `Tracks physio load and steps together, since both are usually being ramped at once. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Am I ramping up faster than I've adapted to?"`,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -688,6 +696,31 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         renderChart={(data) => (
           <WorkloadRatioChart
             data={data}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
+    type: "chart-workload-ratio-bars",
+    label: "Workload ratio + daily load",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: `The same chart with each day's own load drawn as bars against the same baseline, so single hard days show up instead of being averaged away by the lines. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Which individual days were the big ones?"`,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullWorkload}
+        renderChart={(data) => (
+          <WorkloadRatioChart
+            data={data}
+            showBars
             fillHeight={ctx.fillHeight}
             compact={ctx.compact}
             hideLegend={ctx.hideLegend}

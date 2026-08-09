@@ -21,7 +21,7 @@ import {
 } from "./lag";
 import { dailyPainCandles, type PainCandle } from "./candle";
 import { pairSeries, type PairedPoint } from "./correlation";
-import { latestRatio, workloadRatios } from "./workload";
+import { latestRatio, workloadSeries } from "./workload";
 
 // Stat tiles always use a fixed 7-day window, independent of any chart widget's range —
 // averaging a "how am I doing right now" tile over months would smear in stale, low numbers.
@@ -73,12 +73,15 @@ export type ProgressionPoint = {
 
 export type HeatmapDay = { date: string; avgPain: number | null };
 
-// Acute:chronic ratios for the two things being ramped at once. Null until each has
-// enough logged history to have a baseline worth dividing by (see domain/workload.ts).
+// Acute:chronic ratios for the two things being ramped at once, plus each day's own
+// load against the same baseline. Null until there's enough logged history to have a
+// baseline worth dividing by (see domain/workload.ts).
 export type WorkloadPoint = {
   date: string;
   physioLoadRatio: number | null;
   stepsRatio: number | null;
+  physioLoadDayRatio: number | null;
+  stepsDayRatio: number | null;
 };
 
 export type ChartDataBundle = {
@@ -269,16 +272,18 @@ export function buildChartDataBundle(
   }
 
   // ── Workload ratios: recent load vs the adapted-to baseline ────────────
-  const physioLoadRatios = workloadRatios(denseLoad);
-  const stepsRatios = workloadRatios(denseSteps);
+  const physioWorkload = workloadSeries(denseLoad);
+  const stepsWorkload = workloadSeries(denseSteps);
   const fullWorkload: WorkloadPoint[] = denseLoad.map((slot, i) => ({
     date: slot.date,
-    physioLoadRatio: physioLoadRatios[i],
-    stepsRatio: stepsRatios[i],
+    physioLoadRatio: physioWorkload.ratio[i],
+    stepsRatio: stepsWorkload.ratio[i],
+    physioLoadDayRatio: physioWorkload.dayRatio[i],
+    stepsDayRatio: stepsWorkload.dayRatio[i],
   }));
   const workloadNow = {
-    physioLoad: latestRatio(physioLoadRatios),
-    steps: latestRatio(stepsRatios),
+    physioLoad: latestRatio(physioWorkload.ratio),
+    steps: latestRatio(stepsWorkload.ratio),
   };
 
   // ── Insights scatters ───────────────────────────────────────────────────

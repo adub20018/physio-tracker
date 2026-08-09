@@ -1,9 +1,10 @@
-// Workload ratio — recent load (7d) over the baseline you're adapted to (28d), for physio
-// and steps together, since both are usually being ramped at once. The shaded band is the
-// steady zone; excursions above it are where flares tend to cluster.
+// Acute:chronic workload ratio (ACWR) — recent load (7d) over the baseline you're adapted
+// to (28d), for physio and steps together since both are usually being ramped at once.
+// Bands mark the conventional zones; `showBars` adds each day's own load on the same axis.
 "use client";
 
 import {
+  Bar,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -22,6 +23,7 @@ import {
   shortDate,
 } from "./chart-theme";
 import {
+  WORKLOAD_DANGER_MIN,
   WORKLOAD_STEADY_MAX,
   WORKLOAD_STEADY_MIN,
 } from "@/domain/workload";
@@ -33,6 +35,8 @@ export type WorkloadRatioPoint = {
   date: string;
   physioLoadRatio: number | null;
   stepsRatio: number | null;
+  physioLoadDayRatio: number | null;
+  stepsDayRatio: number | null;
 };
 
 const LINES = [
@@ -40,8 +44,29 @@ const LINES = [
   { key: "stepsRatio", label: "Steps", color: SERIES.steps },
 ] as const;
 
-// Ratios round to 2dp here rather than in the domain — the numbers stay exact for
-// comparisons, and only the displayed value is shortened.
+const BARS = [
+  { key: "physioLoadDayRatio", label: "Physio load (that day)", color: SERIES.load },
+  { key: "stepsDayRatio", label: "Steps (that day)", color: SERIES.steps },
+] as const;
+
+// Zone fills. Green/amber/red match the pain severity scale used elsewhere, so the
+// colours carry the same meaning across the app.
+const ZONE_BANDS = [
+  { from: 0, to: WORKLOAD_STEADY_MIN, fill: "var(--faint)", opacity: 0.06 },
+  {
+    from: WORKLOAD_STEADY_MIN,
+    to: WORKLOAD_STEADY_MAX,
+    fill: "var(--pain-none)",
+    opacity: 0.13,
+  },
+  {
+    from: WORKLOAD_STEADY_MAX,
+    to: WORKLOAD_DANGER_MIN,
+    fill: "var(--pain-elevated)",
+    opacity: 0.13,
+  },
+] as const;
+
 function WorkloadTooltipContent({
   active,
   payload,
@@ -74,11 +99,15 @@ function WorkloadTooltipContent({
 
 export function WorkloadRatioChart({
   data,
+  showBars = false,
   fillHeight = false,
   compact = false,
   hideLegend = false,
 }: {
   data: WorkloadRatioPoint[];
+  // Overlay each day's own load against the baseline — the individual spikes the
+  // 7-day rolling ratio smooths away.
+  showBars?: boolean;
   fillHeight?: boolean;
   compact?: boolean;
   hideLegend?: boolean;
@@ -89,8 +118,8 @@ export function WorkloadRatioChart({
     containerRef,
   } = useChartTooltipSuppression();
 
-  // Every slot is null until ~2 weeks of history exists, which would otherwise render as
-  // an empty grid with no explanation of why.
+  // Every slot is null until ~2 weeks of history exists, which would otherwise render
+  // as an empty grid with no explanation of why.
   const hasRatios = data.some(
     (d) => d.physioLoadRatio != null || d.stepsRatio != null,
   );
@@ -103,6 +132,17 @@ export function WorkloadRatioChart({
       />
     );
   }
+
+  // Explicit domain rather than "auto": the top band has to be drawn up to a known
+  // number, and an auto domain could leave headroom above it unshaded.
+  const plotted = data.flatMap((d) =>
+    [
+      d.physioLoadRatio,
+      d.stepsRatio,
+      ...(showBars ? [d.physioLoadDayRatio, d.stepsDayRatio] : []),
+    ].filter((v): v is number => v != null),
+  );
+  const yMax = Math.max(WORKLOAD_DANGER_MIN + 0.3, ...plotted);
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
@@ -117,13 +157,15 @@ export function WorkloadRatioChart({
               {l.label}
             </span>
           ))}
-          <span className={styles.legendItem}>
-            <span
-              className={styles.legendSwatch}
-              style={{ background: SERIES.rollingAvg, opacity: 0.18 }}
-            />
-            Steady ({WORKLOAD_STEADY_MIN}–{WORKLOAD_STEADY_MAX}×)
-          </span>
+          {showBars && (
+            <span className={styles.legendItem}>
+              <span
+                className={styles.legendSwatch}
+                style={{ background: "var(--muted)", opacity: 0.45 }}
+              />
+              Bars: that day alone
+            </span>
+          )}
         </div>
       )}
       <ResponsiveContainer
@@ -141,12 +183,22 @@ export function WorkloadRatioChart({
           margin={{ top: 6, right: 12, bottom: 0, left: -18 }}
         >
           <CartesianGrid stroke={CHART_CHROME.grid} vertical={false} />
-          {/* Drawn before the lines so it sits behind them. */}
+          {/* Declared before the data marks so the bands sit behind them. */}
+          {ZONE_BANDS.map((band) => (
+            <ReferenceArea
+              key={band.from}
+              y1={band.from}
+              y2={band.to}
+              fill={band.fill}
+              fillOpacity={band.opacity}
+              strokeOpacity={0}
+            />
+          ))}
           <ReferenceArea
-            y1={WORKLOAD_STEADY_MIN}
-            y2={WORKLOAD_STEADY_MAX}
-            fill={SERIES.rollingAvg}
-            fillOpacity={0.12}
+            y1={WORKLOAD_DANGER_MIN}
+            y2={yMax}
+            fill="var(--pain-flare)"
+            fillOpacity={0.13}
             strokeOpacity={0}
           />
           <ReferenceLine
@@ -164,7 +216,7 @@ export function WorkloadRatioChart({
           />
           <YAxis
             {...CHART_Y_AXIS}
-            domain={[0, "auto"]}
+            domain={[0, yMax]}
             interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
@@ -172,6 +224,21 @@ export function WorkloadRatioChart({
             cursor={{ stroke: CHART_CHROME.axisLine }}
             active={tooltipSuppressed ? false : undefined}
           />
+          {showBars &&
+            BARS.map((b) => (
+              <Bar
+                key={b.key}
+                dataKey={b.key}
+                name={b.label}
+                fill={b.color}
+                fillOpacity={0.32}
+                isAnimationActive={!compact}
+                animationBegin={0}
+                animationDuration={300}
+                animationEasing="linear"
+              />
+            ))}
+          {/* After the bars so the trend lines read on top of them. */}
           {LINES.map((l) => (
             <Line
               key={l.key}

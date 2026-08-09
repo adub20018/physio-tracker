@@ -8,19 +8,22 @@ import type { DatedValue } from "./aggregate";
 export const ACUTE_WINDOW_DAYS = 7;
 export const CHRONIC_WINDOW_DAYS = 28;
 
-// Ratios inside this band mean training near your established baseline.
+// Zone edges. Ratios inside the steady band mean training near your established
+// baseline; above it is where flares cluster in the source research.
 export const WORKLOAD_STEADY_MIN = 0.8;
 export const WORKLOAD_STEADY_MAX = 1.3;
+export const WORKLOAD_DANGER_MIN = 1.5;
 
 // Guards against a baseline built from almost nothing: without these, one logged day in
 // four weeks would define "normal" and the very next session would read as a huge spike.
 const MIN_ACUTE_LOGGED_DAYS = 3;
 const MIN_CHRONIC_LOGGED_DAYS = 14;
 
-export type WorkloadZone = "steady" | "under" | "over";
+export type WorkloadZone = "under" | "steady" | "caution" | "danger";
 
 export function workloadZone(ratio: number): WorkloadZone {
-  if (ratio > WORKLOAD_STEADY_MAX) return "over";
+  if (ratio > WORKLOAD_DANGER_MIN) return "danger";
+  if (ratio > WORKLOAD_STEADY_MAX) return "caution";
   if (ratio < WORKLOAD_STEADY_MIN) return "under";
   return "steady";
 }
@@ -42,11 +45,22 @@ function trailingMean(
   return present.reduce((sum, v) => sum + v, 0) / present.length;
 }
 
-// Ratio per day, aligned to `series`, which must be calendar-dense (one slot per day,
-// null where unlogged) and oldest-first — a window of array slots is only a window of
-// days if no dates are missing.
-export function workloadRatios(series: DatedValue<number>[]): (number | null)[] {
-  return series.map((_, i) => {
+export type WorkloadSeries = {
+  // Acute:chronic ratio — the 7-day mean over the 28-day baseline.
+  ratio: (number | null)[];
+  // That single day's own load over the same baseline. Shares the ratio's units and
+  // axis, so the two can be read together: the spikes a 7-day mean flattens show here.
+  dayRatio: (number | null)[];
+};
+
+// Both series per day, aligned to `series`, which must be calendar-dense (one slot per
+// day, null where unlogged) and oldest-first — a window of array slots is only a window
+// of days if no dates are missing.
+export function workloadSeries(series: DatedValue<number>[]): WorkloadSeries {
+  const ratio: (number | null)[] = [];
+  const dayRatio: (number | null)[] = [];
+
+  series.forEach((slot, i) => {
     const acute = trailingMean(series, i, ACUTE_WINDOW_DAYS, MIN_ACUTE_LOGGED_DAYS);
     const chronic = trailingMean(
       series,
@@ -56,9 +70,12 @@ export function workloadRatios(series: DatedValue<number>[]): (number | null)[] 
     );
     // A zero baseline divides to Infinity: four weeks of nothing then one session is
     // "started again", not a ratio worth showing.
-    if (acute == null || chronic == null || chronic === 0) return null;
-    return acute / chronic;
+    const usableBaseline = chronic != null && chronic > 0;
+    ratio.push(usableBaseline && acute != null ? acute / chronic : null);
+    dayRatio.push(usableBaseline && slot.value != null ? slot.value / chronic : null);
   });
+
+  return { ratio, dayRatio };
 }
 
 // Most recent ratio in the series, or null if none qualified.

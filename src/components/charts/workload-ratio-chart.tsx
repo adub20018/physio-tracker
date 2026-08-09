@@ -135,14 +135,18 @@ export function WorkloadRatioChart({
 
   // Explicit domain rather than "auto": the top band has to be drawn up to a known
   // number, and an auto domain could leave headroom above it unshaded.
-  const plotted = data.flatMap((d) =>
-    [
-      d.physioLoadRatio,
-      d.stepsRatio,
-      ...(showBars ? [d.physioLoadDayRatio, d.stepsDayRatio] : []),
-    ].filter((v): v is number => v != null),
+  const ratios = data.flatMap((d) =>
+    [d.physioLoadRatio, d.stepsRatio].filter((v): v is number => v != null),
   );
-  const yMax = Math.max(WORKLOAD_DANGER_MIN + 0.3, ...plotted);
+  const ratioMax = Math.max(WORKLOAD_DANGER_MIN + 0.3, ...ratios);
+
+  // Bars get their own axis. A single hard day routinely lands several times the
+  // baseline — sharing the ratio's scale would squash the lines and every zone band
+  // into the bottom of the plot, which is the part actually being read.
+  const dayRatios = data.flatMap((d) =>
+    [d.physioLoadDayRatio, d.stepsDayRatio].filter((v): v is number => v != null),
+  );
+  const dayMax = Math.max(1, ...dayRatios);
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
@@ -163,7 +167,7 @@ export function WorkloadRatioChart({
                 className={styles.legendSwatch}
                 style={{ background: "var(--muted)", opacity: 0.45 }}
               />
-              Bars: that day alone
+              Bars: that day alone (right axis)
             </span>
           )}
         </div>
@@ -187,6 +191,7 @@ export function WorkloadRatioChart({
           {ZONE_BANDS.map((band) => (
             <ReferenceArea
               key={band.from}
+              yAxisId="ratio"
               y1={band.from}
               y2={band.to}
               fill={band.fill}
@@ -195,13 +200,15 @@ export function WorkloadRatioChart({
             />
           ))}
           <ReferenceArea
+            yAxisId="ratio"
             y1={WORKLOAD_DANGER_MIN}
-            y2={yMax}
+            y2={ratioMax}
             fill="var(--pain-flare)"
             fillOpacity={0.13}
             strokeOpacity={0}
           />
           <ReferenceLine
+            yAxisId="ratio"
             y={1}
             stroke={CHART_CHROME.axisLine}
             strokeDasharray="3 3"
@@ -216,7 +223,17 @@ export function WorkloadRatioChart({
           />
           <YAxis
             {...CHART_Y_AXIS}
-            domain={[0, yMax]}
+            yAxisId="ratio"
+            domain={[0, ratioMax]}
+            interval={compact ? "preserveStart" : 0}
+          />
+          <YAxis
+            {...CHART_Y_AXIS}
+            yAxisId="day"
+            orientation="right"
+            width={showBars ? 32 : 0}
+            domain={[0, dayMax]}
+            hide={!showBars}
             interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
@@ -228,6 +245,7 @@ export function WorkloadRatioChart({
             BARS.map((b) => (
               <Bar
                 key={b.key}
+                yAxisId="day"
                 dataKey={b.key}
                 name={b.label}
                 fill={b.color}
@@ -242,6 +260,7 @@ export function WorkloadRatioChart({
           {LINES.map((l) => (
             <Line
               key={l.key}
+              yAxisId="ratio"
               dataKey={l.key}
               name={l.label}
               stroke={l.color}

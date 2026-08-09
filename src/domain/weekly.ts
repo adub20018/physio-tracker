@@ -1,5 +1,5 @@
 // Weekly report card: groups logged days into Monday-started calendar weeks
-// and summarizes each — the per-week averages table on /insights.
+// and summarizes each — the data behind the Weekly report card widget.
 import { windowStats, type WindowStats } from "./aggregate";
 import { addDays } from "./lag";
 import { isFlareDay } from "./flare";

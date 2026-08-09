@@ -1,4 +1,4 @@
-// Shimmering placeholder shaped like one dashboard/insights card (title +
+// Shimmering placeholder shaped like one dashboard card (title +
 // subtitle + content block). Composed 1-4x per loading.tsx to minimize layout shift.
 import { Skeleton } from "@primereact/ui/skeleton";
 import styles from "./card-skeleton.module.css";

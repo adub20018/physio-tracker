@@ -1,5 +1,5 @@
 // Time-range options for the CSV export dialog. Deliberately separate from
-// lib/time-range.ts's TimeRange (dashboard/insights): this needs 14d and a
+// lib/time-range.ts's TimeRange (dashboard charts): this needs 14d and a
 // custom from/to range, neither of which fit that enum.
 
 export const EXPORT_RANGES = ["all", "7d", "14d", "30d", "3m", "custom"] as const;

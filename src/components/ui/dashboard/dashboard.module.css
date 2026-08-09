@@ -1,8 +1,7 @@
-/* Shared "page card" styles for the dashboard and insights pages — moved
-   here (out of app/) specifically so the client components that now own
-   the range-dependent charts (dashboard-charts.tsx, insights-charts.tsx)
-   can use the same classes without components/ importing from app/, which
-   the project's one-way dependency rule (PLAN.md §5) doesn't allow. */
+/* Shared "page card" styles — kept here (out of app/) so the client
+   components that render widgets can use the same classes without
+   components/ importing from app/, which the project's one-way dependency
+   rule (PLAN.md §5) doesn't allow. */
 
 .tiles {
   display: grid;
@@ -15,30 +14,6 @@
   .tiles {
     grid-template-columns: repeat(4, 1fr);
   }
-}
-
-/* The time-range picker, right-aligned above the stat tiles (dashboard) or
-   above the charts (insights, which has no stat tiles). width: fit-content
-   + margin-left: auto right-aligns a shrink-wrapped block in normal flow,
-   the same trick as centering with both margins auto. margin-bottom gives
-   it breathing room from whatever follows — without it, the picker sits
-   flush against the next block on narrow screens where nothing else
-   provides that gap. */
-.rangeControl {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-  width: fit-content;
-  margin-left: auto;
-  margin-bottom: 0.75rem;
-}
-
-.rangeCaption {
-  font-size: 0.72rem;
-  color: var(--faint);
-  text-align: right;
-  max-width: 14rem;
 }
 
 .card {

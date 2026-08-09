@@ -47,7 +47,7 @@ export function SleepPainTimeline({
   // the fixed 0–10 pain scale (Account → Preferences).
   autoScaleYAxis?: boolean;
   // When true, fill the parent's height instead of the fixed pixel heights used on
-  // /insights (see .fill in charts.module.css); panels keep relative proportions via flexGrow.
+  // fixed-height mode (see .fill in charts.module.css); panels keep relative proportions via flexGrow.
   fillHeight?: boolean;
   // Add-widget picker preview mode: lets Y-axis ticks drop instead of forcing every one,
   // and skips animation — needed since ~20 previews can mount at once.

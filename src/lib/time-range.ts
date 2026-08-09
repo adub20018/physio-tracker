@@ -1,5 +1,5 @@
-// Shared time-range presets for the dashboard and insights pages (via the `range` URL
-// param). Not domain/: this is a presentation-layer concept, not a rehab calculation.
+// Shared time-range presets for a dashboard's charts (persisted per dashboard, see
+// dashboards.timeRange). Not domain/: presentation-layer, not a rehab calculation.
 
 export const TIME_RANGES = ["7d", "1m", "3m", "1y", "all"] as const;
 export type TimeRange = (typeof TIME_RANGES)[number];

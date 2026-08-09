@@ -17,7 +17,7 @@
 
 /* Fill mode: inside a resizable dashboard widget the placeholder has to
    track the cell's height like a real chart would, instead of reserving
-   the fixed height it uses on /insights. min-height:0 lets it shrink
+   the fixed height it uses otherwise. min-height:0 lets it shrink
    below its content box the same way .fill does in charts.module.css. */
 .fill {
   height: 100%;

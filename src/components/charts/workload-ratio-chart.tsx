@@ -67,6 +67,19 @@ const ZONE_BANDS = [
   },
 ] as const;
 
+// Next multiple of `step` at or above `value`, kept off floating-point edges so a
+// value already sitting on a step doesn't round up a whole one.
+function roundUpTo(value: number, step: number): number {
+  return Math.ceil(value / step - 1e-9) * step;
+}
+
+// Every tick from 0 to `max` inclusive, so the axis endpoint is always a round label.
+function stepTicks(max: number, step: number): number[] {
+  const ticks: number[] = [];
+  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(Number(t.toFixed(2)));
+  return ticks;
+}
+
 function WorkloadTooltipContent({
   active,
   payload,
@@ -134,11 +147,13 @@ export function WorkloadRatioChart({
   }
 
   // Explicit domain rather than "auto": the top band has to be drawn up to a known
-  // number, and an auto domain could leave headroom above it unshaded.
+  // number, and an auto domain could leave headroom above it unshaded. Rounded up to a
+  // whole step, with matching ticks — an explicit domain makes its own endpoint a tick,
+  // so a raw 2.2214… would render clipped on top of the 2 next to it.
   const ratios = data.flatMap((d) =>
     [d.physioLoadRatio, d.stepsRatio].filter((v): v is number => v != null),
   );
-  const ratioMax = Math.max(WORKLOAD_DANGER_MIN + 0.3, ...ratios);
+  const ratioMax = roundUpTo(Math.max(WORKLOAD_DANGER_MIN + 0.3, ...ratios), 0.5);
 
   // Bars get their own axis. A single hard day routinely lands several times the
   // baseline — sharing the ratio's scale would squash the lines and every zone band
@@ -146,7 +161,9 @@ export function WorkloadRatioChart({
   const dayRatios = data.flatMap((d) =>
     [d.physioLoadDayRatio, d.stepsDayRatio].filter((v): v is number => v != null),
   );
-  const dayMax = Math.max(1, ...dayRatios);
+  const rawDayMax = Math.max(1, ...dayRatios);
+  const dayStep = rawDayMax > 4 ? 1 : 0.5;
+  const dayMax = roundUpTo(rawDayMax, dayStep);
 
   return (
     <div className={fillHeight ? styles.fill : undefined}>
@@ -225,6 +242,7 @@ export function WorkloadRatioChart({
             {...CHART_Y_AXIS}
             yAxisId="ratio"
             domain={[0, ratioMax]}
+            ticks={stepTicks(ratioMax, 0.5)}
             interval={compact ? "preserveStart" : 0}
           />
           <YAxis
@@ -233,6 +251,7 @@ export function WorkloadRatioChart({
             orientation="right"
             width={showBars ? 32 : 0}
             domain={[0, dayMax]}
+            ticks={stepTicks(dayMax, dayStep)}
             hide={!showBars}
             interval={compact ? "preserveStart" : 0}
           />

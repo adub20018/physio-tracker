@@ -6,4 +6,8 @@
 .group {
   margin-left: auto;
   border: 1px solid var(--border-muted);
+  /* The group ships as a nowrap inline-flex, so its five buttons set a floor it
+     can't shrink under — in a narrow popover that pushed ~30px past the edge.
+     Wrapping lets it use a second row instead of overflowing. */
+  flex-wrap: wrap;
 }

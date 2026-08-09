@@ -2,6 +2,16 @@
 // exactly the domain endpoint, so an unrounded max (a raw mean or ratio) renders as a
 // long decimal clipped on top of the round tick beside it.
 
+// Compact tick labels ("6k", "1.5k") so step counts never overflow the axis gutter and
+// lose their leading digits — a 48px gutter clips "2,000" down to "000".
+export function compactNumber(v: number): string {
+  if (Math.abs(v) >= 1000) {
+    const k = v / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}k`;
+  }
+  return String(Math.round(v));
+}
+
 // Next multiple of `step` at or above `value`, kept off floating-point edges so a value
 // already sitting on a step doesn't round up a whole one.
 export function roundUpTo(value: number, step: number): number {

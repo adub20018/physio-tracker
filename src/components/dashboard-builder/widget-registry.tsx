@@ -717,7 +717,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
+    hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -745,7 +745,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
+    hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}

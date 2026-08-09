@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { CHART_CHROME, CHART_Y_AXIS, SERIES, STACKED_PANEL_HEIGHT, TOOLTIP_STYLE } from "./chart-theme";
 import { EmptyState } from "@/components/ui/shared/empty-state";
+import { compactNumber } from "./axis-scale";
 import { StackedPanelXAxis } from "./stacked-panel-xaxis";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
@@ -30,16 +31,6 @@ export type LoadVsSymptomsPoint = {
 
 // Shared axis/grid props for the three synchronized panels.
 const SYNC_ID = "load-vs-symptoms";
-
-// Compact tick labels ("6k", "1.5k") so step counts never overflow the
-// axis gutter and lose their leading digits.
-function compactNumber(v: number): string {
-  if (Math.abs(v) >= 1000) {
-    const k = v / 1000;
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}k`;
-  }
-  return String(v);
-}
 
 // Every panel hides its own axis now — see StackedPanelXAxis for the visible ticks.
 function PanelXAxis() {

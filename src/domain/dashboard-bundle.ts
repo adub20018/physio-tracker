@@ -85,6 +85,9 @@ export type WorkloadPoint = {
 // drawn as a moving corridor (zoneBoundsFor) instead of an abstract multiplier.
 export type LoadZonePoint = {
   date: string;
+  // That day's own total. Same units as the corridor, so it can be drawn against it —
+  // but it isn't what the zones bound, which is the acute mean below.
+  value: number | null;
   // 28-day mean — what the body is currently adapted to.
   baseline: number | null;
   // 7-day mean — the thing the zones actually bound.
@@ -288,14 +291,20 @@ export function buildChartDataBundle(
     physioLoadRatio: physioWorkload.ratio[i],
     stepsRatio: stepsWorkload.ratio[i],
   }));
-  const toZonePoints = (w: typeof physioWorkload): LoadZonePoint[] =>
-    denseLoad.map((slot, i) => ({
+  // Takes its own dense series rather than closing over one: the daily value has to
+  // come from the metric being charted, not just the dates they happen to share.
+  const toZonePoints = (
+    dense: DatedValue<number>[],
+    w: typeof physioWorkload,
+  ): LoadZonePoint[] =>
+    dense.map((slot, i) => ({
       date: slot.date,
+      value: slot.value,
       baseline: w.chronic[i],
       acute: w.chronic[i] != null ? w.acute[i] : null,
     }));
-  const fullPhysioLoadZones = toZonePoints(physioWorkload);
-  const fullStepZones = toZonePoints(stepsWorkload);
+  const fullPhysioLoadZones = toZonePoints(denseLoad, physioWorkload);
+  const fullStepZones = toZonePoints(denseSteps, stepsWorkload);
   const workloadNow = {
     physioLoad: latestRatio(physioWorkload.ratio),
     steps: latestRatio(stepsWorkload.ratio),

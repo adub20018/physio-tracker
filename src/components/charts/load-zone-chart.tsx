@@ -10,6 +10,7 @@
 
 import {
   Area,
+  Bar,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -26,12 +27,13 @@ import {
 } from "./chart-theme";
 import { zoneBoundsFor } from "@/domain/workload";
 import { EmptyState } from "@/components/ui/shared/empty-state";
-import { niceStep, roundUpTo, stepTicks } from "./axis-scale";
+import { compactNumber, niceStep, roundUpTo, stepTicks } from "./axis-scale";
 import { useChartTooltipSuppression } from "./use-chart-tooltip-suppression";
 import styles from "./charts.module.css";
 
 export type LoadZonePoint = {
   date: string;
+  value: number | null;
   baseline: number | null;
   acute: number | null;
 };
@@ -65,6 +67,7 @@ function ZoneTooltipContent({
   return (
     <div style={TOOLTIP_STYLE}>
       <div style={{ color: "var(--muted)", marginBottom: 4 }}>{label}</div>
+      {row.value != null && <div>That day: {formatValue(row.value)}</div>}
       {row.acute != null && (
         <div>7-day average: {formatValue(row.acute)}</div>
       )}
@@ -113,9 +116,12 @@ export function LoadZoneChart({
   }
 
   // Headroom above the danger edge so the top band is visibly a band, not a hairline.
+  // Daily values are included so a big day isn't drawn clipped off the top.
   const plotted = data.flatMap((d) => {
     const bounds = zoneBoundsFor(d.baseline);
-    return [d.acute, bounds?.dangerMin].filter((v): v is number => v != null);
+    return [d.acute, d.value, bounds?.dangerMin].filter(
+      (v): v is number => v != null,
+    );
   });
   const step = niceStep(Math.max(...plotted) * 1.15);
   const yMax = roundUpTo(Math.max(...plotted) * 1.15, step);
@@ -170,6 +176,13 @@ export function LoadZoneChart({
           <span className={styles.legendItem}>
             <span
               className={styles.legendSwatch}
+              style={{ background: color, opacity: 0.4 }}
+            />
+            That day
+          </span>
+          <span className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
               style={{ background: "var(--pain-none)", opacity: 0.4 }}
             />
             Steady range
@@ -203,7 +216,9 @@ export function LoadZoneChart({
             {...CHART_Y_AXIS}
             domain={[0, yMax]}
             ticks={stepTicks(yMax, step)}
-            tickFormatter={formatValue}
+            // Compact here, full precision in the tooltip: the axis gutter is 48px and
+            // clips "2,000" down to "000".
+            tickFormatter={compactNumber}
             interval={compact ? "preserveStart" : 0}
           />
           <Tooltip
@@ -227,6 +242,19 @@ export function LoadZoneChart({
               activeDot={false}
             />
           ))}
+          {/* Each day's own total. Legitimate to draw here — same units and axis as the
+              corridor — but it is context, not a verdict: the bands bound the 7-day
+              average, so a tall bar is a big day, not a dangerous one. */}
+          <Bar
+            dataKey="value"
+            name="That day"
+            fill={color}
+            fillOpacity={0.28}
+            isAnimationActive={!compact}
+            animationBegin={0}
+            animationDuration={300}
+            animationEasing="linear"
+          />
           <Line
             dataKey="baseline"
             name="Baseline (28d)"

@@ -710,6 +710,31 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     ),
   },
   {
+    type: "chart-workload-ratio-ewma",
+    label: "Workload ratio (EWMA)",
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint: 'Shows the same ratio with recent days weighted more heavily than older ones, so the baseline follows the last fortnight instead of treating four weeks equally.\n\nUse it to answer: "Does my baseline reflect what I\'ve actually been doing lately?"',
+    definitionId: DEFINITION_IDS.ewmaAcwr,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={bundle.fullWorkloadEwma}
+        renderChart={(data) => (
+          <WorkloadRatioChart
+            data={data}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  },
+  {
     type: "chart-step-zones",
     label: "Step load zones",
     category: "Dashboard charts",

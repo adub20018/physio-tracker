@@ -21,7 +21,7 @@ import {
 } from "./lag";
 import { dailyPainCandles, type PainCandle } from "./candle";
 import { pairSeries, type PairedPoint } from "./correlation";
-import { latestRatio, workloadSeries } from "./workload";
+import { ewmaWorkloadSeries, latestRatio, workloadSeries } from "./workload";
 
 // Stat tiles always use a fixed 7-day window, independent of any chart widget's range —
 // averaging a "how am I doing right now" tile over months would smear in stale, low numbers.
@@ -111,6 +111,8 @@ export type ChartDataBundle = {
   fullProgression: ProgressionPoint[];
   heatmap: HeatmapDay[];
   fullWorkload: WorkloadPoint[];
+  // Same ratios with exponentially decaying means — see ewmaWorkloadSeries.
+  fullWorkloadEwma: WorkloadPoint[];
   fullPhysioLoadZones: LoadZonePoint[];
   fullStepZones: LoadZonePoint[];
   // Latest qualifying ratio for each, for the stat tiles.
@@ -286,11 +288,19 @@ export function buildChartDataBundle(
   // ── Workload ratios: recent load vs the adapted-to baseline ────────────
   const physioWorkload = workloadSeries(denseLoad);
   const stepsWorkload = workloadSeries(denseSteps);
-  const fullWorkload: WorkloadPoint[] = denseLoad.map((slot, i) => ({
-    date: slot.date,
-    physioLoadRatio: physioWorkload.ratio[i],
-    stepsRatio: stepsWorkload.ratio[i],
-  }));
+  const physioEwma = ewmaWorkloadSeries(denseLoad);
+  const stepsEwma = ewmaWorkloadSeries(denseSteps);
+  const toRatioPoints = (
+    physio: (number | null)[],
+    steps: (number | null)[],
+  ): WorkloadPoint[] =>
+    denseLoad.map((slot, i) => ({
+      date: slot.date,
+      physioLoadRatio: physio[i],
+      stepsRatio: steps[i],
+    }));
+  const fullWorkload = toRatioPoints(physioWorkload.ratio, stepsWorkload.ratio);
+  const fullWorkloadEwma = toRatioPoints(physioEwma.ratio, stepsEwma.ratio);
   // Takes its own dense series rather than closing over one: the daily value has to
   // come from the metric being charted, not just the dates they happen to share.
   const toZonePoints = (
@@ -392,6 +402,7 @@ export function buildChartDataBundle(
     fullProgression,
     heatmap,
     fullWorkload,
+    fullWorkloadEwma,
     fullPhysioLoadZones,
     fullStepZones,
     workloadNow,

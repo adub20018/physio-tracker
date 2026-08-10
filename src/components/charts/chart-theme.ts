@@ -1,5 +1,6 @@
 // Shared visual constants for all charts. Categorical palette validated against dark card
 // surface #18181b via the dataviz six-checks validator; color roles stay strict (series vs flare vs pain magnitude).
+import type { WorkloadZone } from "@/domain/workload";
 
 // Categorical series colors, in fixed order (never cycled).
 export const SERIES = {
@@ -24,6 +25,24 @@ export const SERIES = {
 
 // Status color for flare markers (means "flare", never "series 4").
 export const FLARE_COLOR = "var(--pain-flare)";
+
+// Workload zone identity, shared by the band fills, their legend swatches, and the ratio
+// stat tiles — one definition so a zone can't be one color in the chart and another in
+// the tile. Reuses the pain severity palette so green/amber/red mean the same thing here
+// as everywhere else.
+export const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
+  under: "var(--faint)",
+  steady: "var(--pain-none)",
+  caution: "var(--pain-elevated)",
+  danger: "var(--pain-flare)",
+};
+
+export const WORKLOAD_ZONE_LABEL: Record<WorkloadZone, string> = {
+  under: "Below range",
+  steady: "Steady",
+  caution: "Higher risk",
+  danger: "Above range",
+};
 
 // Recessive chart chrome — grid/axis must sit far behind the data.
 export const CHART_CHROME = {

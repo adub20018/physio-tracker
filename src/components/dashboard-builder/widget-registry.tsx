@@ -10,7 +10,7 @@ import { WeightTilde } from "lucide-react";
 import { Gauge } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { pearson, correlationStrength } from "@/domain/correlation";
-import { workloadZone, type WorkloadZone } from "@/domain/workload";
+import { workloadZone } from "@/domain/workload";
 import { DEFINITION_IDS, definitionHref } from "@/lib/definitions";
 import type { PairedPoint } from "@/domain/correlation";
 import type { WidgetDataBundle } from "@/lib/widget-data";
@@ -27,7 +27,7 @@ import { LoadZoneChart } from "@/components/charts/load-zone-chart";
 import { LagScatter } from "@/components/charts/scatter/lag-scatter";
 import { MultiScatter } from "@/components/charts/scatter/multi-scatter";
 import { PainCandleChart } from "@/components/charts/pain-candle-chart";
-import { SERIES } from "@/components/charts/chart-theme";
+import { SERIES, WORKLOAD_ZONE_COLOR } from "@/components/charts/chart-theme";
 import styles from "@/components/ui/dashboard/dashboard.module.css";
 
 // Formats a delta as "0.4" (sign shown via caret icon instead) + direction.
@@ -322,14 +322,7 @@ function SleepVsPainWidget({
 
 // Ratio tiles colour by zone rather than by metric identity (the usual StatTile rule):
 // on these the zone *is* the headline, and "am I ramping too fast" should be readable
-// without parsing the number. Reuses the pain severity palette so green/amber/red mean
-// the same thing here as everywhere else.
-const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
-  under: "var(--faint)",
-  steady: "var(--pain-none)",
-  caution: "var(--pain-elevated)",
-  danger: "var(--pain-flare)",
-};
+// without parsing the number. Same palette as the zone bands — see chart-theme.ts.
 
 // One ratio stat tile. `pick` chooses which of the two ratios this tile tracks.
 function WorkloadTile({

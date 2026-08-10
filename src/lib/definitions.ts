@@ -13,6 +13,7 @@ import {
 import {
   ACUTE_WINDOW_DAYS,
   CHRONIC_WINDOW_DAYS,
+  smoothingFactor,
   WORKLOAD_DANGER_MIN,
   WORKLOAD_STEADY_MAX,
   WORKLOAD_STEADY_MIN,
@@ -45,6 +46,10 @@ export type DefinitionGroup = {
 };
 
 const painScale = `${PAIN_SCALE_MIN}–${PAIN_SCALE_MAX} in steps of ${PAIN_SCALE_STEP}`;
+
+// Rounded for reading; the code uses the exact fractions.
+const SMOOTHING_ACUTE = smoothingFactor(ACUTE_WINDOW_DAYS).toFixed(2);
+const SMOOTHING_CHRONIC = smoothingFactor(CHRONIC_WINDOW_DAYS).toFixed(3);
 
 export const DEFINITION_GROUPS: DefinitionGroup[] = [
   {
@@ -306,6 +311,24 @@ export const DEFINITION_GROUPS: DefinitionGroup[] = [
           "It bounds your weekly average, not any single day — one hard session is fine if the week's average stays in range.",
           "Blank until there's enough logged history, and blank rather than infinite when the baseline is zero.",
           "The bands it's read against are conventions, not facts — see Workload zones below.",
+          "Both means here are flat: every day in the window counts the same, and drops out entirely once it falls off the end. The EWMA version below fades them instead.",
+        ],
+      },
+      {
+        id: "ewma-acwr",
+        name: "Workload ratio, EWMA version",
+        kind: "derived",
+        summary: "The same ratio, with recent days counting for more than old ones.",
+        collection:
+          "Computed for physio load and for steps, separately, from the same logged days.",
+        formula: `each day's average = today's value × λ + yesterday's average × (1 − λ), where λ = 2 ÷ (window + 1) — so ${SMOOTHING_ACUTE} for the ${ACUTE_WINDOW_DAYS}-day average and ${SMOOTHING_CHRONIC} for the ${CHRONIC_WINDOW_DAYS}-day one. The ratio is then acute ÷ chronic, exactly as above.`,
+        meaning:
+          "A flat 28-day baseline counts a session from four weeks ago exactly as much as yesterday's, and drops it entirely on day 29. That makes it slow to notice a fortnight of harder work — your baseline reads lower than what you're actually adapted to, so the ratio overstates a ramp. Weighting the recent days more heavily tracks that adaptation as it happens, and the older days fade out gradually instead of falling off a cliff.",
+        notes: [
+          "Read against the same zones as the flat version — they aren't recalibrated for it.",
+          "The two ratios usually agree. When they disagree, the EWMA is the one reacting to something recent, which is worth a look rather than an alarm.",
+          "Needs the same warm-up before it appears, but counts logged days in total rather than within a window: an exponential average never forgets a day, so intermittent logging still builds a baseline.",
+          "An unlogged day carries both averages forward untouched rather than decaying them — same reasoning as everywhere else here.",
         ],
       },
       {
@@ -385,6 +408,7 @@ export const DEFINITION_IDS = {
   physioLoad: "physio-load",
   holdVolume: "hold-volume",
   acwr: "acwr",
+  ewmaAcwr: "ewma-acwr",
   workloadZones: "workload-zones",
   dailyPainAverage: "daily-pain-average",
   dailyPainPeak: "daily-pain-peak",

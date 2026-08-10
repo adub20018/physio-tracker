@@ -57,12 +57,16 @@ function ZoneTooltipContent({
   label,
   formatValue,
   unit,
+  acuteLabel,
+  baselineLabel,
 }: {
   active?: boolean;
   payload?: { payload?: Row }[];
   label?: string;
   formatValue: (value: number) => string;
   unit: string;
+  acuteLabel: string;
+  baselineLabel: string;
 }) {
   const row = active ? payload?.[0]?.payload : undefined;
   if (!row || row.baseline == null) return null;
@@ -71,10 +75,12 @@ function ZoneTooltipContent({
       <div style={{ color: "var(--muted)", marginBottom: 4 }}>{label}</div>
       {row.value != null && <div>That day: {formatValue(row.value)}</div>}
       {row.acute != null && (
-        <div>7-day average: {formatValue(row.acute)}</div>
+        <div>
+          {acuteLabel}: {formatValue(row.acute)}
+        </div>
       )}
       <div style={{ color: "var(--muted)" }}>
-        Baseline (28d): {formatValue(row.baseline)}
+        {baselineLabel}: {formatValue(row.baseline)}
       </div>
       {row.steadyMin != null && row.steadyMax != null && (
         <div style={{ color: "var(--pain-none)" }}>
@@ -91,6 +97,8 @@ export function LoadZoneChart({
   unit,
   formatValue,
   emptyMessage,
+  acuteLabel = "7-day average",
+  baselineLabel = "Baseline (28d)",
   fillHeight = false,
   compact = false,
   hideLegend = false,
@@ -102,6 +110,11 @@ export function LoadZoneChart({
   unit: string;
   formatValue: (value: number) => string;
   emptyMessage: string;
+  // Names for the two lines, in legend, tooltip and Recharts payload. Defaults describe
+  // the flat means; the EWMA variants pass their own so the chart can't claim the
+  // wrong model.
+  acuteLabel?: string;
+  baselineLabel?: string;
   fillHeight?: boolean;
   compact?: boolean;
   hideLegend?: boolean;
@@ -166,14 +179,14 @@ export function LoadZoneChart({
         <div className={styles.legend}>
           <span className={styles.legendItem}>
             <span className={styles.legendLine} style={{ background: color }} />
-            7-day average
+            {acuteLabel}
           </span>
           <span className={styles.legendItem}>
             <span
               className={styles.legendLine}
               style={{ background: "var(--muted)", opacity: 0.7 }}
             />
-            Baseline (28d)
+            {baselineLabel}
           </span>
           <span className={styles.legendItem}>
             <span
@@ -229,7 +242,12 @@ export function LoadZoneChart({
           />
           <Tooltip
             content={
-              <ZoneTooltipContent formatValue={formatValue} unit={unit} />
+              <ZoneTooltipContent
+                formatValue={formatValue}
+                unit={unit}
+                acuteLabel={acuteLabel}
+                baselineLabel={baselineLabel}
+              />
             }
             cursor={{ stroke: CHART_CHROME.axisLine }}
             active={tooltipSuppressed ? false : undefined}
@@ -263,7 +281,7 @@ export function LoadZoneChart({
           />
           <Line
             dataKey="baseline"
-            name="Baseline (28d)"
+            name={baselineLabel}
             stroke="var(--muted)"
             strokeWidth={1.5}
             strokeDasharray="4 3"
@@ -276,7 +294,7 @@ export function LoadZoneChart({
           />
           <Line
             dataKey="acute"
-            name="7-day average"
+            name={acuteLabel}
             stroke={color}
             strokeWidth={2.5}
             dot={false}

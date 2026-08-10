@@ -39,24 +39,28 @@
    misleading about their actual size — 4 narrower columns instead. Fixed
    counts rather than auto-fill so that size difference is deliberate, not
    just whatever happens to fit. */
+/* minmax(0, …) not 1fr: a bare 1fr floors each track at the item's min-content
+   width, and a mounted Recharts chart reports a min-content wide enough to push
+   the track past the dialog (the Insights grid resolved to 432px inside a 284px
+   dialog). The 0 lets the track shrink and the chart follow it down. */
 .chartsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
 }
 
 @media (max-width: 34rem) {
   .chartsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .statsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -66,6 +70,14 @@
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  /* Same reason as the track's minmax(0, …) above — a grid item defaults to
+     min-width:auto and would otherwise refuse to shrink under its chart. */
+  min-width: 0;
+  /* A preview whose widget scrolls internally (the report widgets) is clipped
+     correctly by its own box, but Chrome still folds the full un-clipped height
+     into an overflow:visible ancestor's scrollHeight — which left ~1100px of
+     dead scroll under the last widget. Clipping here stops it propagating. */
+  overflow: hidden;
   padding: 0.6rem;
   border: var(--border-subtle);
   border-radius: 12px;

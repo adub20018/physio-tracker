@@ -58,6 +58,11 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  /* flex/min-height only bind inside a flex parent, which the widget shell is
+     but the Add-widget preview box isn't — there this grew to its full content
+     (1500px of accordion in a 160px box), clipped from view but still counted
+     in the dialog's scroll height as dead space. */
+  max-height: 100%;
 }
 
 /* Per-series correlation lines above a multi-series chart (e.g. sleep vs

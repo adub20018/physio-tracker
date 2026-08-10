@@ -331,17 +331,6 @@ const WORKLOAD_ZONE_COLOR: Record<WorkloadZone, string> = {
   danger: "var(--pain-flare)",
 };
 
-// Shared across all four ACWR tooltips: the metric's full name (so it can be looked up)
-// and the limits of the thresholds, which are conventions rather than facts.
-const ACWR_EXPLAINER =
-  "This is the acute:chronic workload ratio (ACWR) — the last 7 days of load divided by the 28-day baseline you've built up to. 1.00× means training right at that baseline. Zones: green 0.80–1.30 steady, amber 1.30–1.50 higher risk, red above 1.50.";
-// Only shown on the zone charts, where a corridor in real units invites reading it as a
-// daily allowance — it isn't one.
-const ACWR_ZONES_BOUND_THE_WEEK =
-  "The range bounds your 7-day average, not any single day: one hard session is fine as long as the week's average stays inside it.";
-const ACWR_CAVEAT =
-  "These cut-offs come from team-sport research and are not golden numbers — they won't hold for every person or injury, so treat a reading as a prompt to look, not a verdict.";
-
 // One ratio stat tile. `pick` chooses which of the two ratios this tile tracks.
 function WorkloadTile({
   label,
@@ -566,7 +555,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         ctx={ctx}
         ratio={bundle.workloadNow.physioLoad}
         pick={(p) => p.physioLoadRatio}
-        hint={`${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Have I stepped up my physio faster than usual?"`}
+        hint={
+          'Shows your last 7 days of physio load as a multiple of the 28-day baseline you\'ve built up to.\n\nUse it to answer: "Have I stepped up my physio faster than usual?"'
+        }
       />
     ),
   },
@@ -586,7 +577,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         ctx={ctx}
         ratio={bundle.workloadNow.steps}
         pick={(p) => p.stepsRatio}
-        hint={`${ACWR_EXPLAINER} Here the load is your daily step count. ${ACWR_CAVEAT}\n\nUse it to answer: "Am I increasing my steps gradually?"`}
+        hint={
+          'Shows your last 7 days of steps as a multiple of the 28-day baseline you\'ve built up to.\n\nUse it to answer: "Am I increasing my steps gradually?"'
+        }
       />
     ),
   },
@@ -706,7 +699,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `Tracks physio load and steps together, since both are usually being ramped at once. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Am I ramping up faster than I've adapted to?"`,
+    hint: 'Shows your recent physio load and steps as a multiple of the 28-day baseline you\'ve built up to, with the usual steady range shaded.\n\nUse it to answer: "Am I ramping up faster than I\'ve adapted to?"',
     definitionId: DEFINITION_IDS.acwr,
     render: (bundle, ctx) => (
       <RangedChart
@@ -731,7 +724,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
+    hint: 'Shows your daily steps against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How many steps a day is a sensible amount right now?"',
     definitionId: DEFINITION_IDS.workloadZones,
     render: (bundle, ctx) => (
       <RangedChart
@@ -760,7 +753,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
+    hint: 'Shows your daily physio load against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How much physio a day is a sensible amount right now?"',
     definitionId: DEFINITION_IDS.workloadZones,
     render: (bundle, ctx) => (
       <RangedChart

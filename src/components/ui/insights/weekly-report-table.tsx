@@ -8,6 +8,7 @@ import { SortableHeader } from "@/components/ui/shared/datatable-sort-header";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
 import { EmptyState } from "@/components/ui/shared/empty-state";
 import { painSeverity, type PainSeverity } from "@/domain/constants";
+import { DEFINITION_IDS, definitionHref } from "@/lib/definitions";
 import type { WeeklyRow } from "@/lib/widget-data";
 import styles from "./weekly-report-table.module.css";
 
@@ -54,7 +55,10 @@ export function WeeklyReportTable({
                 <DataTable.THeadCell>Avg steps</DataTable.THeadCell>
                 <DataTable.THeadCell>
                   Physio load
-                  <InfoTooltip text="Sum of sets × hold time × average intensity %, added up over the week. Weighted by intensity — unlike Hold volume in Physio progression, which is raw sets × seconds" />
+                  <InfoTooltip
+                    text="Sum of sets × hold time × average intensity %, added up over the week. Weighted by intensity — unlike Hold volume in Physio progression, which is raw sets × seconds"
+                    learnMoreHref={definitionHref(DEFINITION_IDS.physioLoad)}
+                  />
                 </DataTable.THeadCell>
                 <DataTable.THeadCell>Flares</DataTable.THeadCell>
               </DataTable.THeadRow>

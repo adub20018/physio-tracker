@@ -62,6 +62,20 @@
   color: var(--muted);
 }
 
+/* Deep link into /definitions. pointer-events matter here: the popup is
+   otherwise inert, and the link has to be clickable without the tooltip
+   closing out from under the pointer. */
+.learnMore {
+  align-self: flex-start;
+  color: var(--accent);
+  font-weight: 600;
+  pointer-events: auto;
+}
+
+.learnMore:hover {
+  text-decoration: underline;
+}
+
 .arrow {
   fill: var(--surface-raised);
 }

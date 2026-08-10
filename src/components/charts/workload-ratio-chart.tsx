@@ -19,6 +19,8 @@ import {
   CHART_Y_AXIS,
   SERIES,
   TOOLTIP_STYLE,
+  WORKLOAD_ZONE_COLOR,
+  WORKLOAD_ZONE_LABEL,
   shortDate,
 } from "./chart-theme";
 import {
@@ -42,22 +44,40 @@ const LINES = [
   { key: "stepsRatio", label: "Steps", color: SERIES.steps },
 ] as const;
 
-// Zone fills. Green/amber/red match the pain severity scale used elsewhere, so the
-// colours carry the same meaning across the app.
+// Zone fills. The top band is drawn separately since its upper edge is the axis max.
 const ZONE_BANDS = [
-  { from: 0, to: WORKLOAD_STEADY_MIN, fill: "var(--faint)", opacity: 0.06 },
+  {
+    from: 0,
+    to: WORKLOAD_STEADY_MIN,
+    fill: WORKLOAD_ZONE_COLOR.under,
+    opacity: 0.06,
+  },
   {
     from: WORKLOAD_STEADY_MIN,
     to: WORKLOAD_STEADY_MAX,
-    fill: "var(--pain-none)",
+    fill: WORKLOAD_ZONE_COLOR.steady,
     opacity: 0.13,
   },
   {
     from: WORKLOAD_STEADY_MAX,
     to: WORKLOAD_DANGER_MIN,
-    fill: "var(--pain-elevated)",
+    fill: WORKLOAD_ZONE_COLOR.caution,
     opacity: 0.13,
   },
+] as const;
+
+// Legend swatches for the three named zones. The ranges are spelled out here because
+// this chart's axis is the multiplier itself, so the numbers are readable off it.
+const ZONE_LEGEND = [
+  {
+    zone: "steady",
+    range: `${WORKLOAD_STEADY_MIN}–${WORKLOAD_STEADY_MAX}×`,
+  },
+  {
+    zone: "caution",
+    range: `${WORKLOAD_STEADY_MAX}–${WORKLOAD_DANGER_MIN}×`,
+  },
+  { zone: "danger", range: `over ${WORKLOAD_DANGER_MIN}×` },
 ] as const;
 
 // Ratios round to 2dp here rather than in the domain — the numbers stay exact for
@@ -145,13 +165,18 @@ export function WorkloadRatioChart({
               {l.label}
             </span>
           ))}
-          <span className={styles.legendItem}>
-            <span
-              className={styles.legendSwatch}
-              style={{ background: "var(--pain-none)", opacity: 0.35 }}
-            />
-            Steady ({WORKLOAD_STEADY_MIN}–{WORKLOAD_STEADY_MAX}×)
-          </span>
+          {ZONE_LEGEND.map(({ zone, range }) => (
+            <span key={zone} className={styles.legendItem}>
+              <span
+                className={styles.legendSwatch}
+                style={{
+                  background: WORKLOAD_ZONE_COLOR[zone],
+                  opacity: 0.35,
+                }}
+              />
+              {WORKLOAD_ZONE_LABEL[zone]} ({range})
+            </span>
+          ))}
         </div>
       )}
       <ResponsiveContainer
@@ -183,7 +208,7 @@ export function WorkloadRatioChart({
           <ReferenceArea
             y1={WORKLOAD_DANGER_MIN}
             y2={ratioMax}
-            fill="var(--pain-flare)"
+            fill={WORKLOAD_ZONE_COLOR.danger}
             fillOpacity={0.13}
             strokeOpacity={0}
           />

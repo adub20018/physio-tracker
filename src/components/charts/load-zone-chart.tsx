@@ -23,6 +23,8 @@ import {
   CHART_CHROME,
   CHART_Y_AXIS,
   TOOLTIP_STYLE,
+  WORKLOAD_ZONE_COLOR,
+  WORKLOAD_ZONE_LABEL,
   shortDate,
 } from "./chart-theme";
 import { zoneBoundsFor } from "@/domain/workload";
@@ -152,10 +154,10 @@ export function LoadZoneChart({
   });
 
   const BANDS = [
-    { key: "bandUnder", fill: "var(--faint)", opacity: 0.06 },
-    { key: "bandSteady", fill: "var(--pain-none)", opacity: 0.16 },
-    { key: "bandCaution", fill: "var(--pain-elevated)", opacity: 0.16 },
-    { key: "bandDanger", fill: "var(--pain-flare)", opacity: 0.16 },
+    { key: "bandUnder", zone: "under", opacity: 0.06 },
+    { key: "bandSteady", zone: "steady", opacity: 0.16 },
+    { key: "bandCaution", zone: "caution", opacity: 0.16 },
+    { key: "bandDanger", zone: "danger", opacity: 0.16 },
   ] as const;
 
   return (
@@ -180,13 +182,17 @@ export function LoadZoneChart({
             />
             That day
           </span>
-          <span className={styles.legendItem}>
-            <span
-              className={styles.legendSwatch}
-              style={{ background: "var(--pain-none)", opacity: 0.4 }}
-            />
-            Steady range
-          </span>
+          {/* Zone bands. No numbers on these labels — unlike the ratio chart, the edges
+              here are in the metric's own units and move with the baseline. */}
+          {(["steady", "caution", "danger"] as const).map((zone) => (
+            <span key={zone} className={styles.legendItem}>
+              <span
+                className={styles.legendSwatch}
+                style={{ background: WORKLOAD_ZONE_COLOR[zone], opacity: 0.4 }}
+              />
+              {WORKLOAD_ZONE_LABEL[zone]}
+            </span>
+          ))}
         </div>
       )}
       <ResponsiveContainer
@@ -236,7 +242,7 @@ export function LoadZoneChart({
               dataKey={band.key}
               stackId="zones"
               stroke="none"
-              fill={band.fill}
+              fill={WORKLOAD_ZONE_COLOR[band.zone]}
               fillOpacity={band.opacity}
               isAnimationActive={false}
               activeDot={false}

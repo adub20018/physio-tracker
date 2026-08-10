@@ -13,6 +13,7 @@ import { UserEdit } from "@primeicons/react/user-edit";
 import { SlidersH } from "@primeicons/react/sliders-h";
 import { Database } from "@primeicons/react/database";
 import { Shield } from "@primeicons/react/shield";
+import { Book } from "@primeicons/react/book";
 import styles from "./account-menu.module.css";
 
 export type AccountUser = { name: string; email: string };
@@ -102,6 +103,18 @@ export function AccountMenu({ user }: { user: AccountUser }) {
                 >
                   <Shield />
                   Account
+                </Menu.Item>
+              </Menu.Group>
+              <Menu.Separator />
+              <Menu.Group>
+                <Menu.Item
+                  as={Link}
+                  href="/definitions"
+                  closeOnSelect={false}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Book />
+                  Definitions
                 </Menu.Item>
               </Menu.Group>
               <Menu.Separator />

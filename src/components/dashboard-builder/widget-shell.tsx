@@ -2,6 +2,7 @@
 // the card wrapper. Edit mode adds a drag handle (`[data-drag-handle]`, matched by dashboard-grid.tsx's dragConfig.handle) + remove button in place, so nothing resizes.
 import { GripVertical, X, Info } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/shared/info-tooltip";
+import { definitionHref } from "@/lib/definitions";
 import type { WidgetDataBundle } from "@/lib/widget-data";
 import type { WidgetDefinition, WidgetRenderContext } from "./widget-registry";
 import cardStyles from "@/components/ui/dashboard/dashboard.module.css";
@@ -84,6 +85,11 @@ export function WidgetShell({
           {definition.hint && (
             <InfoTooltip
               text={definition.hint}
+              learnMoreHref={
+                definition.definitionId
+                  ? definitionHref(definition.definitionId)
+                  : undefined
+              }
               label="What does this chart show?"
             >
               <Info size={14} />

@@ -775,7 +775,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: 'Shows the same ratio with recent days weighted more heavily than older ones, so the baseline follows the last fortnight instead of treating four weeks equally.\n\nUse it to answer: "Does my baseline reflect what I\'ve actually been doing lately?"',
+    hint: 'Shows your recent physio load and steps as a multiple of a baseline that weights recent days most, unlike the ACWR version\'s flat 28-day average.\n\nUse it to answer: "Am I ramping up faster than I\'ve recently adapted to?"',
     definitionId: DEFINITION_IDS.ewmaAcwr,
     render: (bundle, ctx) => (
       <RangedChart
@@ -803,7 +803,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   zoneWidget({
     type: "chart-step-zones-ewma",
     label: "Step load zones (EWMA)",
-    hint: 'Shows your daily steps against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How many steps a day is sensible, given what I\'ve been doing lately?"',
+    hint: 'Shows your daily steps against a steady range scaled to a baseline that weights recent days most, unlike the ACWR version\'s flat 28-day average.\n\nUse it to answer: "How many steps a day is sensible, given what I\'ve been doing lately?"',
     color: SERIES.steps,
     unit: "steps",
     pick: (bundle) => bundle.fullStepZonesEwma,
@@ -820,7 +820,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   zoneWidget({
     type: "chart-physio-load-zones-ewma",
     label: "Physio load zones (EWMA)",
-    hint: 'Shows your daily physio load against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How much physio a day is sensible, given what I\'ve been doing lately?"',
+    hint: 'Shows your daily physio load against a steady range scaled to a baseline that weights recent days most, unlike the ACWR version\'s flat 28-day average.\n\nUse it to answer: "How much physio a day is sensible, given what I\'ve been doing lately?"',
     color: SERIES.load,
     unit: "load",
     pick: (bundle) => bundle.fullPhysioLoadZonesEwma,

@@ -340,7 +340,8 @@ function WorkloadTile({
   pick: (point: WidgetDataBundle["fullWorkload"][number]) => number | null;
   hint: string;
 }) {
-  const color = ratio == null ? "var(--faint)" : WORKLOAD_ZONE_COLOR[workloadZone(ratio)];
+  const color =
+    ratio == null ? "var(--faint)" : WORKLOAD_ZONE_COLOR[workloadZone(ratio)];
   return (
     <StatTile
       label={label}
@@ -355,7 +356,8 @@ function WorkloadTile({
         return {
           date: p.date,
           value,
-          display: value != null ? `${value.toFixed(2)}×` : "Not enough history",
+          display:
+            value != null ? `${value.toFixed(2)}×` : "Not enough history",
         };
       })}
       sparklineVariant="area"
@@ -695,7 +697,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     bounds: DOUBLE_STACKED_CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_DOUBLE_STACKED_CHART_BOUNDS,
-    hint: "Shows your sleep alongside your pain throughout the same day.\n\nUse it to answer: \"Does getting more or less sleep seem to affect my pain?\"",
+    hint: 'Shows your sleep alongside your pain throughout the same day.\n\nUse it to answer: "Does getting more or less sleep seem to affect my pain?"',
     definitionId: DEFINITION_IDS.sleepHours,
     render: (bundle, ctx) => (
       <RangedChart
@@ -742,13 +744,13 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   {
     type: "chart-workload-ratio",
-    label: "Workload ratio",
+    label: "Workload ratio (ACWR)",
     category: "Dashboard charts",
     defaultSize: { w: 12, h: 18 },
     bounds: CHART_BOUNDS,
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
-    hint: 'Shows your recent physio load and steps as a multiple of the 28-day baseline you\'ve built up to, with the usual steady range shaded.\n\nUse it to answer: "Am I ramping up faster than I\'ve adapted to?"',
+    hint: "Shows your recent physio load and steps as a multiple of the 28-day baseline you've built up to, with the usual steady range shaded.\n\nUse it to answer: \"Am I ramping up faster than I've adapted to?\"",
     definitionId: DEFINITION_IDS.acwr,
     render: (bundle, ctx) => (
       <RangedChart
@@ -792,7 +794,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   },
   zoneWidget({
     type: "chart-step-zones",
-    label: "ACWR step load zones",
+    label: "Step load zones (ACWR)",
     hint: 'Shows your daily steps against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How many steps a day is a sensible amount right now?"',
     color: SERIES.steps,
     unit: "steps",
@@ -800,7 +802,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   }),
   zoneWidget({
     type: "chart-step-zones-ewma",
-    label: "EWMA step load zones",
+    label: "Step load zones (EWMA)",
     hint: 'Shows your daily steps against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How many steps a day is sensible, given what I\'ve been doing lately?"',
     color: SERIES.steps,
     unit: "steps",
@@ -809,7 +811,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   }),
   zoneWidget({
     type: "chart-physio-load-zones",
-    label: "ACWR physio load zones",
+    label: "Physio load zones (ACWR)",
     hint: 'Shows your daily physio load against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How much physio a day is a sensible amount right now?"',
     color: SERIES.load,
     unit: "load",
@@ -817,7 +819,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   }),
   zoneWidget({
     type: "chart-physio-load-zones-ewma",
-    label: "EWMA physio load zones",
+    label: "Physio load zones (EWMA)",
     hint: 'Shows your daily physio load against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How much physio a day is sensible, given what I\'ve been doing lately?"',
     color: SERIES.load,
     unit: "load",

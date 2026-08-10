@@ -115,6 +115,9 @@ export type ChartDataBundle = {
   fullWorkloadEwma: WorkloadPoint[];
   fullPhysioLoadZones: LoadZonePoint[];
   fullStepZones: LoadZonePoint[];
+  // The same corridors built from the exponentially weighted means instead.
+  fullPhysioLoadZonesEwma: LoadZonePoint[];
+  fullStepZonesEwma: LoadZonePoint[];
   // Latest qualifying ratio for each, for the stat tiles.
   workloadNow: { physioLoad: number | null; steps: number | null };
 
@@ -315,6 +318,8 @@ export function buildChartDataBundle(
     }));
   const fullPhysioLoadZones = toZonePoints(denseLoad, physioWorkload);
   const fullStepZones = toZonePoints(denseSteps, stepsWorkload);
+  const fullPhysioLoadZonesEwma = toZonePoints(denseLoad, physioEwma);
+  const fullStepZonesEwma = toZonePoints(denseSteps, stepsEwma);
   const workloadNow = {
     physioLoad: latestRatio(physioWorkload.ratio),
     steps: latestRatio(stepsWorkload.ratio),
@@ -405,6 +410,8 @@ export function buildChartDataBundle(
     fullWorkloadEwma,
     fullPhysioLoadZones,
     fullStepZones,
+    fullPhysioLoadZonesEwma,
+    fullStepZonesEwma,
     workloadNow,
     fullStepsPoints,
     fullVolumePoints,

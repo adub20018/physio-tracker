@@ -344,6 +344,7 @@ export const DEFINITION_GROUPS: DefinitionGroup[] = [
           "These cut-offs come from team-sport research and are not golden numbers. They have never been validated for one person's rehab, so treat a reading as a prompt to look, not a verdict — and worth raising with your physio before letting them steer decisions.",
           "Below the steady band isn't automatically bad: it's what deliberate rest weeks look like.",
           "On the zone charts, the bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one, since the range bounds the week rather than the day.",
+          "The zone charts come in two versions: ACWR ones scale the bands through the flat 28-day baseline, EWMA ones through the exponentially weighted baseline. Same bands either way — only the baseline they're multiplied by differs.",
         ],
       },
     ],

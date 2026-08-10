@@ -365,6 +365,62 @@ function WorkloadTile({
   );
 }
 
+// The four zone charts differ only in the metric and which set of means backs the
+// corridor, so they're built from one shape rather than four near-identical blocks.
+function zoneWidget({
+  type,
+  label,
+  hint,
+  color,
+  unit,
+  pick,
+  weighted = false,
+}: {
+  type: string;
+  label: string;
+  hint: string;
+  // This metric's identity color, matching its other charts.
+  color: string;
+  // Short unit for the tooltip's range line ("steps", "load").
+  unit: string;
+  pick: (bundle: WidgetDataBundle) => WidgetDataBundle["fullStepZones"];
+  // True for the EWMA variants — renames the two lines so the chart says which
+  // kind of average it's drawing.
+  weighted?: boolean;
+}): WidgetDefinition {
+  return {
+    type,
+    label,
+    category: "Dashboard charts",
+    defaultSize: { w: 12, h: 18 },
+    bounds: CHART_BOUNDS,
+    mobileDefaultSize: { w: 2, h: 18 },
+    mobileBounds: MOBILE_CHART_BOUNDS,
+    hint,
+    definitionId: DEFINITION_IDS.workloadZones,
+    render: (bundle, ctx) => (
+      <RangedChart
+        ctx={ctx}
+        fullData={pick(bundle)}
+        renderChart={(data) => (
+          <LoadZoneChart
+            data={data}
+            color={color}
+            unit={unit}
+            formatValue={(v) => Math.round(v).toLocaleString()}
+            emptyMessage="Not enough logged history yet"
+            acuteLabel={weighted ? "7-day average (weighted)" : undefined}
+            baselineLabel={weighted ? "Baseline (28d, weighted)" : undefined}
+            fillHeight={ctx.fillHeight}
+            compact={ctx.compact}
+            hideLegend={ctx.hideLegend}
+          />
+        )}
+      />
+    ),
+  };
+}
+
 export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   // ── Stat tiles ────────────────────────────────────────────────────────
   {
@@ -734,64 +790,40 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       />
     ),
   },
-  {
+  zoneWidget({
     type: "chart-step-zones",
-    label: "Step load zones",
-    category: "Dashboard charts",
-    defaultSize: { w: 12, h: 18 },
-    bounds: CHART_BOUNDS,
-    mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    label: "ACWR step load zones",
     hint: 'Shows your daily steps against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How many steps a day is a sensible amount right now?"',
-    definitionId: DEFINITION_IDS.workloadZones,
-    render: (bundle, ctx) => (
-      <RangedChart
-        ctx={ctx}
-        fullData={bundle.fullStepZones}
-        renderChart={(data) => (
-          <LoadZoneChart
-            data={data}
-            color={SERIES.steps}
-            unit="steps"
-            formatValue={(v) => Math.round(v).toLocaleString()}
-            emptyMessage="Not enough logged history yet"
-            fillHeight={ctx.fillHeight}
-            compact={ctx.compact}
-            hideLegend={ctx.hideLegend}
-          />
-        )}
-      />
-    ),
-  },
-  {
+    color: SERIES.steps,
+    unit: "steps",
+    pick: (bundle) => bundle.fullStepZones,
+  }),
+  zoneWidget({
+    type: "chart-step-zones-ewma",
+    label: "EWMA step load zones",
+    hint: 'Shows your daily steps against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How many steps a day is sensible, given what I\'ve been doing lately?"',
+    color: SERIES.steps,
+    unit: "steps",
+    pick: (bundle) => bundle.fullStepZonesEwma,
+    weighted: true,
+  }),
+  zoneWidget({
     type: "chart-physio-load-zones",
-    label: "Physio load zones",
-    category: "Dashboard charts",
-    defaultSize: { w: 12, h: 18 },
-    bounds: CHART_BOUNDS,
-    mobileDefaultSize: { w: 2, h: 18 },
-    mobileBounds: MOBILE_CHART_BOUNDS,
+    label: "ACWR physio load zones",
     hint: 'Shows your daily physio load against a steady range scaled to your own 28-day baseline, so the range moves as that baseline does.\n\nUse it to answer: "How much physio a day is a sensible amount right now?"',
-    definitionId: DEFINITION_IDS.workloadZones,
-    render: (bundle, ctx) => (
-      <RangedChart
-        ctx={ctx}
-        fullData={bundle.fullPhysioLoadZones}
-        renderChart={(data) => (
-          <LoadZoneChart
-            data={data}
-            color={SERIES.load}
-            unit="load"
-            formatValue={(v) => Math.round(v).toLocaleString()}
-            emptyMessage="Not enough logged history yet"
-            fillHeight={ctx.fillHeight}
-            compact={ctx.compact}
-            hideLegend={ctx.hideLegend}
-          />
-        )}
-      />
-    ),
-  },
+    color: SERIES.load,
+    unit: "load",
+    pick: (bundle) => bundle.fullPhysioLoadZones,
+  }),
+  zoneWidget({
+    type: "chart-physio-load-zones-ewma",
+    label: "EWMA physio load zones",
+    hint: 'Shows your daily physio load against a steady range scaled to a baseline that weights recent days more heavily than older ones.\n\nUse it to answer: "How much physio a day is sensible, given what I\'ve been doing lately?"',
+    color: SERIES.load,
+    unit: "load",
+    pick: (bundle) => bundle.fullPhysioLoadZonesEwma,
+    weighted: true,
+  }),
   {
     type: "chart-heatmap",
     label: "Calendar / Pain Heatmap",

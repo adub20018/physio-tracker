@@ -23,6 +23,8 @@ export type StatTileProps = {
   deltaLabel?: string;
   // Optional formula/definition shown when the icon badge is hovered.
   hint?: string;
+  // Deep link to this metric's entry on /definitions, shown in that tooltip.
+  hintHref?: string;
   // Badge icon naming which metric this is.
   icon: React.ReactNode;
   // This tile's identity color — label, badge, and sparkline all use it;
@@ -50,6 +52,7 @@ export function StatTile({
   deltaIsGood,
   deltaLabel = "vs previous period",
   hint,
+  hintHref,
   icon,
   accentColor,
   sparklineValues,
@@ -94,6 +97,7 @@ export function StatTile({
         {hint ? (
           <InfoTooltip
             text={hint}
+            learnMoreHref={hintHref}
             label={`What is ${label}?`}
             triggerClassName={styles.iconBadge}
             triggerStyle={badgeStyle}

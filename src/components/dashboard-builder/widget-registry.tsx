@@ -11,6 +11,7 @@ import { Gauge } from "lucide-react";
 import { filterWindow } from "@/domain/aggregate";
 import { pearson, correlationStrength } from "@/domain/correlation";
 import { workloadZone, type WorkloadZone } from "@/domain/workload";
+import { DEFINITION_IDS, definitionHref } from "@/lib/definitions";
 import type { PairedPoint } from "@/domain/correlation";
 import type { WidgetDataBundle } from "@/lib/widget-data";
 import { StatTile } from "@/components/ui/dashboard/stat-tile";
@@ -94,6 +95,9 @@ export type WidgetDefinition = {
   bare?: boolean;
   // InfoTooltip text for the shell header; unused for bare widgets.
   hint?: string;
+  // Anchor on /definitions for this widget's headline value, linked from the
+  // tooltip's "Read more". The tooltip stays brief; the page carries the detail.
+  definitionId?: string;
   render: (
     bundle: WidgetDataBundle,
     ctx: WidgetRenderContext,
@@ -361,6 +365,7 @@ function WorkloadTile({
       value={ratio != null ? ratio.toFixed(2) : "—"}
       unit={ratio != null ? "×" : undefined}
       hint={hint}
+      hintHref={definitionHref(DEFINITION_IDS.acwr)}
       icon={<Gauge size={16} />}
       accentColor={color}
       sparklineValues={bundle.fullWorkload.slice(-7).map((p) => {
@@ -405,6 +410,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
+          hintHref={definitionHref(DEFINITION_IDS.dailyPainAverage)}
           hint={`Shows your average daily pain over 7 days, with a trend line showing how it has changed across each day in this period.\n\nUse it to answer: "Is my pain improving, worsening, or staying consistent?"`}
           icon={<BoneFracture size={16} />}
           accentColor={SERIES.pain}
@@ -448,6 +454,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
+          hintHref={definitionHref(DEFINITION_IDS.steps)}
           hint={`Shows your average daily steps over 7 days, showing how your activity has changed across each day in this period.\n\nUse it to answer: "Is my activity level increasing, decreasing, or staying consistent?"`}
           icon={<Footprints size={16} />}
           accentColor={SERIES.steps}
@@ -483,6 +490,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
+          hintHref={definitionHref(DEFINITION_IDS.sleepHours)}
           hint={`Shows your average nightly sleep duration over 7 days, showing how your sleep has changed across each night in this period.\n\nUse it to answer: "Is my sleep improving, worsening, or staying consistent?"`}
           icon={<BedDouble size={16} />}
           accentColor={SERIES.sleep}
@@ -529,6 +537,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
               : null
           }
           deltaLabel="vs previous week"
+          hintHref={definitionHref(DEFINITION_IDS.physioLoad)}
           hint={`Shows your average daily physio load over 7 days, with a trend line showing how your rehabilitation workload has changed across each day in this period.\n\nUse it to answer: "Is my rehabilitation workload increasing, decreasing, or staying consistent?"`}
           icon={<WeightTilde size={16} />}
           accentColor={SERIES.load}
@@ -592,6 +601,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows your morning, daytime, and night pain over time, alongside a 7-day trend line and highlighted flare days.\n\nUse it to answer: "Is my pain improving overall, or just fluctuating from day to day?"',
+    definitionId: DEFINITION_IDS.painRollingAverage,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -618,6 +628,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: "Shows your daily steps and physio load alongside the following day's pain.\n\nUse it to answer: \"Did yesterday's workload contribute to today's pain?\"",
+    definitionId: DEFINITION_IDS.nextDayLag,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -643,6 +654,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_DOUBLE_STACKED_CHART_BOUNDS,
     hint: "Shows your sleep alongside your pain throughout the same day.\n\nUse it to answer: \"Does getting more or less sleep seem to affect my pain?\"",
+    definitionId: DEFINITION_IDS.sleepHours,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -669,6 +681,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 20 },
     mobileBounds: MOBILE_TRIPLE_STACKED_CHART_BOUNDS,
     hint: 'Shows how your rehabilitation program has progressed by tracking exercise intensity, hold volume, and overall physio load.\n\nUse it to answer: "Am I steadily progressing my rehabilitation program?"',
+    definitionId: DEFINITION_IDS.holdVolume,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -694,6 +707,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: `Tracks physio load and steps together, since both are usually being ramped at once. ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "Am I ramping up faster than I've adapted to?"`,
+    definitionId: DEFINITION_IDS.acwr,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -718,6 +732,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: `The same zones in steps rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable as an actual step count and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How many steps a day is a sensible amount right now?"`,
+    definitionId: DEFINITION_IDS.workloadZones,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -746,6 +761,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: `The same zones in physio load rather than as a multiplier: your 28-day baseline with the thresholds scaled through it, so the steady range is readable in load units and moves as your baseline does. Bars are that day's own total, drawn for context — a tall bar is a big day, not a dangerous one. ${ACWR_ZONES_BOUND_THE_WEEK} ${ACWR_EXPLAINER} ${ACWR_CAVEAT}\n\nUse it to answer: "How much physio a day is a sensible amount right now?"`,
+    definitionId: DEFINITION_IDS.workloadZones,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -775,6 +791,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileBounds: MOBILE_HEATMAP_BOUNDS,
     hint: 'Shows your daily pain as a color-coded calendar, making patterns and flare periods easy to spot.\n\nUse it to answer: "When was my pain better or worse?"',
     // Ignores the selected time range — always shows full history.
+    definitionId: DEFINITION_IDS.dailyPainAverage,
     render: (bundle) => <CalendarHeatmap data={bundle.heatmap} />,
   },
 
@@ -788,6 +805,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your daily steps and your pain the following morning.\n\nUse it to answer: "Do higher step counts lead to more pain the next morning?"',
+    definitionId: DEFINITION_IDS.nextDayLag,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -815,6 +833,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your daily steps and your highest pain the following day.\n\nUse it to answer: "Do higher step counts lead to worse pain the next day?"',
+    definitionId: DEFINITION_IDS.dailyPainPeak,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -842,6 +861,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your daily steps and your average pain the following day.\n\nUse it to answer: "Do higher step counts affect my overall pain the next day?"',
+    definitionId: DEFINITION_IDS.dailyPainAverage,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -869,6 +889,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your physio load and your pain the following morning.\n\nUse it to answer: "Does increasing my physio workload affect my pain the next morning?"',
+    definitionId: DEFINITION_IDS.physioLoad,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -896,6 +917,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your physio load and your highest pain the following day.\n\nUse it to answer: "Does increasing my physio workload lead to worse pain the next day?"',
+    definitionId: DEFINITION_IDS.physioLoad,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -923,6 +945,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows the relationship between your physio load and your average pain the following day.\n\nUse it to answer: "Does increasing my physio workload affect my overall pain the next day?"',
+    definitionId: DEFINITION_IDS.physioLoad,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -950,6 +973,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_CHART_BOUNDS,
     hint: 'Shows how your pain changes throughout each day, from morning to night.\n\nUse it to answer: "Does my pain usually improve or worsen as the day goes on?"',
+    definitionId: DEFINITION_IDS.painReadings,
     render: (bundle, ctx) => (
       <RangedChart
         ctx={ctx}
@@ -975,6 +999,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     mobileDefaultSize: { w: 2, h: 18 },
     mobileBounds: MOBILE_MULTI_SCATTER_CHART_BOUNDS,
     hint: 'Shows the relationship between your sleep and your pain throughout the same day.\n\nUse it to answer: "Does getting more sleep seem to affect my pain?"',
+    definitionId: DEFINITION_IDS.sleepHours,
     render: (bundle, ctx) => <SleepVsPainWidget bundle={bundle} ctx={ctx} />,
   },
   {
@@ -988,6 +1013,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     hint: 'Shows every flare day alongside the activity, physio, and notes from the days leading up to it.\n\nUse it to answer: "What happened before my flare-up?"',
     // Ignores the selected time range — a flare history is only useful whole,
     // same reasoning as the calendar heatmap above.
+    definitionId: DEFINITION_IDS.flareDay,
     render: (bundle) => (
       <div className={styles.scrollBody}>
         <FlareReview episodes={bundle.flareEpisodeViews} />
@@ -1005,6 +1031,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     hint: 'Shows a weekly summary of your pain, activity, physio load, and flare count.\n\nUse it to answer: "How does each week compare with the last?"',
     // Range-independent for the same reason as Flare review: the point is
     // comparing every week to the last.
+    definitionId: DEFINITION_IDS.weeklyAverages,
     render: (bundle, ctx) => (
       <div className={styles.scrollBody}>
         <WeeklyReportTable

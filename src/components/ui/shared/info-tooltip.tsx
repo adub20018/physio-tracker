@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import { Tooltip } from "@primereact/ui/tooltip";
 import { QuestionCircle } from "@primeicons/react/question-circle";
 import styles from "./info-tooltip.module.css";
@@ -32,6 +33,7 @@ function useIsCoarsePointer(): boolean {
 export function InfoTooltip({
   text,
   label,
+  learnMoreHref,
   children,
   triggerClassName = styles.trigger,
   triggerStyle,
@@ -42,6 +44,9 @@ export function InfoTooltip({
   // callers use for a paragraph break.
   text: string;
   label?: string;
+  // Deep link to this thing's entry on /definitions. The tooltip stays a brief
+  // explanation; the full collection method and formula live there.
+  learnMoreHref?: string;
   // Trigger content — defaults to the "?" icon.
   children?: React.ReactNode;
   // Class for the trigger button — defaults to the "?" badge's own reset/sizing.
@@ -56,7 +61,9 @@ export function InfoTooltip({
   return (
     <Tooltip.Root
       openDelay={150}
-      closeDelay={100}
+      // Longer grace period when there's a link to click: the pointer has to cross
+      // the sideOffset gap, and the popup only cancels the close once it's entered.
+      closeDelay={learnMoreHref ? 350 : 100}
       {...(isTouch
         ? { open, onOpenChange: (e: { value?: boolean }) => setOpen(!!e.value) }
         : {})}
@@ -91,6 +98,17 @@ export function InfoTooltip({
             <div className={styles.content}>
               <p>{description}</p>
               {useCase && <p className={styles.useCase}>{useCase}</p>}
+              {learnMoreHref && (
+                <Link
+                  className={styles.learnMore}
+                  href={learnMoreHref}
+                  // Touch keeps the popup open until tapped again, so the link is
+                  // reachable; closing on click stops it lingering after navigation.
+                  onClick={() => setOpen(false)}
+                >
+                  Read more →
+                </Link>
+              )}
             </div>
             <Tooltip.Arrow className={styles.arrow} />
           </Tooltip.Popup>

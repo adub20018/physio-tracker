@@ -98,6 +98,54 @@ export function zoneBoundsFor(baseline: number | null): {
   };
 }
 
+// Smoothing factor for a given span, the conventional 2/(N+1). At N=28 the most recent
+// day carries ~6.9% of the baseline and a day four weeks back ~1%, where a flat 28-day
+// mean would still weight both at 1/28.
+export function smoothingFactor(spanDays: number): number {
+  return 2 / (spanDays + 1);
+}
+
+// EWMA variant of the ratio above. Same windows and the same zone thresholds, but the
+// means decay exponentially instead of being flat, so recent adaptation counts for more
+// than a session four weeks ago and load doesn't drop off a cliff on day 29.
+//
+// Unlogged days carry the average forward untouched rather than decaying it — "didn't
+// record" isn't "did nothing", matching the flat version's skip-nulls rule.
+export function ewmaWorkloadSeries(series: DatedValue<number>[]): WorkloadSeries {
+  const acuteLambda = smoothingFactor(ACUTE_WINDOW_DAYS);
+  const chronicLambda = smoothingFactor(CHRONIC_WINDOW_DAYS);
+
+  const ratio: (number | null)[] = [];
+  const acuteOut: (number | null)[] = [];
+  const chronicOut: (number | null)[] = [];
+
+  let acute: number | null = null;
+  let chronic: number | null = null;
+  let loggedDays = 0;
+
+  for (const { value } of series) {
+    if (value != null) {
+      loggedDays++;
+      // The first logged value seeds both averages; there's nothing prior to decay.
+      acute = acute == null ? value : value * acuteLambda + acute * (1 - acuteLambda);
+      chronic =
+        chronic == null ? value : value * chronicLambda + chronic * (1 - chronicLambda);
+    }
+
+    // Same warm-up guards as the flat version, counted cumulatively: an EWMA never
+    // leaves a window, so "enough history" is a total, not a slice.
+    const acuteNow = loggedDays >= MIN_ACUTE_LOGGED_DAYS ? acute : null;
+    const chronicNow = loggedDays >= MIN_CHRONIC_LOGGED_DAYS ? chronic : null;
+    const usableBaseline = chronicNow != null && chronicNow > 0;
+
+    ratio.push(usableBaseline && acuteNow != null ? acuteNow / chronicNow : null);
+    acuteOut.push(acuteNow);
+    chronicOut.push(usableBaseline ? chronicNow : null);
+  }
+
+  return { ratio, acute: acuteOut, chronic: chronicOut };
+}
+
 // Most recent ratio in the series, or null if none qualified.
 export function latestRatio(ratios: (number | null)[]): number | null {
   for (let i = ratios.length - 1; i >= 0; i--) {

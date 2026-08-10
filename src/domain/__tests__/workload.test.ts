@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  ewmaWorkloadSeries,
   latestRatio,
+  smoothingFactor,
   workloadSeries,
   workloadZone,
   zoneBoundsFor,
+  ACUTE_WINDOW_DAYS,
+  CHRONIC_WINDOW_DAYS,
   WORKLOAD_DANGER_MIN,
   WORKLOAD_STEADY_MAX,
   WORKLOAD_STEADY_MIN,
@@ -19,6 +23,8 @@ function series(values: (number | null)[]): DatedValue<number>[] {
 }
 
 const ratiosOf = (values: (number | null)[]) => workloadSeries(series(values)).ratio;
+const ewmaRatiosOf = (values: (number | null)[]) =>
+  ewmaWorkloadSeries(series(values)).ratio;
 
 describe("workloadZone", () => {
   it("splits at each band edge", () => {
@@ -125,5 +131,85 @@ describe("latestRatio", () => {
     expect(latestRatio([1, 2, null, 3, null])).toBe(3);
     expect(latestRatio([null, null])).toBeNull();
     expect(latestRatio([])).toBeNull();
+  });
+});
+
+describe("smoothingFactor", () => {
+  it("uses the conventional 2/(N+1)", () => {
+    expect(smoothingFactor(ACUTE_WINDOW_DAYS)).toBeCloseTo(0.25, 10);
+    expect(smoothingFactor(CHRONIC_WINDOW_DAYS)).toBeCloseTo(2 / 29, 10);
+  });
+});
+
+describe("ewmaWorkloadSeries", () => {
+  it("returns 1 when load has been flat", () => {
+    expect(ewmaRatiosOf(Array(60).fill(100))[59]).toBeCloseTo(1, 10);
+  });
+
+  it("applies the recursion from the first logged value", () => {
+    // Seeded at 100, then 200×0.25 + 100×0.75 = 125, then 300×0.25 + 125×0.75 = 168.75.
+    const { acute } = ewmaWorkloadSeries(series([100, 200, 300]));
+    expect(acute[0]).toBeNull(); // below the 3-logged-day warm-up
+    expect(acute[2]).toBeCloseTo(168.75, 10);
+  });
+
+  it("weights the newest day more heavily than a flat mean does", () => {
+    // One spike day after a long flat run. The 7-day mean spreads it over seven
+    // slots; the EWMA puts a quarter of it on the day itself.
+    const spike = [...Array(40).fill(100), 300];
+    const flat = workloadSeries(series(spike)).acute[40]!;
+    const ewma = ewmaWorkloadSeries(series(spike)).acute[40]!;
+    expect(ewma).toBeGreaterThan(flat);
+  });
+
+  it("tracks a sustained two-week block faster than the 28-day mean", () => {
+    // The motivation for having this at all: a flat 28-day baseline still counts
+    // weeks 1-2 at full weight, so it lags a fortnight of harder training.
+    const ramp = [...Array(28).fill(100), ...Array(14).fill(200)];
+    const flat = workloadSeries(series(ramp)).chronic[41]!;
+    const ewma = ewmaWorkloadSeries(series(ramp)).chronic[41]!;
+    expect(ewma).toBeGreaterThan(flat);
+  });
+
+  it("rises above the steady band when recent load exceeds the baseline", () => {
+    const ratios = ewmaRatiosOf([...Array(28).fill(100), ...Array(7).fill(200)]);
+    expect(ratios[34]!).toBeGreaterThan(WORKLOAD_STEADY_MAX);
+  });
+
+  it("drops below the steady band when recent load falls off", () => {
+    const ratios = ewmaRatiosOf([...Array(28).fill(100), ...Array(7).fill(20)]);
+    expect(ratios[34]!).toBeLessThan(WORKLOAD_STEADY_MIN);
+  });
+
+  it("is null until enough days have been logged in total", () => {
+    const ratios = ewmaRatiosOf(Array(40).fill(100));
+    expect(ratios[12]).toBeNull();
+    expect(ratios[13]).not.toBeNull();
+  });
+
+  it("counts logged days cumulatively, not within a window", () => {
+    // Twenty logged days spread over forty: a windowed rule would never see 14 at
+    // once, but an EWMA never forgets them, so the baseline is established.
+    const gappy = Array(40)
+      .fill(null)
+      .map((_, i) => (i % 2 === 0 ? 100 : null));
+    expect(ewmaRatiosOf(gappy)[39]).toBeCloseTo(1, 10);
+  });
+
+  it("carries the average forward on unlogged days rather than decaying it", () => {
+    // A week off doesn't move either average, so the ratio is unchanged when
+    // logging resumes — "didn't record" is not "did nothing".
+    const withGap = [...Array(20).fill(100), ...Array(7).fill(null)];
+    const ratios = ewmaWorkloadSeries(series(withGap)).ratio;
+    expect(ratios[26]).toBeCloseTo(ratios[19]!, 10);
+  });
+
+  it("returns null rather than NaN when nothing has been done at all", () => {
+    expect(ewmaRatiosOf(Array(40).fill(0))[39]).toBeNull();
+  });
+
+  it("reports a restart after a long layoff as a large spike", () => {
+    const ratios = ewmaRatiosOf([...Array(28).fill(0), ...Array(7).fill(50)]);
+    expect(ratios[34]!).toBeGreaterThan(WORKLOAD_DANGER_MIN);
   });
 });

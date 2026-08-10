@@ -26,6 +26,7 @@ import { UserEdit } from "@primeicons/react/user-edit";
 import { SlidersH } from "@primeicons/react/sliders-h";
 import { Database } from "@primeicons/react/database";
 import { Shield } from "@primeicons/react/shield";
+import { Book } from "@primeicons/react/book";
 import styles from "./app-nav.module.css";
 
 const LINKS = [
@@ -159,6 +160,15 @@ export function AppNav({ user }: { user: { name: string; email: string } }) {
                       >
                         <Shield />
                         <span>Account</span>
+                      </Menu.Item>
+                      <Menu.Item
+                        as={Link}
+                        href="/definitions"
+                        onClick={() => setIsDrawerOpen(false)}
+                        className={styles.item}
+                      >
+                        <Book />
+                        <span>Definitions</span>
                       </Menu.Item>
                       <Menu.Label className={styles.menuLabel}>Chat</Menu.Label>
                       <Menu.Item disabled className={styles.item}>

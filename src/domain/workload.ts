@@ -58,13 +58,20 @@ export type WorkloadSeries = {
 // All three series per day, aligned to `series`, which must be calendar-dense (one slot
 // per day, null where unlogged) and oldest-first — a window of array slots is only a
 // window of days if no dates are missing.
-export function workloadSeries(series: DatedValue<number>[]): WorkloadSeries {
+export function acwrWorkloadSeries(
+  series: DatedValue<number>[],
+): WorkloadSeries {
   const ratio: (number | null)[] = [];
   const acuteOut: (number | null)[] = [];
   const chronicOut: (number | null)[] = [];
 
   series.forEach((_, i) => {
-    const acute = trailingMean(series, i, ACUTE_WINDOW_DAYS, MIN_ACUTE_LOGGED_DAYS);
+    const acute = trailingMean(
+      series,
+      i,
+      ACUTE_WINDOW_DAYS,
+      MIN_ACUTE_LOGGED_DAYS,
+    );
     const chronic = trailingMean(
       series,
       i,
@@ -111,7 +118,9 @@ export function smoothingFactor(spanDays: number): number {
 //
 // Unlogged days carry the average forward untouched rather than decaying it — "didn't
 // record" isn't "did nothing", matching the flat version's skip-nulls rule.
-export function ewmaWorkloadSeries(series: DatedValue<number>[]): WorkloadSeries {
+export function ewmaWorkloadSeries(
+  series: DatedValue<number>[],
+): WorkloadSeries {
   const acuteLambda = smoothingFactor(ACUTE_WINDOW_DAYS);
   const chronicLambda = smoothingFactor(CHRONIC_WINDOW_DAYS);
 
@@ -127,9 +136,12 @@ export function ewmaWorkloadSeries(series: DatedValue<number>[]): WorkloadSeries
     if (value != null) {
       loggedDays++;
       // The first logged value seeds both averages; there's nothing prior to decay.
-      acute = acute == null ? value : value * acuteLambda + acute * (1 - acuteLambda);
+      acute =
+        acute == null ? value : value * acuteLambda + acute * (1 - acuteLambda);
       chronic =
-        chronic == null ? value : value * chronicLambda + chronic * (1 - chronicLambda);
+        chronic == null
+          ? value
+          : value * chronicLambda + chronic * (1 - chronicLambda);
     }
 
     // Same warm-up guards as the flat version, counted cumulatively: an EWMA never
@@ -138,7 +150,9 @@ export function ewmaWorkloadSeries(series: DatedValue<number>[]): WorkloadSeries
     const chronicNow = loggedDays >= MIN_CHRONIC_LOGGED_DAYS ? chronic : null;
     const usableBaseline = chronicNow != null && chronicNow > 0;
 
-    ratio.push(usableBaseline && acuteNow != null ? acuteNow / chronicNow : null);
+    ratio.push(
+      usableBaseline && acuteNow != null ? acuteNow / chronicNow : null,
+    );
     acuteOut.push(acuteNow);
     chronicOut.push(usableBaseline ? chronicNow : null);
   }

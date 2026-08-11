@@ -3,7 +3,7 @@ import {
   ewmaWorkloadSeries,
   latestRatio,
   smoothingFactor,
-  workloadSeries,
+  acwrWorkloadSeries,
   workloadZone,
   zoneBoundsFor,
   ACUTE_WINDOW_DAYS,
@@ -22,7 +22,8 @@ function series(values: (number | null)[]): DatedValue<number>[] {
   });
 }
 
-const ratiosOf = (values: (number | null)[]) => workloadSeries(series(values)).ratio;
+const ratiosOf = (values: (number | null)[]) =>
+  acwrWorkloadSeries(series(values)).ratio;
 const ewmaRatiosOf = (values: (number | null)[]) =>
   ewmaWorkloadSeries(series(values)).ratio;
 
@@ -38,7 +39,7 @@ describe("workloadZone", () => {
   });
 });
 
-describe("workloadSeries ratio", () => {
+describe("acwrWorkloadSeries ratio", () => {
   it("returns 1 when load has been flat", () => {
     expect(ratiosOf(Array(40).fill(100))[39]).toBeCloseTo(1, 10);
   });
@@ -87,22 +88,24 @@ describe("workloadSeries ratio", () => {
   });
 });
 
-describe("workloadSeries acute and chronic", () => {
+describe("acwrWorkloadSeries acute and chronic", () => {
   it("reports both means in the original units", () => {
-    const { acute, chronic } = workloadSeries(series(Array(40).fill(100)));
+    const { acute, chronic } = acwrWorkloadSeries(series(Array(40).fill(100)));
     expect(acute[39]).toBeCloseTo(100, 10);
     expect(chronic[39]).toBeCloseTo(100, 10);
   });
 
   it("moves the acute mean ahead of the baseline after a step up", () => {
-    const { acute, chronic } = workloadSeries(
+    const { acute, chronic } = acwrWorkloadSeries(
       series([...Array(28).fill(100), ...Array(7).fill(200)]),
     );
     expect(acute[34]!).toBeGreaterThan(chronic[34]!);
   });
 
   it("nulls the baseline when it would be zero", () => {
-    expect(workloadSeries(series(Array(40).fill(0))).chronic[39]).toBeNull();
+    expect(
+      acwrWorkloadSeries(series(Array(40).fill(0))).chronic[39],
+    ).toBeNull();
   });
 });
 
@@ -157,7 +160,7 @@ describe("ewmaWorkloadSeries", () => {
     // One spike day after a long flat run. The 7-day mean spreads it over seven
     // slots; the EWMA puts a quarter of it on the day itself.
     const spike = [...Array(40).fill(100), 300];
-    const flat = workloadSeries(series(spike)).acute[40]!;
+    const flat = acwrWorkloadSeries(series(spike)).acute[40]!;
     const ewma = ewmaWorkloadSeries(series(spike)).acute[40]!;
     expect(ewma).toBeGreaterThan(flat);
   });
@@ -166,13 +169,16 @@ describe("ewmaWorkloadSeries", () => {
     // The motivation for having this at all: a flat 28-day baseline still counts
     // weeks 1-2 at full weight, so it lags a fortnight of harder training.
     const ramp = [...Array(28).fill(100), ...Array(14).fill(200)];
-    const flat = workloadSeries(series(ramp)).chronic[41]!;
+    const flat = acwrWorkloadSeries(series(ramp)).chronic[41]!;
     const ewma = ewmaWorkloadSeries(series(ramp)).chronic[41]!;
     expect(ewma).toBeGreaterThan(flat);
   });
 
   it("rises above the steady band when recent load exceeds the baseline", () => {
-    const ratios = ewmaRatiosOf([...Array(28).fill(100), ...Array(7).fill(200)]);
+    const ratios = ewmaRatiosOf([
+      ...Array(28).fill(100),
+      ...Array(7).fill(200),
+    ]);
     expect(ratios[34]!).toBeGreaterThan(WORKLOAD_STEADY_MAX);
   });
 

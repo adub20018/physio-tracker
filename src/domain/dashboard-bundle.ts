@@ -21,7 +21,11 @@ import {
 } from "./lag";
 import { dailyPainCandles, type PainCandle } from "./candle";
 import { pairSeries, type PairedPoint } from "./correlation";
-import { ewmaWorkloadSeries, latestRatio, workloadSeries } from "./workload";
+import {
+  ewmaWorkloadSeries,
+  latestRatio,
+  acwrWorkloadSeries,
+} from "./workload";
 
 // Stat tiles always use a fixed 7-day window, independent of any chart widget's range —
 // averaging a "how am I doing right now" tile over months would smear in stale, low numbers.
@@ -161,7 +165,9 @@ export function buildChartDataBundle(
     stepsAvg: previous.stepsAvg,
     sleepAvg: previous.sleepAvg,
     physioLoadAvg:
-      previous.loggedDays > 0 ? previous.physioLoad / previous.loggedDays : null,
+      previous.loggedDays > 0
+        ? previous.physioLoad / previous.loggedDays
+        : null,
   };
 
   const painSparkline: SparklinePoint[] = lastNDaysSeries(
@@ -289,8 +295,8 @@ export function buildChartDataBundle(
   }
 
   // ── Workload ratios: recent load vs the adapted-to baseline ────────────
-  const physioWorkload = workloadSeries(denseLoad);
-  const stepsWorkload = workloadSeries(denseSteps);
+  const physioWorkload = acwrWorkloadSeries(denseLoad);
+  const stepsWorkload = acwrWorkloadSeries(denseSteps);
   const physioEwma = ewmaWorkloadSeries(denseLoad);
   const stepsEwma = ewmaWorkloadSeries(denseSteps);
   const toRatioPoints = (

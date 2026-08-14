@@ -12,6 +12,8 @@ It was built to replace a spreadsheet used to track a tibialis posterior tendon
 injury, but nothing in it is specific to that injury. Every account gets its own
 private logs.
 
+![The PhysiMate dashboard: stat tiles for average pain, steps, sleep and physio load, above a pain-over-time chart and a step load zones chart](public/PhysiMate-dashboard.png)
+
 ## Features
 
 - **Daily logging** split into short steps (pain, activity, physio, notes) so it

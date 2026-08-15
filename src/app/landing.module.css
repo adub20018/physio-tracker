@@ -1,0 +1,491 @@
+/* Landing page. The product is a dark, quiet instrument panel, so the marketing
+   page is built from the same tokens rather than a separate brand voice — what
+   you see here is what you get after signing in. Emerald appears only where it
+   means something (one CTA, the eyebrow dot, the bloom behind the screenshot);
+   everything else is zinc and hairlines. */
+
+.landing {
+  --gutter: 1.25rem;
+  --max: 68rem;
+  width: 100%;
+  overflow-x: clip;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+
+.header {
+  position: relative;
+  z-index: 2;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.15rem;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.5rem;
+  padding-inline: 1.05rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.btnPrimary {
+  background: var(--accent);
+  color: #06231a;
+}
+
+.btnPrimary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #ffffff);
+  transform: translateY(-1px);
+}
+
+.btnGhost {
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.btnGhost:hover {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.btnQuiet {
+  color: var(--muted);
+}
+
+.btnQuiet:hover {
+  color: var(--foreground);
+}
+
+.btnLarge {
+  height: 2.9rem;
+  padding-inline: 1.4rem;
+  font-size: 0.95rem;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  padding-top: clamp(3rem, 9vw, 6rem);
+}
+
+/* Chart gridlines, essentially — the product's own visual language used as
+   atmosphere. Masked to fade out before it reaches the content edges. */
+.heroBackdrop {
+  position: absolute;
+  inset: -12rem 0 auto;
+  height: 52rem;
+  pointer-events: none;
+  /* --border at 45% lands around #212124 on the near-black page: a hairline you
+     can just make out. --border-muted blends to a 6/255 delta, i.e. nothing. */
+  --gridline: color-mix(in srgb, var(--border) 45%, transparent);
+  background-image:
+    linear-gradient(var(--gridline) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gridline) 1px, transparent 1px);
+  background-size: 3.5rem 3.5rem;
+  -webkit-mask-image: radial-gradient(
+    58rem 34rem at 50% 34%,
+    #000 0%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(58rem 34rem at 50% 34%, #000 0%, transparent 72%);
+}
+
+.heroGlow {
+  position: absolute;
+  inset: -8rem 0 auto;
+  height: 44rem;
+  pointer-events: none;
+  background: radial-gradient(
+    46rem 24rem at 50% 30%,
+    color-mix(in srgb, var(--accent) 11%, transparent),
+    transparent 68%
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.title {
+  margin-top: 1.4rem;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.titleAccent {
+  color: var(--accent);
+}
+
+.subtitle {
+  margin: 1.15rem auto 0;
+  max-width: 34rem;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.09rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.9rem;
+}
+
+.heroNote {
+  margin-top: 0.9rem;
+  color: var(--faint);
+  font-size: 0.8rem;
+}
+
+/* ── Screenshot ─────────────────────────────────────────────────────── */
+
+.shot {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  /* Wider than the text column: the screenshot is the argument. */
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.shotFrame {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 6px;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #ffffff 6%, transparent) inset,
+    0 40px 80px -32px rgba(0, 0, 0, 0.9),
+    0 0 90px -30px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.shotImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9px;
+}
+
+/* The dashboard scrolls past the fold in the real app; fading the bottom edge
+   says so, instead of implying the page ends there. */
+.shotFade {
+  position: absolute;
+  inset: auto 0 0;
+  height: 22%;
+  border-radius: 0 0 14px 14px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--background) 92%, transparent)
+  );
+}
+
+/* ── Sections ───────────────────────────────────────────────────────── */
+
+.section {
+  padding-block: clamp(4rem, 10vw, 7rem);
+  /* The hero's "See what it measures" jumps here; leave the label breathing room. */
+  scroll-margin-top: 2rem;
+}
+
+.sectionHead {
+  max-width: 40rem;
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  font-size: clamp(1.6rem, 3.4vw, 2.15rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+.sectionBody {
+  margin-top: 0.85rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+/* ── Feature cards ──────────────────────────────────────────────────── */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.card {
+  padding: 1.5rem 1.4rem;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--widget-border-radius);
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.cardBody {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Steps ──────────────────────────────────────────────────────────── */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.75rem 2.25rem;
+  margin-top: 2.75rem;
+}
+
+.step {
+  position: relative;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border-muted);
+}
+
+.stepNumber {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.stepTitle {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.stepBody {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ── Closing CTA ────────────────────────────────────────────────────── */
+
+.cta {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.5rem, 6vw, 3.75rem) var(--gutter);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--widget-border-radius);
+  background:
+    radial-gradient(
+      36rem 18rem at 50% 120%,
+      color-mix(in srgb, var(--accent) 13%, transparent),
+      transparent 70%
+    ),
+    color-mix(in srgb, var(--surface) 70%, transparent);
+  text-align: center;
+}
+
+.ctaTitle {
+  font-size: clamp(1.5rem, 3.2vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+.ctaBody {
+  margin: 0.8rem auto 0;
+  max-width: 30rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.75rem;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+
+.footer {
+  padding-block: 2.25rem 3rem;
+  border-top: 1px solid var(--border-muted);
+  margin-top: clamp(3rem, 8vw, 5rem);
+}
+
+.footerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.footerLinks a:hover {
+  color: var(--foreground);
+}
+
+.disclaimer {
+  margin-top: 1.5rem;
+  max-width: 44rem;
+  color: var(--faint);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+/* ── Load-in ────────────────────────────────────────────────────────── */
+
+/* One orchestrated reveal on load rather than scattered scroll effects. */
+.reveal {
+  animation: rise 0.62s cubic-bezier(0.22, 0.68, 0.32, 1) backwards;
+}
+
+.d1 {
+  animation-delay: 0.05s;
+}
+.d2 {
+  animation-delay: 0.13s;
+}
+.d3 {
+  animation-delay: 0.21s;
+}
+.d4 {
+  animation-delay: 0.29s;
+}
+.d5 {
+  animation-delay: 0.4s;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+}

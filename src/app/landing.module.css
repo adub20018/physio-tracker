@@ -147,27 +147,6 @@
   text-align: center;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0.8rem 0.3rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  color: var(--muted);
-  font-size: 0.78rem;
-  letter-spacing: 0.01em;
-}
-
-.eyebrowDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
 .title {
   margin-top: 1.3rem;
   font-size: clamp(2.15rem, 5.2vw, 3.4rem);

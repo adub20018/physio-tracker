@@ -71,13 +71,6 @@ export default function LandingPage() {
 
           <div className={styles.inner}>
             <div className={styles.heroCopy}>
-              <span
-                className={`${styles.eyebrow} ${styles.reveal} ${styles.d1}`}
-              >
-                <span className={styles.eyebrowDot} aria-hidden />
-                Built for rehab, not for the gym
-              </span>
-
               <h1 className={`${styles.title} ${styles.reveal} ${styles.d2}`}>
                 Your recovery,{" "}
                 <span className={styles.titleAccent}>measured properly</span>
@@ -109,6 +102,7 @@ export default function LandingPage() {
                   height={1700}
                   className={styles.deviceImage}
                   sizes="(max-width: 48rem) 100vw, 920px"
+                  quality={90}
                   priority
                 />
               </div>
@@ -123,6 +117,7 @@ export default function LandingPage() {
                   height={2532}
                   className={styles.deviceImage}
                   sizes="(max-width: 48rem) 240px, 190px"
+                  quality={90}
                   priority
                 />
               </div>

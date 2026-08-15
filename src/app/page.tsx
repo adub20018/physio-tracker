@@ -163,7 +163,9 @@ export default function LandingPage() {
           <div className={styles.inner}>
             <div className={styles.sectionHead}>
               <span className={styles.sectionLabel}>How it works</span>
-              <h2 className={styles.sectionTitle}>Three habits, that&rsquo;s it</h2>
+              <h2 className={styles.sectionTitle}>
+                Three habits, that&rsquo;s it
+              </h2>
             </div>
 
             <div className={styles.steps}>

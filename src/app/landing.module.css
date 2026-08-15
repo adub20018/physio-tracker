@@ -207,9 +207,12 @@
 /* ── Device showcase ────────────────────────────────────────────────── */
 
 /* Frames drawn in CSS rather than baked into the screenshots: they stay crisp at
-   any density, follow the theme, and a new screenshot is a straight swap. Each
-   screen's aspect-ratio must equal its capture's (1360x850 and 390x844) or the
-   image letterboxes inside its own bezel. */
+   any density, follow the theme, and a new screenshot is a straight swap.
+   The frames deliberately carry no aspect-ratio — the image's own intrinsic
+   ratio sets the height, so the bezel is even on all four sides. An
+   aspect-ratio here would size the *border* box (box-sizing is border-box
+   globally) while the image only spans the content box, and the mismatch eats
+   the bottom bezel. next/image reserves the space from width/height anyway. */
 .showcase {
   position: relative;
   z-index: 1;
@@ -225,9 +228,6 @@
 }
 
 .laptopScreen {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 1360 / 850;
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -244,9 +244,6 @@
 }
 
 .phoneScreen {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 390 / 844;
   padding: 5px;
   border: 1px solid var(--border-strong);
   /* Chunkier bezel and a much larger radius are what read as "phone" rather

@@ -1,13 +1,13 @@
-// Public landing page at /. The only route outside the auth gate besides
-// /login and /sign-up (see the matcher in src/proxy.ts) — signed-in visitors
-// are sent straight to their dashboard rather than shown the pitch again.
+// Public landing page at /. The only route outside the auth gate besides /login
+// and /sign-up (see the matcher in src/proxy.ts). Deliberately reads no session:
+// that keeps it statically rendered and CDN-cacheable, and the signed-in/out
+// buttons are swapped client-side instead — see landing-cta.tsx.
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Activity, CalendarCheck, LineChart, Gauge } from "lucide-react";
-import { getOptionalUser } from "@/auth/get-current-user";
 import { Wordmark } from "@/components/ui/nav/wordmark";
+import { HeaderActions, HeroActions } from "./landing-cta";
 import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
@@ -54,27 +54,13 @@ const STEPS = [
   },
 ];
 
-export default async function LandingPage() {
-  if (await getOptionalUser()) {
-    redirect("/dashboard");
-  }
-
+export default function LandingPage() {
   return (
     <div className={styles.landing}>
       <header className={styles.header}>
         <div className={`${styles.inner} ${styles.headerRow}`}>
           <Wordmark />
-          <nav className={styles.headerActions}>
-            <Link href="/login" className={`${styles.btn} ${styles.btnQuiet}`}>
-              Log in
-            </Link>
-            <Link
-              href="/sign-up"
-              className={`${styles.btn} ${styles.btnPrimary}`}
-            >
-              Get started
-            </Link>
-          </nav>
+          <HeaderActions />
         </div>
       </header>
 
@@ -103,26 +89,7 @@ export default async function LandingPage() {
                 limits a spreadsheet can&rsquo;t.
               </p>
 
-              <div
-                className={`${styles.heroActions} ${styles.reveal} ${styles.d4}`}
-              >
-                <Link
-                  href="/sign-up"
-                  className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLarge}`}
-                >
-                  Start tracking
-                </Link>
-                <a
-                  href="#what-you-get"
-                  className={`${styles.btn} ${styles.btnGhost} ${styles.btnLarge}`}
-                >
-                  See what it measures
-                </a>
-              </div>
-
-              <p className={`${styles.heroNote} ${styles.reveal} ${styles.d4}`}>
-                Free, and your logs stay private to your account.
-              </p>
+              <HeroActions />
             </div>
 
             <div className={`${styles.preview} ${styles.reveal} ${styles.d5}`}>

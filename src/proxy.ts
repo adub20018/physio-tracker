@@ -21,6 +21,8 @@ export const config = {
   matcher: [
     // Match all paths except API routes, static/image output, unauthenticated pages, and
     // public/ assets (by extension, so new assets are excluded automatically — else logos 404 to /login).
-    "/((?!api|_next/static|_next/image|login|sign-up|.*\\.(?:ico|svg|png|jpg|jpeg|gif|webp|avif|css|js|mjs|txt|xml|json|woff2?|ttf|map)$).*)",
+    // The leading `$` excludes "/" itself and nothing else — the landing page is public,
+    // and it redirects signed-in visitors to /dashboard on its own.
+    "/((?!$|api|_next/static|_next/image|login|sign-up|.*\\.(?:ico|svg|png|jpg|jpeg|gif|webp|avif|css|js|mjs|txt|xml|json|woff2?|ttf|map)$).*)",
   ],
 };

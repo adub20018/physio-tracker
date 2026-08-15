@@ -98,7 +98,8 @@
 
 .hero {
   position: relative;
-  padding-top: clamp(3rem, 9vw, 6rem);
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  padding-bottom: clamp(3rem, 7vw, 5rem);
 }
 
 /* Chart gridlines, essentially — the product's own visual language used as
@@ -106,7 +107,7 @@
 .heroBackdrop {
   position: absolute;
   inset: -12rem 0 auto;
-  height: 52rem;
+  height: 48rem;
   pointer-events: none;
   /* --border at 45% lands around #212124 on the near-black page: a hairline you
      can just make out. --border-muted blends to a 6/255 delta, i.e. nothing. */
@@ -116,31 +117,43 @@
     linear-gradient(90deg, var(--gridline) 1px, transparent 1px);
   background-size: 3.5rem 3.5rem;
   -webkit-mask-image: radial-gradient(
-    58rem 34rem at 50% 34%,
+    52rem 30rem at 50% 30%,
     #000 0%,
     transparent 72%
   );
-  mask-image: radial-gradient(58rem 34rem at 50% 34%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(52rem 30rem at 50% 30%, #000 0%, transparent 72%);
 }
 
 .heroGlow {
   position: absolute;
-  inset: -8rem 0 auto;
-  height: 44rem;
+  inset: -6rem 0 auto;
+  height: 38rem;
   pointer-events: none;
   background: radial-gradient(
-    46rem 24rem at 50% 30%,
-    color-mix(in srgb, var(--accent) 11%, transparent),
+    38rem 20rem at 68% 42%,
+    color-mix(in srgb, var(--accent) 12%, transparent),
     transparent 68%
   );
 }
 
-.heroContent {
+/* Copy left, product right — the screenshot earns its place beside the pitch
+   rather than pushing everything else below the fold. */
+.heroGrid {
   position: relative;
   z-index: 1;
-  max-width: 44rem;
-  margin: 0 auto;
-  text-align: center;
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 3.5rem);
+  align-items: center;
+}
+
+@media (min-width: 62rem) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  }
+}
+
+.heroCopy {
+  max-width: 34rem;
 }
 
 .eyebrow {
@@ -165,9 +178,9 @@
 }
 
 .title {
-  margin-top: 1.4rem;
-  font-size: clamp(2.4rem, 7vw, 4rem);
-  line-height: 1.04;
+  margin-top: 1.3rem;
+  font-size: clamp(2.15rem, 5vw, 3.3rem);
+  line-height: 1.06;
   letter-spacing: -0.025em;
   font-weight: 600;
   text-wrap: balance;
@@ -178,10 +191,10 @@
 }
 
 .subtitle {
-  margin: 1.15rem auto 0;
-  max-width: 34rem;
+  margin-top: 1.05rem;
+  max-width: 32rem;
   color: var(--muted);
-  font-size: clamp(1rem, 1.6vw, 1.09rem);
+  font-size: clamp(0.98rem, 1.4vw, 1.06rem);
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -189,60 +202,81 @@
 .heroActions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 0.6rem;
-  margin-top: 1.9rem;
+  margin-top: 1.75rem;
 }
 
 .heroNote {
-  margin-top: 0.9rem;
+  margin-top: 0.85rem;
   color: var(--faint);
   font-size: 0.8rem;
 }
 
-/* ── Screenshot ─────────────────────────────────────────────────────── */
+/* ── Product preview ────────────────────────────────────────────────── */
 
-.shot {
+/* A window onto the app, not a shrunk-down page: the image sits larger than its
+   frame and is cropped, so the UI stays readable at this size. The fades on the
+   cut edges say "this continues" rather than "this is all there is". */
+.preview {
   position: relative;
-  z-index: 1;
-  margin-top: clamp(2.5rem, 6vw, 4rem);
-  /* Wider than the text column: the screenshot is the argument. */
-  max-width: 74rem;
-  margin-inline: auto;
-  padding-inline: var(--gutter);
 }
 
-.shotFrame {
+.previewFrame {
   position: relative;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
   padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
   box-shadow:
     0 1px 0 color-mix(in srgb, #ffffff 6%, transparent) inset,
-    0 40px 80px -32px rgba(0, 0, 0, 0.9),
-    0 0 90px -30px color-mix(in srgb, var(--accent) 45%, transparent);
+    0 30px 60px -28px rgba(0, 0, 0, 0.95),
+    0 0 70px -26px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
-.shotImage {
-  display: block;
-  width: 100%;
+.previewViewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 11px;
+  background: var(--background);
+  aspect-ratio: 16 / 11;
+}
+
+@media (min-width: 62rem) {
+  .previewViewport {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.previewImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 152%;
   height: auto;
-  border-radius: 9px;
+  max-width: none;
 }
 
-/* The dashboard scrolls past the fold in the real app; fading the bottom edge
-   says so, instead of implying the page ends there. */
-.shotFade {
+.previewFadeRight {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 16%;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--background) 85%, transparent)
+  );
+}
+
+.previewFadeBottom {
   position: absolute;
   inset: auto 0 0;
-  height: 22%;
-  border-radius: 0 0 14px 14px;
+  height: 20%;
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in srgb, var(--background) 92%, transparent)
+    color-mix(in srgb, var(--background) 90%, transparent)
   );
 }
 

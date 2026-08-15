@@ -83,9 +83,11 @@ export default async function LandingPage() {
           <div className={styles.heroBackdrop} aria-hidden />
           <div className={styles.heroGlow} aria-hidden />
 
-          <div className={styles.inner}>
-            <div className={styles.heroContent}>
-              <span className={`${styles.eyebrow} ${styles.reveal} ${styles.d1}`}>
+          <div className={`${styles.inner} ${styles.heroGrid}`}>
+            <div className={styles.heroCopy}>
+              <span
+                className={`${styles.eyebrow} ${styles.reveal} ${styles.d1}`}
+              >
                 <span className={styles.eyebrowDot} aria-hidden />
                 Built for rehab, not for the gym
               </span>
@@ -122,20 +124,23 @@ export default async function LandingPage() {
                 Free, and your logs stay private to your account.
               </p>
             </div>
-          </div>
 
-          <div className={`${styles.shot} ${styles.reveal} ${styles.d5}`}>
-            <div className={styles.shotFrame}>
-              <Image
-                src="/PhysiMate-dashboard.png"
-                alt="The PhysiMate dashboard: stat tiles for average pain, steps, sleep and physio load above a pain-over-time chart and a step load zones chart"
-                width={1210}
-                height={929}
-                className={styles.shotImage}
-                sizes="(max-width: 74rem) 100vw, 74rem"
-                priority
-              />
-              <div className={styles.shotFade} aria-hidden />
+            <div className={`${styles.preview} ${styles.reveal} ${styles.d5}`}>
+              <div className={styles.previewFrame}>
+                <div className={styles.previewViewport}>
+                  <Image
+                    src="/PhysiMate-dashboard.png"
+                    alt="A PhysiMate dashboard showing stat tiles for average pain, steps, sleep and physio load above a pain-over-time chart"
+                    width={1210}
+                    height={929}
+                    className={styles.previewImage}
+                    sizes="(max-width: 62rem) 145vw, 820px"
+                    priority
+                  />
+                  <div className={styles.previewFadeRight} aria-hidden />
+                  <div className={styles.previewFadeBottom} aria-hidden />
+                </div>
+              </div>
             </div>
           </div>
         </section>

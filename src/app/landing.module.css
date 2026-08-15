@@ -136,26 +136,15 @@
   );
 }
 
-/* Copy left, product right — the screenshot earns its place beside the pitch
-   rather than pushing everything else below the fold. */
-.heroGrid {
+/* Centred copy with the device composite beneath it: a laptop-plus-phone mock
+   needs the full column width to stay legible, which a side-by-side split can't
+   give it. */
+.heroCopy {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: clamp(2.5rem, 5vw, 3.5rem);
-  align-items: center;
-}
-
-@media (min-width: 62rem) {
-  /* The preview takes the larger share: shown whole rather than cropped, it needs
-     the width to stay legible. The copy column is capped at 34rem regardless. */
-  .heroGrid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  }
-}
-
-.heroCopy {
-  max-width: 34rem;
+  max-width: 44rem;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .eyebrow {
@@ -181,7 +170,7 @@
 
 .title {
   margin-top: 1.3rem;
-  font-size: clamp(2.15rem, 5vw, 3.3rem);
+  font-size: clamp(2.15rem, 5.2vw, 3.4rem);
   line-height: 1.06;
   letter-spacing: -0.025em;
   font-weight: 600;
@@ -193,8 +182,8 @@
 }
 
 .subtitle {
-  margin-top: 1.05rem;
-  max-width: 32rem;
+  margin: 1.05rem auto 0;
+  max-width: 34rem;
   color: var(--muted);
   font-size: clamp(0.98rem, 1.4vw, 1.06rem);
   line-height: 1.6;
@@ -204,6 +193,7 @@
 .heroActions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.6rem;
   margin-top: 1.75rem;
 }
@@ -214,32 +204,88 @@
   font-size: 0.8rem;
 }
 
-/* ── Product preview ────────────────────────────────────────────────── */
+/* ── Device showcase ────────────────────────────────────────────────── */
 
-/* The whole dashboard, scaled to the frame — a glimpse of the real thing rather
-   than a crop of one corner. The frame is what keeps it feeling like a product
-   shot at this size. */
-.preview {
+/* Frames drawn in CSS rather than baked into the screenshots: they stay crisp at
+   any density, follow the theme, and a new screenshot is a straight swap. Each
+   screen's aspect-ratio must equal its capture's (1360x850 and 390x844) or the
+   image letterboxes inside its own bezel. */
+.showcase {
   position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  margin: clamp(2.5rem, 6vw, 4rem) auto 0;
+  padding-inline: var(--gutter);
 }
 
-.previewFrame {
+.laptop {
+  /* Phone-only below the breakpoint — a laptop shot at 350px wide is a smudge,
+     and the phone is the more relevant form factor on a phone anyway. */
+  display: none;
+}
+
+.laptopScreen {
   position: relative;
+  overflow: hidden;
+  aspect-ratio: 1360 / 850;
   padding: 6px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--surface);
   box-shadow:
     0 1px 0 color-mix(in srgb, #ffffff 6%, transparent) inset,
-    0 30px 60px -28px rgba(0, 0, 0, 0.95),
-    0 0 70px -26px color-mix(in srgb, var(--accent) 40%, transparent);
+    0 34px 70px -30px rgba(0, 0, 0, 0.95),
+    0 0 80px -28px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
-.previewImage {
+.phone {
+  width: min(62%, 13.5rem);
+  margin-inline: auto;
+}
+
+.phoneScreen {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 390 / 844;
+  padding: 5px;
+  border: 1px solid var(--border-strong);
+  /* Chunkier bezel and a much larger radius are what read as "phone" rather
+     than "small laptop". */
+  border-radius: 1.9rem;
+  background: var(--surface);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #ffffff 8%, transparent) inset,
+    0 26px 50px -18px rgba(0, 0, 0, 0.95);
+}
+
+.deviceImage {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 11px;
+  border-radius: 9px;
+}
+
+.phone .deviceImage {
+  border-radius: 1.55rem;
+}
+
+@media (min-width: 48rem) {
+  .showcase {
+    /* Room for the phone to hang below the laptop without being clipped. */
+    padding-bottom: 3.5rem;
+  }
+
+  .laptop {
+    display: block;
+  }
+
+  .phone {
+    position: absolute;
+    left: 5%;
+    bottom: 0;
+    width: 19%;
+    margin: 0;
+  }
 }
 
 /* ── Sections ───────────────────────────────────────────────────────── */

@@ -69,7 +69,7 @@ export default function LandingPage() {
           <div className={styles.heroBackdrop} aria-hidden />
           <div className={styles.heroGlow} aria-hidden />
 
-          <div className={`${styles.inner} ${styles.heroGrid}`}>
+          <div className={styles.inner}>
             <div className={styles.heroCopy}>
               <span
                 className={`${styles.eyebrow} ${styles.reveal} ${styles.d1}`}
@@ -91,16 +91,38 @@ export default function LandingPage() {
 
               <HeroActions />
             </div>
+          </div>
 
-            <div className={`${styles.preview} ${styles.reveal} ${styles.d5}`}>
-              <div className={styles.previewFrame}>
+          {/* One label for the pair: two images each with their own alt would
+              have a screen reader announce the same dashboard twice. */}
+          <div
+            className={`${styles.showcase} ${styles.reveal} ${styles.d5}`}
+            role="img"
+            aria-label="The PhysiMate dashboard on a laptop, with the phone layout of the same app beside it"
+          >
+            <div className={styles.laptop}>
+              <div className={styles.laptopScreen}>
                 <Image
-                  src="/PhysiMate-dashboard.png"
-                  alt="A PhysiMate dashboard showing stat tiles for average pain, steps, sleep and physio load above a pain-over-time chart and a step load zones chart"
-                  width={1210}
-                  height={929}
-                  className={styles.previewImage}
-                  sizes="(max-width: 62rem) 100vw, 620px"
+                  src="/dashboard-desktop.png"
+                  alt=""
+                  width={2720}
+                  height={1700}
+                  className={styles.deviceImage}
+                  sizes="(max-width: 48rem) 100vw, 920px"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className={styles.phone}>
+              <div className={styles.phoneScreen}>
+                <Image
+                  src="/dashboard-mobile.png"
+                  alt=""
+                  width={1170}
+                  height={2532}
+                  className={styles.deviceImage}
+                  sizes="(max-width: 48rem) 240px, 190px"
                   priority
                 />
               </div>

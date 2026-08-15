@@ -127,19 +127,15 @@ export default async function LandingPage() {
 
             <div className={`${styles.preview} ${styles.reveal} ${styles.d5}`}>
               <div className={styles.previewFrame}>
-                <div className={styles.previewViewport}>
-                  <Image
-                    src="/PhysiMate-dashboard.png"
-                    alt="A PhysiMate dashboard showing stat tiles for average pain, steps, sleep and physio load above a pain-over-time chart"
-                    width={1210}
-                    height={929}
-                    className={styles.previewImage}
-                    sizes="(max-width: 62rem) 145vw, 820px"
-                    priority
-                  />
-                  <div className={styles.previewFadeRight} aria-hidden />
-                  <div className={styles.previewFadeBottom} aria-hidden />
-                </div>
+                <Image
+                  src="/PhysiMate-dashboard.png"
+                  alt="A PhysiMate dashboard showing stat tiles for average pain, steps, sleep and physio load above a pain-over-time chart and a step load zones chart"
+                  width={1210}
+                  height={929}
+                  className={styles.previewImage}
+                  sizes="(max-width: 62rem) 100vw, 620px"
+                  priority
+                />
               </div>
             </div>
           </div>

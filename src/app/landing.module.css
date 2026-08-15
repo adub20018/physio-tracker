@@ -147,8 +147,10 @@
 }
 
 @media (min-width: 62rem) {
+  /* The preview takes the larger share: shown whole rather than cropped, it needs
+     the width to stay legible. The copy column is capped at 34rem regardless. */
   .heroGrid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
   }
 }
 
@@ -214,9 +216,9 @@
 
 /* ── Product preview ────────────────────────────────────────────────── */
 
-/* A window onto the app, not a shrunk-down page: the image sits larger than its
-   frame and is cropped, so the UI stays readable at this size. The fades on the
-   cut edges say "this continues" rather than "this is all there is". */
+/* The whole dashboard, scaled to the frame — a glimpse of the real thing rather
+   than a crop of one corner. The frame is what keeps it feeling like a product
+   shot at this size. */
 .preview {
   position: relative;
 }
@@ -233,51 +235,11 @@
     0 0 70px -26px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
-.previewViewport {
-  position: relative;
-  overflow: hidden;
-  border-radius: 11px;
-  background: var(--background);
-  aspect-ratio: 16 / 11;
-}
-
-@media (min-width: 62rem) {
-  .previewViewport {
-    aspect-ratio: 4 / 3;
-  }
-}
-
 .previewImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 152%;
+  display: block;
+  width: 100%;
   height: auto;
-  max-width: none;
-}
-
-.previewFadeRight {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 16%;
-  pointer-events: none;
-  background: linear-gradient(
-    to right,
-    transparent,
-    color-mix(in srgb, var(--background) 85%, transparent)
-  );
-}
-
-.previewFadeBottom {
-  position: absolute;
-  inset: auto 0 0;
-  height: 20%;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    color-mix(in srgb, var(--background) 90%, transparent)
-  );
+  border-radius: 11px;
 }
 
 /* ── Sections ───────────────────────────────────────────────────────── */

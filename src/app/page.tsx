@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "PhysiMate — Track your physio rehab",
   description:
     "Log pain, activity and prescribed exercises in seconds. PhysiMate turns them into trends, flare context and workload limits built from your own history.",
+  icons: {
+    apple: "/PhysiMate-apple-logo.png",
+  },
 };
 
 const FEATURES = [

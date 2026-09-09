@@ -11,7 +11,13 @@ export const metadata: Metadata = {
     "What every value in PhysiMate means, how it's collected, and the formulas behind the derived ones.",
 };
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={styles.row}>
       <span className={styles.rowLabel}>{label}</span>
@@ -78,9 +84,9 @@ export default function DefinitionsPage() {
       </header>
 
       <p className={styles.intro}>
-        Values are either <strong>logged</strong> — typed in on the Log page — or{" "}
-        <strong>derived</strong>, calculated from logged values. Derived entries
-        list the arithmetic behind them, so nothing here is a black box.
+        Values are either <strong>logged</strong> — typed in on the Log page —
+        or <strong>derived</strong>, calculated from logged values. Derived
+        entries list the arithmetic behind them, so nothing here is a black box.
       </p>
 
       <nav className={styles.toc} aria-label="Jump to a definition">

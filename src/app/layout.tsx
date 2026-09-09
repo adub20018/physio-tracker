@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "PhysiMate",
   description: "Personal rehab progress dashboard",
   icons: {
-    apple: "/PhysiMate-logo.png",
+    apple: "/PhysiMate-apple-logo.png",
   },
 };
 

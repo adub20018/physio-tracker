@@ -19,6 +19,9 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "PhysiMate",
   description: "Personal rehab progress dashboard",
+  icons: {
+    apple: "/PhysiMate-logo.png",
+  },
 };
 
 export default function RootLayout({
